@@ -1,27 +1,97 @@
-import { TableCell } from '@/components/table/TableCell'
-import { TableHead } from '@/components/table/TableHead'
-import { TableRow } from '@/components/table/TableRow'
-import { Titles } from '../constants/titles'
+import { ColWidth, RowHeight } from '@/constants/defaultValues'
+import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { TableCell } from '@/components/Table/TableCell'
+import { TableHead } from '@/components/Table/TableHead'
+import { TableRow } from '@/components/Table/TableRow'
+import { TableGroup } from '@/components/Table/TableGroup'
+import { CellText } from '@/components/CellText/CellText'
+import { Badge } from '@/components/Badge/Badge'
+import { SortUpIcon } from '@/components/Icons/SortUpIcon'
+import { SortDownIcon } from '@/components/Icons/SortDownIcon'
+import { getTableSort, setSort } from '../tableSlice'
+import { Columns, HeaderColumns } from '../columns'
+
+const width = Columns.reduce((ac, cur) => ac + (cur.width || ColWidth), 0)
+const height = 2 * RowHeight
 
 export const DataTableHead = () => {
+	const sort = useAppSelector(getTableSort)
+
+	const dispatch = useAppDispatch()
+
+	const setSortHandler = (field: string) => () => {
+		dispatch(setSort(field))
+	}
+
+	const renderHeader = () => {
+		const header: JSX.Element[] = []
+		//TODO добавить проверку на скрытые поля
+
+		HeaderColumns.forEach(c => {
+			if (c.children) {
+				header.push(
+					<TableGroup key={c.key}>
+						<TableRow>
+							<TableCell key={c.key}>
+								<CellText value={c.label} />
+							</TableCell>
+						</TableRow>
+						<TableRow>
+							{c.children.map(c => (
+								<TableCell
+									key={c.key}
+									width={c.width || ColWidth}
+									isActive
+									onClick={setSortHandler(c.key)}
+								>
+									<CellText value={c.label} />
+
+									<Badge
+										color='primary'
+										badgeContent={Object.keys(sort).findIndex(k => k == c.key) + 1}
+										invisible={Object.keys(sort).length < 2}
+									>
+										{!sort[c.key] || sort[c.key] == 'ASC' ? (
+											<SortUpIcon fontSize={16} fill={sort[c.key] ? 'black' : '#adadad'} />
+										) : null}
+										{sort[c.key] == 'DESC' ? (
+											<SortDownIcon fontSize={16} fill={sort[c.key] ? 'black' : '#adadad'} />
+										) : null}
+									</Badge>
+								</TableCell>
+							))}
+						</TableRow>
+					</TableGroup>
+				)
+			} else {
+				header.push(
+					<TableCell key={c.key} width={c.width || ColWidth} isActive onClick={setSortHandler(c.key)}>
+						<CellText value={c.label} />
+
+						<Badge
+							color='primary'
+							badgeContent={Object.keys(sort).findIndex(k => k == c.key) + 1}
+							invisible={Object.keys(sort).length < 2}
+						>
+							{!sort[c.key] || sort[c.key] == 'ASC' ? (
+								<SortUpIcon fontSize={16} fill={sort[c.key] ? 'black' : '#adadad'} />
+							) : null}
+							{sort[c.key] == 'DESC' ? (
+								<SortDownIcon fontSize={16} fill={sort[c.key] ? 'black' : '#adadad'} />
+							) : null}
+						</Badge>
+					</TableCell>
+				)
+			}
+		})
+
+		return header
+	}
+
 	return (
 		<TableHead>
-			<TableRow>
-				<TableCell rowSpan={2}>{Titles.Type}</TableCell>
-				<TableCell rowSpan={2}>{Titles.Name}</TableCell>
-				<TableCell rowSpan={2}>{Titles.UName}</TableCell>
-				<TableCell rowSpan={2}>{Titles.Doc}</TableCell>
-				<TableCell rowSpan={2}>{Titles.Purity}</TableCell>
-				<TableCell rowSpan={2}>{Titles.DateOfManufacture}</TableCell>
-				<TableCell rowSpan={2}>{Titles.Consignment}</TableCell>
-				<TableCell rowSpan={2}>{Titles.Manufacturer}</TableCell>
-				<TableCell rowSpan={2}>{Titles.ShelfLife}</TableCell>
-				<TableCell colSpan={2}>{Titles.Place.Main}</TableCell>
-				<TableCell></TableCell>
-			</TableRow>
-			<TableRow>
-				<TableCell>{Titles.Place.Closet}</TableCell>
-				<TableCell>{Titles.Place.Shelf}</TableCell>
+			<TableRow width={width} height={height}>
+				{renderHeader()}
 			</TableRow>
 		</TableHead>
 	)

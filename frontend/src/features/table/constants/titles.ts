@@ -13,4 +13,21 @@ export const Titles = Object.freeze({
 		Closet: 'Шкаф',
 		Shelf: 'Полка',
 	},
+	IncomingControl: {
+		Main: 'Входной контроль',
+		ReceiptDate: 'Дата поступления',
+		Amount: 'Количество',
+		Date: 'Дата проведения ВК',
+		Protocol: 'Протокол ВК',
+		Result: 'Результат ВК',
+	},
+	Extending: {
+		Main: 'Продление срока годности',
+		Date: 'Дата',
+		Period: 'Период продления, мес',
+	},
+	SeizureInformation: 'Сведения об изъятии',
+	DisposalInformation: 'Сведения об утилизации',
+	Comments: 'Комментарии',
+	Notes: 'Примечание',
 })

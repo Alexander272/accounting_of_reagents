@@ -1,10 +1,14 @@
-import { Table } from '@/components/table/Table'
+import { Table } from '@/components/Table/Table'
 import { DataTableHead } from './TableHead'
+import { DataTableBody } from './TableBody'
 
 export const DataTable = () => {
 	return (
-		<Table>
-			<DataTableHead />
-		</Table>
+		<>
+			<Table>
+				<DataTableHead />
+				<DataTableBody />
+			</Table>
+		</>
 	)
 }

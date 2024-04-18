@@ -1,19 +1,19 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import { setupListeners } from '@reduxjs/toolkit/dist/query'
+import { setupListeners } from '@reduxjs/toolkit/query'
 
-import { dataTablePath, dataTableReducer } from '@/features/dataTable/dataTableSlice'
-import { modalPath, modalReducer } from '@/features/modal/modalSlice'
-import { employeesPath, employeesReducer } from '@/features/employees/employeeSlice'
 import { userPath, userReducer } from '@/features/user/userSlice'
+import { tablePath, tableReducer } from '@/features/table/tableSlice'
+// import { modalPath, modalReducer } from '@/features/modal/modalSlice'
+// import { employeesPath, employeesReducer } from '@/features/employees/employeeSlice'
 import { resetStoreListener } from './middlewares/resetStore'
 import { apiSlice } from './apiSlice'
 
 const rootReducer = combineReducers({
 	[apiSlice.reducerPath]: apiSlice.reducer,
-	[dataTablePath]: dataTableReducer,
-	[modalPath]: modalReducer,
-	[employeesPath]: employeesReducer,
 	[userPath]: userReducer,
+	[tablePath]: tableReducer,
+	// [modalPath]: modalReducer,
+	// [employeesPath]: employeesReducer,
 })
 
 export const store = configureStore({

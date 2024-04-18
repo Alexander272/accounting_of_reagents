@@ -47,7 +47,7 @@ export const theme = createTheme({
 			defaultProps: {
 				disableInteractive: true,
 				arrow: true,
-				enterDelay: 800,
+				// enterDelay: 800,
 			},
 			styleOverrides: {
 				tooltip: {
