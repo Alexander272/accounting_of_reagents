@@ -15,6 +15,7 @@ const tableApiSlice = apiSlice.injectEndpoints({
 			providesTags: [{ type: 'DataItems', id: 'ALL' }],
 		}),
 	}),
+	// TODO когда удается реагент можно делать ему метку, а потом проверять если метка старше 30 дней, то запись удаляется
 })
 
 export const { useGetAllQuery } = tableApiSlice

@@ -14,7 +14,3 @@ export interface IColumn {
 	align?: 'center' | 'right' | 'left'
 	formatter?: (value: unknown) => string
 }
-
-export interface ISort {
-	[x: string]: 'DESC' | 'ASC'
-}

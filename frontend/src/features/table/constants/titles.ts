@@ -21,6 +21,7 @@ export const Titles = Object.freeze({
 		Protocol: 'Протокол ВК',
 		Result: 'Результат ВК',
 	},
+	Spending: 'Расходование',
 	Extending: {
 		Main: 'Продление срока годности',
 		Date: 'Дата',

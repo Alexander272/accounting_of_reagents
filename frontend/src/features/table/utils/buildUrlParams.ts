@@ -7,7 +7,11 @@ export const buildSiUrlParams = (req: IParams): URLSearchParams => {
 	if (req.page && req.page != 1) params.push(['page', req.page.toString()])
 	if (req.size && req.size != Size) params.push(['size', req.size.toString()])
 
-	if (req.sort) {
+	if (req.search?.value) {
+		params.push([`search[${req.search.fields.join(',')}]`, req.search.value])
+	}
+
+	if (Object.keys(req.sort).length) {
 		const sort: string[] = []
 		Object.keys(req.sort).forEach(k => {
 			sort.push(`${req.sort[k] == 'DESC' ? '-' : ''}${k}`)

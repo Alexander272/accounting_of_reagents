@@ -1,6 +1,22 @@
-import { createTheme } from '@mui/material/styles'
+import { alpha, createTheme, getContrastRatio } from '@mui/material/styles'
 
 import { type IScrollbarParameters, generateScrollbarStyles } from '@/utils/generateScrollbarStyles'
+
+declare module '@mui/material/styles' {
+	interface Palette {
+		gray: Palette['primary']
+	}
+
+	interface PaletteOptions {
+		gray?: PaletteOptions['primary']
+	}
+}
+
+declare module '@mui/material/Button' {
+	interface ButtonPropsColorOverrides {
+		gray: true
+	}
+}
 
 const scrollbarParameters: IScrollbarParameters = {
 	borderRadius: '5px',
@@ -12,6 +28,9 @@ const scrollbarParameters: IScrollbarParameters = {
 	thumbColorHover: '#00000030',
 }
 
+const grayBase = '#212121'
+const grayMain = alpha(grayBase, 0.8)
+
 export const theme = createTheme({
 	palette: {
 		primary: {
@@ -21,6 +40,12 @@ export const theme = createTheme({
 		background: {
 			default: '#fafafa',
 			paper: '#FFF',
+		},
+		gray: {
+			main: grayMain,
+			light: alpha(grayBase, 0.5),
+			dark: alpha(grayBase, 1),
+			contrastText: getContrastRatio(grayBase, '#fff') > 4.5 ? '#fff' : '#111',
 		},
 	},
 	components: {

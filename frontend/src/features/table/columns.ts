@@ -78,6 +78,7 @@ export const HeaderColumns: IHeadColumn[] = [
 			},
 		],
 	},
+	{ key: 'spending', label: Titles.Spending },
 	{
 		key: 'extending',
 		label: Titles.Extending.Main,
@@ -175,6 +176,7 @@ export const Columns: IColumn[] = [
 		key: 'incomingControl_result',
 		label: Titles.IncomingControl.Result,
 	},
+	{ key: 'spending', label: Titles.Spending },
 	{
 		key: 'extending_date',
 		label: Titles.Extending.Date,

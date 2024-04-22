@@ -7,7 +7,8 @@ export default function Home() {
 		<PageBox>
 			<Box
 				borderRadius={3}
-				padding={2}
+				paddingX={2}
+				paddingY={1}
 				width={'100%'}
 				border={'1px solid rgba(0, 0, 0, 0.12)'}
 				flexGrow={1}
