@@ -1,0 +1,35 @@
+log_level: debug
+log_source: true
+
+http:
+    port: 9000
+
+postgres:
+    db_name: reagents
+    host: 127.0.0.1
+    # host: pro.sealur.ru
+    port: 5436
+    # port: 5432
+    ssl_mode: disable
+    username: postgres
+# redis:
+#     db: 0
+#     host: pro.sealur.ru
+#     port: 6379
+
+# notification:
+#     # start_time: 10
+#     # interval: 30s
+#     times:
+#         - type: sub
+#           sub: 240h
+#           time: 72h
+#         - type: add
+#           add: 72h
+#           time: 72h
+#         - type: add
+#           add: 72h
+#           time: 72h
+#         - type: add
+#           add: 24h
+#           time: 72h
