@@ -1,6 +1,8 @@
 package roles
 
 import (
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,11 +16,12 @@ func NewRoleHandlers(service services.Role) *RoleHandlers {
 	}
 }
 
-func Register(api *gin.RouterGroup, service services.Role) {
-	handlers := NewRoleHandlers(service)
+func Register(api *gin.RouterGroup, service services.Role, middleware *middleware.Middleware) {
+	// handlers := NewRoleHandlers(service)
 
 	roles := api.Group("/roles")
 	{
+		roles.GET("")
 		// roles.GET("", handlers.GetAll)
 		// roles.GET("/:name", handlers.Get)
 		// roles.POST("", handlers.Create)

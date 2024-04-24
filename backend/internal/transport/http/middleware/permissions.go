@@ -29,7 +29,7 @@ func (m *Middleware) CheckPermissions(c *gin.Context) {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
 		return
 	}
-	logger.Debug("permissions", logger.StringAttr("path", c.FullPath()), logger.StringAttr("method", c.Request.Method), logger.StringAttr("access", access))
+	logger.Debug("permissions", logger.StringAttr("path", c.FullPath()), logger.StringAttr("method", c.Request.Method), logger.BoolAttr("access", access))
 	//logger.Debug("permissions path - ", c.FullPath(), " method - ", c.Request.Method, ". permission access - ", access)
 
 	if !access {

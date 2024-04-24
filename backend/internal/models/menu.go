@@ -1,7 +1,5 @@
 package models
 
-import "github.com/lib/pq"
-
 type Menu struct {
 	Id          string   `json:"id" db:"id"`
 	RoleId      string   `json:"-" db:"role_id"`
@@ -9,14 +7,6 @@ type Menu struct {
 	RoleLevel   int      `json:"roleLevel" db:"level"`
 	RoleExtends []string `json:"roleExtends" db:"extends"`
 	MenuItemId  string   `json:"menuItemId" db:"menu_item_id"`
-}
-type MenuPqDTO struct {
-	Id          string         `json:"id" db:"id"`
-	RoleId      string         `json:"-" db:"role_id"`
-	RoleName    string         `json:"roleName" db:"name"`
-	RoleLevel   int            `json:"roleLevel" db:"level"`
-	RoleExtends pq.StringArray `json:"roleExtends" db:"extends"`
-	MenuItemId  string         `json:"menuItemId" db:"menu_item_id"`
 }
 
 type MenuFull struct {

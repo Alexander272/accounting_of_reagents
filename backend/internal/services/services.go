@@ -9,6 +9,9 @@ import (
 
 type Services struct {
 	Session
+	Permission
+
+	Role
 }
 
 type Deps struct {

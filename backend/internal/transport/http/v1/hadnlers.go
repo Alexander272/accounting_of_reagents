@@ -31,6 +31,7 @@ func NewHandler(deps Deps) *Handler {
 }
 
 func (h *Handler) Init(group *gin.RouterGroup) {
-	v1 := group.Group("/v1")
+	// v1 := group.Group("/v1")
 
+	//TODO можно попробовать ограничивать не только по разделам, но и по видам реактивов
 }

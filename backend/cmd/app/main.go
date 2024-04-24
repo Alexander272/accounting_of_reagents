@@ -18,6 +18,7 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/auth"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/database/postgres"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
+	_ "github.com/lib/pq"
 	"github.com/subosito/gotenv"
 )
 
