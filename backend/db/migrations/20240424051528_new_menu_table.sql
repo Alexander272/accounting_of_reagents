@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.menu
     id uuid NOT NULL,
     role_id uuid NOT NULL,
     menu_item_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
     CONSTRAINT menu_pkey PRIMARY KEY (id),
     CONSTRAINT menu_role_id_fkey FOREIGN KEY (role_id)
         REFERENCES public.roles (id) MATCH SIMPLE

@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS public.menu_item
     method text COLLATE pg_catalog."default" DEFAULT 'Read'::text,
     description text COLLATE pg_catalog."default" DEFAULT ''::text,
     is_show boolean DEFAULT true,
+    created_at timestamp with time zone DEFAULT now(),
     CONSTRAINT menu_item_pkey PRIMARY KEY (id)
 )
 TABLESPACE pg_default;

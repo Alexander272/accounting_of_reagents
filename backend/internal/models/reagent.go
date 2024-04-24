@@ -17,6 +17,6 @@ type Reagent struct {
 	Amount            string `json:"incomingControl_amount" db:"amount"` // TODO базе это надо разбить на два поля
 	ControlDate       int    `json:"incomingControl_date" db:"control_data"`
 	Protocol          string `json:"incomingControl_protocol" db:"protocol"`
-	Result            string `json:"incomingControl_result" db:"result"` //TODO можно сделать bool
+	Result            bool   `json:"incomingControl_result" db:"result"`
 	//TODO добавить остальные поля
 }
