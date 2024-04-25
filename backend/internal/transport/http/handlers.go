@@ -13,8 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const CookieName = "sealur_internal_session"
-
 type Handler struct {
 	// permissions casbin.Casbin
 	keycloak *auth.KeycloakClient
@@ -48,7 +46,7 @@ func (h *Handler) Init(conf *config.Config) *gin.Engine {
 
 func (h *Handler) initAPI(router *gin.Engine, conf *config.Config) {
 	middleware := middleware.NewMiddleware(h.services, conf.Auth, h.keycloak)
-	handlerV1 := httpV1.NewHandler(httpV1.Deps{Services: h.services, Conf: conf, CookieName: CookieName, Middleware: middleware})
+	handlerV1 := httpV1.NewHandler(httpV1.Deps{Services: h.services, Conf: conf, Middleware: middleware})
 
 	api := router.Group("/api")
 	{

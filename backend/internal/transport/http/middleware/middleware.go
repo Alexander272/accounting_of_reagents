@@ -8,8 +8,7 @@ import (
 )
 
 type Middleware struct {
-	CookieName string
-	keycloak   *auth.KeycloakClient
+	keycloak *auth.KeycloakClient
 	// TODO стоит наверное получать не все сервисы, а только те что используются
 	services *services.Services
 	auth     config.AuthConfig

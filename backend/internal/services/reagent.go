@@ -23,13 +23,13 @@ func NewReagentService(repo repository.Reagent, reagentType ReagentType) *Reagen
 }
 
 type Reagent interface {
-	Get(context.Context, *models.Params) ([]*models.Reagent, error)
+	Get(context.Context, *models.Params) (*models.ReagentList, error)
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 	Delete(context.Context, *models.DeleteReagentDTO) error
 }
 
-func (s *ReagentService) Get(ctx context.Context, req *models.Params) ([]*models.Reagent, error) {
+func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.ReagentList, error) {
 	user := ctx.Value(constants.CtxUser)
 	logger.Debug("context", logger.AnyAttr("user", user))
 

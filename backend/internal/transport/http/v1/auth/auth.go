@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/config"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
@@ -14,22 +15,19 @@ import (
 )
 
 type AuthHandler struct {
-	service    services.Session
-	auth       config.AuthConfig
-	cookieName string
+	service services.Session
+	auth    config.AuthConfig
 }
 
 type Deps struct {
-	Service    services.Session
-	Auth       config.AuthConfig
-	CookieName string
+	Service services.Session
+	Auth    config.AuthConfig
 }
 
 func NewAuthHandlers(deps Deps) *AuthHandler {
 	return &AuthHandler{
-		service:    deps.Service,
-		auth:       deps.Auth,
-		cookieName: deps.CookieName,
+		service: deps.Service,
+		auth:    deps.Auth,
 	}
 }
 
@@ -38,13 +36,13 @@ func Register(api *gin.RouterGroup, deps Deps) {
 
 	auth := api.Group("/auth")
 	{
-		auth.POST("/sign-in", handlers.SignIn)
-		auth.POST("/sign-out", handlers.SignOut)
-		auth.POST("refresh", handlers.Refresh)
+		auth.POST("/sign-in", handlers.signIn)
+		auth.POST("/sign-out", handlers.signOut)
+		auth.POST("refresh", handlers.refresh)
 	}
 }
 
-func (h *AuthHandler) SignIn(c *gin.Context) {
+func (h *AuthHandler) signIn(c *gin.Context) {
 	var dto models.SignIn
 	if err := c.BindJSON(&dto); err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Отправлены некорректные данные")
@@ -82,12 +80,12 @@ func (h *AuthHandler) SignIn(c *gin.Context) {
 	)
 
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie(h.cookieName, user.RefreshToken, int(h.auth.RefreshTokenTTL.Seconds()), "/", domain, h.auth.Secure, true)
+	c.SetCookie(constants.AuthCookie, user.RefreshToken, int(h.auth.RefreshTokenTTL.Seconds()), "/", domain, h.auth.Secure, true)
 	c.JSON(http.StatusOK, response.DataResponse{Data: user})
 }
 
-func (h *AuthHandler) SignOut(c *gin.Context) {
-	refreshToken, err := c.Cookie(h.cookieName)
+func (h *AuthHandler) signOut(c *gin.Context) {
+	refreshToken, err := c.Cookie(constants.AuthCookie)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusUnauthorized, err.Error(), "Сессия не найдена")
 		return
@@ -110,12 +108,12 @@ func (h *AuthHandler) SignOut(c *gin.Context) {
 	)
 
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie(h.cookieName, "", -1, "/", domain, h.auth.Secure, true)
+	c.SetCookie(constants.AuthCookie, "", -1, "/", domain, h.auth.Secure, true)
 	c.JSON(http.StatusNoContent, response.IdResponse{})
 }
 
-func (h *AuthHandler) Refresh(c *gin.Context) {
-	refreshToken, err := c.Cookie(h.cookieName)
+func (h *AuthHandler) refresh(c *gin.Context) {
+	refreshToken, err := c.Cookie(constants.AuthCookie)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusUnauthorized, err.Error(), "Сессия не найдена")
 		return
@@ -145,6 +143,6 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 	// )
 
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie(h.cookieName, user.RefreshToken, int(h.auth.RefreshTokenTTL.Seconds()), "/", domain, h.auth.Secure, true)
+	c.SetCookie(constants.AuthCookie, user.RefreshToken, int(h.auth.RefreshTokenTTL.Seconds()), "/", domain, h.auth.Secure, true)
 	c.JSON(http.StatusOK, response.DataResponse{Data: user})
 }

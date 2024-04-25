@@ -12,7 +12,7 @@ type AmountTypeService struct {
 	repo repository.AmountType
 }
 
-func NewAmountTypeRepo(repo repository.AmountType) *AmountTypeService {
+func NewAmountTypeService(repo repository.AmountType) *AmountTypeService {
 	return &AmountTypeService{
 		repo: repo,
 	}
@@ -22,6 +22,7 @@ type AmountType interface {
 	GetAll(context.Context) ([]*models.AmountType, error)
 	Create(context.Context, *models.AmountTypeDTO) (string, error)
 	Update(context.Context, *models.AmountTypeDTO) error
+	UpdateSeveral(context.Context, []*models.AmountTypeDTO) error
 	Delete(context.Context, *models.DeleteAmountTypeDTO) error
 }
 
@@ -44,6 +45,13 @@ func (s *AmountTypeService) Create(ctx context.Context, dto *models.AmountTypeDT
 func (s *AmountTypeService) Update(ctx context.Context, dto *models.AmountTypeDTO) error {
 	if err := s.repo.Update(ctx, dto); err != nil {
 		return fmt.Errorf("failed to update amount type. error: %w", err)
+	}
+	return nil
+}
+
+func (s *AmountTypeService) UpdateSeveral(ctx context.Context, dto []*models.AmountTypeDTO) error {
+	if err := s.repo.UpdateSeveral(ctx, dto); err != nil {
+		return fmt.Errorf("failed to several update amount type. error: %w", err)
 	}
 	return nil
 }

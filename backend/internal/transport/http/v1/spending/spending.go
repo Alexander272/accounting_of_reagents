@@ -1,4 +1,4 @@
-package roles
+package spending
 
 import (
 	"net/http"
@@ -11,78 +11,71 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RoleHandlers struct {
-	service services.Role
+type SpendingHandlers struct {
+	service services.Spending
 }
 
-func NewRoleHandlers(service services.Role) *RoleHandlers {
-	return &RoleHandlers{
+func NewSpendingHandlers(service services.Spending) *SpendingHandlers {
+	return &SpendingHandlers{
 		service: service,
 	}
 }
 
-func Register(api *gin.RouterGroup, service services.Role, middleware *middleware.Middleware) {
-	handlers := NewRoleHandlers(service)
+func Register(api *gin.RouterGroup, service services.Spending, middleware *middleware.Middleware) {
+	handlers := NewSpendingHandlers(service)
 
 	// TODO добавить ограничения
-	roles := api.Group("/roles", middleware.VerifyToken)
+	spending := api.Group("/spending")
 	{
-		roles.GET("", handlers.getAll)
-		roles.GET("/:name", handlers.get)
-		roles.POST("", handlers.create)
-		roles.PUT("/:id", handlers.update)
-		roles.DELETE("/:id", handlers.delete)
+		spending.GET(":reagentId", handlers.getByReagentId)
+		spending.POST("", handlers.create)
+		spending.PUT("/:id", handlers.update)
+		spending.DELETE("/:id", handlers.delete)
 	}
 }
 
-func (h *RoleHandlers) getAll(c *gin.Context) {
-	roles, err := h.service.GetAll(c, &models.GetRolesDTO{})
+func (h *SpendingHandlers) getByReagentId(c *gin.Context) {
+	reagentId := c.Param("reagentId")
+	if reagentId == "" {
+		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id реагента не задан")
+		return
+	}
+
+	spending, err := h.service.GetByReagentId(c, reagentId)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
 		error_bot.Send(c, err.Error(), nil)
 		return
 	}
 
-	c.JSON(http.StatusOK, response.DataResponse{Data: roles})
+	c.JSON(http.StatusOK, response.DataResponse{Data: spending})
 }
 
-func (h *RoleHandlers) get(c *gin.Context) {
-	roleName := c.Param("name")
-
-	role, err := h.service.Get(c, roleName)
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
-		error_bot.Send(c, err.Error(), roleName)
-		return
-	}
-
-	c.JSON(http.StatusOK, response.DataResponse{Data: role})
-}
-
-func (h *RoleHandlers) create(c *gin.Context) {
-	dto := &models.RoleDTO{}
+func (h *SpendingHandlers) create(c *gin.Context) {
+	dto := &models.SpendingDTO{}
 	if err := c.BindJSON(dto); err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Отправлены некорректные данные")
 		return
 	}
 
-	if err := h.service.Create(c, dto); err != nil {
+	id, err := h.service.Create(c, dto)
+	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
 		error_bot.Send(c, err.Error(), dto)
 		return
 	}
 
-	c.JSON(http.StatusCreated, response.IdResponse{Message: "Роль создана"})
+	c.JSON(http.StatusCreated, response.IdResponse{Id: id, Message: "Расход добавлен"})
 }
 
-func (h *RoleHandlers) update(c *gin.Context) {
+func (h *SpendingHandlers) update(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id роли не задан")
+		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id не задан")
 		return
 	}
 
-	dto := &models.RoleDTO{}
+	dto := &models.SpendingDTO{}
 	if err := c.BindJSON(dto); err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Отправлены некорректные данные")
 		return
@@ -95,17 +88,18 @@ func (h *RoleHandlers) update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, response.IdResponse{Message: "Роль обновлена"})
+	c.JSON(http.StatusOK, response.IdResponse{Message: "Расход обновлен"})
 }
 
-func (h *RoleHandlers) delete(c *gin.Context) {
+func (h *SpendingHandlers) delete(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id роли не задан")
+		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id не задан")
 		return
 	}
+	dto := &models.DeleteSpendingDTO{Id: id}
 
-	if err := h.service.Delete(c, id); err != nil {
+	if err := h.service.Delete(c, dto); err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
 		error_bot.Send(c, err.Error(), id)
 		return

@@ -4,6 +4,7 @@ type Params struct {
 	Page    *Page
 	Sort    []*Sort
 	Filters []*Filter
+	Search  *Search
 }
 
 type Page struct {
@@ -24,4 +25,9 @@ type Filter struct {
 type FilterValue struct {
 	CompareType string `json:"compareType"`
 	Value       string `json:"value"`
+}
+
+type Search struct {
+	Value  string
+	Fields []string
 }

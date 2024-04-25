@@ -1,4 +1,4 @@
-package roles
+package reagent_type
 
 import (
 	"net/http"
@@ -11,78 +11,71 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RoleHandlers struct {
-	service services.Role
+type ReagentTypeHandlers struct {
+	service services.ReagentType
 }
 
-func NewRoleHandlers(service services.Role) *RoleHandlers {
-	return &RoleHandlers{
+func NewReagentTypeHandlers(service services.ReagentType) *ReagentTypeHandlers {
+	return &ReagentTypeHandlers{
 		service: service,
 	}
 }
 
-func Register(api *gin.RouterGroup, service services.Role, middleware *middleware.Middleware) {
-	handlers := NewRoleHandlers(service)
+func Register(api *gin.RouterGroup, service services.ReagentType, middleware *middleware.Middleware) {
+	handlers := NewReagentTypeHandlers(service)
 
 	// TODO добавить ограничения
-	roles := api.Group("/roles", middleware.VerifyToken)
+	reagentTypes := api.Group("/reagent-types")
 	{
-		roles.GET("", handlers.getAll)
-		roles.GET("/:name", handlers.get)
-		roles.POST("", handlers.create)
-		roles.PUT("/:id", handlers.update)
-		roles.DELETE("/:id", handlers.delete)
+		reagentTypes.GET(":role", handlers.getByRole)
+		reagentTypes.POST("", handlers.create)
+		reagentTypes.PUT("/:id", handlers.update)
+		reagentTypes.DELETE("/:id", handlers.delete)
 	}
 }
 
-func (h *RoleHandlers) getAll(c *gin.Context) {
-	roles, err := h.service.GetAll(c, &models.GetRolesDTO{})
-	if err != nil {
-		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
-		error_bot.Send(c, err.Error(), nil)
+func (h *ReagentTypeHandlers) getByRole(c *gin.Context) {
+	role := c.Param("role")
+	if role == "" {
+		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id типа реагента не задан")
 		return
 	}
 
-	c.JSON(http.StatusOK, response.DataResponse{Data: roles})
-}
-
-func (h *RoleHandlers) get(c *gin.Context) {
-	roleName := c.Param("name")
-
-	role, err := h.service.Get(c, roleName)
+	reagentTypes, err := h.service.GetByRole(c, role)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
-		error_bot.Send(c, err.Error(), roleName)
+		error_bot.Send(c, err.Error(), role)
 		return
 	}
 
-	c.JSON(http.StatusOK, response.DataResponse{Data: role})
+	c.JSON(http.StatusOK, response.DataResponse{Data: reagentTypes})
 }
 
-func (h *RoleHandlers) create(c *gin.Context) {
-	dto := &models.RoleDTO{}
+func (h *ReagentTypeHandlers) create(c *gin.Context) {
+	dto := &models.ReagentTypeDTO{}
 	if err := c.BindJSON(dto); err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Отправлены некорректные данные")
 		return
 	}
 
-	if err := h.service.Create(c, dto); err != nil {
+	id, err := h.service.Create(c, dto)
+	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
 		error_bot.Send(c, err.Error(), dto)
 		return
 	}
 
-	c.JSON(http.StatusCreated, response.IdResponse{Message: "Роль создана"})
+	c.JSON(http.StatusCreated, response.IdResponse{Id: id, Message: "Тип реагента создан"})
 }
 
-func (h *RoleHandlers) update(c *gin.Context) {
+func (h *ReagentTypeHandlers) update(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id роли не задан")
+		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id типа реагента не задан")
 		return
 	}
 
-	dto := &models.RoleDTO{}
+	dto := &models.ReagentTypeDTO{}
 	if err := c.BindJSON(dto); err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Отправлены некорректные данные")
 		return
@@ -95,17 +88,18 @@ func (h *RoleHandlers) update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, response.IdResponse{Message: "Роль обновлена"})
+	c.JSON(http.StatusOK, response.IdResponse{Message: "Тип реагента обновлен"})
 }
 
-func (h *RoleHandlers) delete(c *gin.Context) {
+func (h *ReagentTypeHandlers) delete(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id роли не задан")
+		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id типа реагента не задан")
 		return
 	}
+	dto := &models.DeleteReagentTypeDTO{Id: id}
 
-	if err := h.service.Delete(c, id); err != nil {
+	if err := h.service.Delete(c, dto); err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
 		error_bot.Send(c, err.Error(), id)
 		return
