@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS public.reagents
     receipt_date integer NOT NULL,
     amount real NOT NULL,
     amount_type_id uuid DEFAULT '00000000-0000-0000-0000-000000000000'::uuid,
-    control_data integer DEFAULT 0,
+    control_date integer DEFAULT 0,
     protocol text COLLATE pg_catalog."default" DEFAULT ''::text,
     result boolean DEFAULT true,
     seizure text COLLATE pg_catalog."default" DEFAULT ''::text,

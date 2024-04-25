@@ -35,7 +35,7 @@ func (r *RoleRepo) GetAll(ctx context.Context, req models.GetRolesDTO) (roles []
 		RoleTable,
 	)
 
-	if err := r.db.Select(&data, query); err != nil {
+	if err := r.db.SelectContext(ctx, &data, query); err != nil {
 		return nil, fmt.Errorf("failed to execute query. error: %w", err)
 	}
 
@@ -62,7 +62,7 @@ func (r *RoleRepo) Get(ctx context.Context, roleName string) (*models.Role, erro
 		RoleTable, MenuTable, MenuItemTable,
 	)
 
-	if err := r.db.Select(&data, query); err != nil {
+	if err := r.db.SelectContext(ctx, &data, query); err != nil {
 		return nil, fmt.Errorf("failed to get roles with menu. error: %w", err)
 	}
 
@@ -113,7 +113,7 @@ func (r *RoleRepo) Create(ctx context.Context, role models.RoleDTO) error {
 	query := fmt.Sprintf(`INSERT INTO %s(id, name, level, extends, description) VALUES ($1, $2, $3, $4, $5)`, RoleTable)
 	id := uuid.New()
 
-	_, err := r.db.Exec(query, id, role.Name, role.Level, pq.Array(role.Extends))
+	_, err := r.db.ExecContext(ctx, query, id, role.Name, role.Level, pq.Array(role.Extends))
 	if err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
 	}
@@ -123,7 +123,7 @@ func (r *RoleRepo) Create(ctx context.Context, role models.RoleDTO) error {
 func (r *RoleRepo) Update(ctx context.Context, role models.RoleDTO) error {
 	query := fmt.Sprintf(`UPDATE %s SET name=$1, level=$2, extends=$3, description=$4 WHERE id=$5`, RoleTable)
 
-	_, err := r.db.Exec(query, role.Name, role.Level, pq.Array(role.Extends), role.Description, role.Id)
+	_, err := r.db.ExecContext(ctx, query, role.Name, role.Level, pq.Array(role.Extends), role.Description, role.Id)
 	if err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
 	}
@@ -133,7 +133,7 @@ func (r *RoleRepo) Update(ctx context.Context, role models.RoleDTO) error {
 func (r *RoleRepo) Delete(ctx context.Context, id string) error {
 	query := fmt.Sprintf(`DELETE FROM %s WHERE id=$1`, RoleTable)
 
-	_, err := r.db.Exec(query, id)
+	_, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
 	}

@@ -18,6 +18,15 @@ type Menu interface {
 type ReagentType interface {
 	postgres.ReagentType
 }
+type AmountType interface {
+	postgres.AmountType
+}
+type Spending interface {
+	postgres.Spending
+}
+type Extending interface {
+	postgres.Extending
+}
 
 type Repository struct {
 	Role
@@ -25,6 +34,9 @@ type Repository struct {
 	Menu
 
 	ReagentType
+	AmountType
+	Spending
+	Extending
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
@@ -34,5 +46,8 @@ func NewRepository(db *sqlx.DB) *Repository {
 		Menu:     postgres.NewMenuRepo(db),
 
 		ReagentType: postgres.NewReagentTypeRepo(db),
+		AmountType:  postgres.NewAmountTypeRepo(db),
+		Spending:    postgres.NewSpendingRepo(db),
+		Extending:   postgres.NewExtendingRepo(db),
 	}
 }

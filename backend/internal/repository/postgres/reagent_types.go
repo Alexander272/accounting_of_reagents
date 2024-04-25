@@ -30,7 +30,7 @@ func (r *ReagentTypeRepo) GetAll(ctx context.Context) ([]*models.ReagentType, er
 	query := fmt.Sprintf(`SELECT id, name, role_id FROM %s`, ReagentTypesTable)
 	reagentTypes := []*models.ReagentType{}
 
-	if err := r.db.Select(&reagentTypes, query); err != nil {
+	if err := r.db.SelectContext(ctx, &reagentTypes, query); err != nil {
 		return nil, fmt.Errorf("failed to execute query. error: %w", err)
 	}
 	return reagentTypes, nil

@@ -32,7 +32,7 @@ func (r *AmountTypeRepo) GetAll(ctx context.Context) ([]*models.AmountType, erro
 	query := fmt.Sprintf(`SELECT id, name, number FROM %s`, AmountTypeTable)
 	amountTypes := []*models.AmountType{}
 
-	if err := r.db.Select(&amountTypes, query); err != nil {
+	if err := r.db.SelectContext(ctx, &amountTypes, query); err != nil {
 		return nil, fmt.Errorf("failed to execute query. error: %w", err)
 	}
 	return amountTypes, nil

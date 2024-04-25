@@ -35,7 +35,7 @@ func (r *MenuRepo) GetAll(ctx context.Context) (menu []models.Menu, err error) {
 		RoleTable, MenuTable, RoleTable,
 	)
 
-	if err := r.db.Select(&data, query); err != nil {
+	if err := r.db.SelectContext(ctx, &data, query); err != nil {
 		return nil, fmt.Errorf("failed to execute query. error: %w", err)
 	}
 
@@ -57,7 +57,7 @@ func (r *MenuRepo) Create(ctx context.Context, menu models.MenuDTO) error {
 	query := fmt.Sprintf(`INSERT INTO %s(id, role_id, menu_item_id) VALUES ($1, $2, $3)`, MenuTable)
 	id := uuid.New()
 
-	_, err := r.db.Exec(query, id, menu.RoleId, menu.MenuItemId)
+	_, err := r.db.ExecContext(ctx, query, id, menu.RoleId, menu.MenuItemId)
 	if err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
 	}
@@ -67,7 +67,7 @@ func (r *MenuRepo) Create(ctx context.Context, menu models.MenuDTO) error {
 func (r *MenuRepo) Update(ctx context.Context, menu models.MenuDTO) error {
 	query := fmt.Sprintf(`UPDATE %s SET role_id=$1, menu_item_id=$2 WHERE id=$3`, MenuTable)
 
-	_, err := r.db.Exec(query, menu.RoleId, menu.MenuItemId, menu.Id)
+	_, err := r.db.ExecContext(ctx, query, menu.RoleId, menu.MenuItemId, menu.Id)
 	if err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
 	}
@@ -77,7 +77,7 @@ func (r *MenuRepo) Update(ctx context.Context, menu models.MenuDTO) error {
 func (r *MenuRepo) Delete(ctx context.Context, id string) error {
 	query := fmt.Sprintf(`DELETE FROM %s WHERE id=$1`, MenuTable)
 
-	_, err := r.db.Exec(query, id)
+	_, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
 	}
