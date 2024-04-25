@@ -21,15 +21,15 @@ func NewRoleRepo(db *sqlx.DB) *RoleRepo {
 }
 
 type Role interface {
-	GetAll(context.Context, models.GetRolesDTO) ([]models.RoleFull, error)
+	GetAll(context.Context, *models.GetRolesDTO) ([]*models.RoleFull, error)
 	Get(context.Context, string) (*models.Role, error)
-	Create(context.Context, models.RoleDTO) error
-	Update(context.Context, models.RoleDTO) error
+	Create(context.Context, *models.RoleDTO) error
+	Update(context.Context, *models.RoleDTO) error
 	Delete(context.Context, string) error
 }
 
-func (r *RoleRepo) GetAll(ctx context.Context, req models.GetRolesDTO) (roles []models.RoleFull, err error) {
-	var data []models.RoleFullDTO
+func (r *RoleRepo) GetAll(ctx context.Context, req *models.GetRolesDTO) ([]*models.RoleFull, error) {
+	var data []*models.RoleFullDTO
 	query := fmt.Sprintf(`SELECT id, name, level, description, COALESCE(extends, '{}') AS extends 
 		FROM %s WHERE is_show=true ORDER BY level, name`,
 		RoleTable,
@@ -39,8 +39,9 @@ func (r *RoleRepo) GetAll(ctx context.Context, req models.GetRolesDTO) (roles []
 		return nil, fmt.Errorf("failed to execute query. error: %w", err)
 	}
 
+	roles := []*models.RoleFull{}
 	for _, rfd := range data {
-		roles = append(roles, models.RoleFull{
+		roles = append(roles, &models.RoleFull{
 			Id:          rfd.Id,
 			Name:        rfd.Name,
 			Level:       rfd.Level,
@@ -109,7 +110,7 @@ func (r *RoleRepo) Get(ctx context.Context, roleName string) (*models.Role, erro
 	return role, nil
 }
 
-func (r *RoleRepo) Create(ctx context.Context, role models.RoleDTO) error {
+func (r *RoleRepo) Create(ctx context.Context, role *models.RoleDTO) error {
 	query := fmt.Sprintf(`INSERT INTO %s(id, name, level, extends, description) VALUES ($1, $2, $3, $4, $5)`, RoleTable)
 	id := uuid.New()
 
@@ -120,7 +121,7 @@ func (r *RoleRepo) Create(ctx context.Context, role models.RoleDTO) error {
 	return nil
 }
 
-func (r *RoleRepo) Update(ctx context.Context, role models.RoleDTO) error {
+func (r *RoleRepo) Update(ctx context.Context, role *models.RoleDTO) error {
 	query := fmt.Sprintf(`UPDATE %s SET name=$1, level=$2, extends=$3, description=$4 WHERE id=$5`, RoleTable)
 
 	_, err := r.db.ExecContext(ctx, query, role.Name, role.Level, pq.Array(role.Extends), role.Description, role.Id)

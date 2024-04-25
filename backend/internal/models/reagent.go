@@ -71,3 +71,7 @@ type ReagentDTO struct {
 	Seizure           string `json:"seizureInformation" db:"seizure"`
 	Disposal          string `json:"disposalInformation" db:"disposal"`
 }
+
+type DeleteReagentDTO struct {
+	Id string `json:"id" db:"id"`
+}

@@ -20,9 +20,20 @@ func NewNotesRepo(db *sqlx.DB) *NotesRepo {
 }
 
 type Notes interface {
+	GetByReagentId(context.Context, string) ([]*models.Note, error)
 	Create(context.Context, *models.NoteDTO) (string, error)
 	Update(context.Context, *models.NoteDTO) error
 	Delete(context.Context, *models.DeleteNoteDTO) error
+}
+
+func (r *NotesRepo) GetByReagentId(ctx context.Context, reagentId string) ([]*models.Note, error) {
+	query := fmt.Sprintf(`SELECT id, comment, note FROM %s WHERE reagent_id=$1`, NotesTable)
+	notes := []*models.Note{}
+
+	if err := r.db.SelectContext(ctx, &notes, query, reagentId); err != nil {
+		return nil, fmt.Errorf("failed to execute query. error: %w", err)
+	}
+	return notes, nil
 }
 
 func (r *NotesRepo) Create(ctx context.Context, dto *models.NoteDTO) (string, error) {

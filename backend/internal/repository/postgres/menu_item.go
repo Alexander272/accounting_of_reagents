@@ -21,8 +21,8 @@ func NewMenuItemRepo(db *sqlx.DB) *MenuItemRepo {
 
 type MenuItem interface {
 	GetAll(context.Context) ([]*models.MenuItem, error)
-	Create(context.Context, models.MenuItemDTO) error
-	Update(context.Context, models.MenuItemDTO) error
+	Create(context.Context, *models.MenuItemDTO) error
+	Update(context.Context, *models.MenuItemDTO) error
 	Delete(context.Context, string) error
 }
 
@@ -36,7 +36,7 @@ func (r *MenuItemRepo) GetAll(ctx context.Context) ([]*models.MenuItem, error) {
 	return items, nil
 }
 
-func (r *MenuItemRepo) Create(ctx context.Context, menu models.MenuItemDTO) error {
+func (r *MenuItemRepo) Create(ctx context.Context, menu *models.MenuItemDTO) error {
 	query := fmt.Sprintf(`INSERT INTO %s(id, name, description, is_show) VALUES ($1, $2, $3, $4)`, MenuItemTable)
 	id := uuid.New()
 
@@ -47,7 +47,7 @@ func (r *MenuItemRepo) Create(ctx context.Context, menu models.MenuItemDTO) erro
 	return nil
 }
 
-func (r *MenuItemRepo) Update(ctx context.Context, menu models.MenuItemDTO) error {
+func (r *MenuItemRepo) Update(ctx context.Context, menu *models.MenuItemDTO) error {
 	query := fmt.Sprintf(`UPDATE %s SET name=$1, description=$2, is_show=$3 WHERE id=$4`, MenuItemTable)
 
 	_, err := r.db.ExecContext(ctx, query, menu.Name, menu.Description, menu.IsShow, menu.Id)

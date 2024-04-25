@@ -21,11 +21,17 @@ type ReagentType interface {
 type AmountType interface {
 	postgres.AmountType
 }
+type Reagent interface {
+	postgres.Reagent
+}
 type Spending interface {
 	postgres.Spending
 }
 type Extending interface {
 	postgres.Extending
+}
+type Notes interface {
+	postgres.Notes
 }
 
 type Repository struct {
@@ -35,8 +41,10 @@ type Repository struct {
 
 	ReagentType
 	AmountType
+	Reagent
 	Spending
 	Extending
+	Notes
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
@@ -47,7 +55,9 @@ func NewRepository(db *sqlx.DB) *Repository {
 
 		ReagentType: postgres.NewReagentTypeRepo(db),
 		AmountType:  postgres.NewAmountTypeRepo(db),
+		Reagent:     postgres.NewReagentRepo(db),
 		Spending:    postgres.NewSpendingRepo(db),
 		Extending:   postgres.NewExtendingRepo(db),
+		Notes:       postgres.NewNotesRepo(db),
 	}
 }

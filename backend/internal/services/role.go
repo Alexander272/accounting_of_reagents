@@ -19,14 +19,14 @@ func NewRoleService(repo repository.Role) *RoleService {
 }
 
 type Role interface {
-	GetAll(context.Context, models.GetRolesDTO) ([]models.RoleFull, error)
+	GetAll(context.Context, *models.GetRolesDTO) ([]*models.RoleFull, error)
 	Get(context.Context, string) (*models.Role, error)
-	Create(context.Context, models.RoleDTO) error
-	Update(context.Context, models.RoleDTO) error
+	Create(context.Context, *models.RoleDTO) error
+	Update(context.Context, *models.RoleDTO) error
 	Delete(context.Context, string) error
 }
 
-func (s *RoleService) GetAll(ctx context.Context, req models.GetRolesDTO) ([]models.RoleFull, error) {
+func (s *RoleService) GetAll(ctx context.Context, req *models.GetRolesDTO) ([]*models.RoleFull, error) {
 	roles, err := s.repo.GetAll(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all roles. error: %w", err)
@@ -42,14 +42,14 @@ func (s *RoleService) Get(ctx context.Context, roleName string) (*models.Role, e
 	return role, nil
 }
 
-func (s *RoleService) Create(ctx context.Context, role models.RoleDTO) error {
+func (s *RoleService) Create(ctx context.Context, role *models.RoleDTO) error {
 	if err := s.repo.Create(ctx, role); err != nil {
 		return fmt.Errorf("failed to create role. error: %w", err)
 	}
 	return nil
 }
 
-func (s *RoleService) Update(ctx context.Context, role models.RoleDTO) error {
+func (s *RoleService) Update(ctx context.Context, role *models.RoleDTO) error {
 	if err := s.repo.Update(ctx, role); err != nil {
 		return fmt.Errorf("failed to update role. error: %w", err)
 	}
