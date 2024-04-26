@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS public.reagent_types
 (
     id uuid NOT NULL,
     name text COLLATE pg_catalog."default" NOT NULL,
+    description text COLLATE pg_catalog."default" DEFAULT ''::text,
+    number integer NOT NULL,
     role_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     -- role text COLLATE pg_catalog."default" NOT NULL,

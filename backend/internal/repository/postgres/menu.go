@@ -28,7 +28,7 @@ type Menu interface {
 }
 
 func (r *MenuRepo) GetAll(ctx context.Context) ([]*models.Menu, error) {
-	var data []pq_models.MenuDTO
+	var data []*pq_models.MenuDTO
 	query := fmt.Sprintf(`SELECT m.id, role_id, name, level, menu_item_id, CASE WHEN extends IS NOT NULL THEN
 		ARRAY(SELECT name FROM %s WHERE ARRAY[id] <@ r.extends) ELSE '{}' END AS extends
 		FROM %s AS m INNER JOIN %s AS r ON role_id=r.id ORDER BY level, name`,

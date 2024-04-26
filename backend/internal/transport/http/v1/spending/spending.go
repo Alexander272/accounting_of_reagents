@@ -3,6 +3,7 @@ package spending
 import (
 	"net/http"
 
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
@@ -24,13 +25,12 @@ func NewSpendingHandlers(service services.Spending) *SpendingHandlers {
 func Register(api *gin.RouterGroup, service services.Spending, middleware *middleware.Middleware) {
 	handlers := NewSpendingHandlers(service)
 
-	// TODO добавить ограничения
-	spending := api.Group("/spending")
+	spending := api.Group("/spending", middleware.VerifyToken)
 	{
-		spending.GET(":reagentId", handlers.getByReagentId)
-		spending.POST("", handlers.create)
-		spending.PUT("/:id", handlers.update)
-		spending.DELETE("/:id", handlers.delete)
+		spending.GET(":reagentId", handlers.getByReagentId, middleware.CheckPermissions(constants.Reagent, constants.Read))
+		spending.POST("", handlers.create, middleware.CheckPermissions(constants.Reagent, constants.Write))
+		spending.PUT("/:id", handlers.update, middleware.CheckPermissions(constants.Reagent, constants.Write))
+		spending.DELETE("/:id", handlers.delete, middleware.CheckPermissions(constants.Reagent, constants.Write))
 	}
 }
 

@@ -40,10 +40,10 @@ func NewServices(deps Deps) *Services {
 	// notification := NewNotificationService(si, most, errorBot)
 
 	menuItem := NewMenuItemService(deps.Repos.MenuItem)
-	menu := NewMenuService(deps.Repos.Menu)
+	menu := NewMenuService(deps.Repos.Menu, menuItem)
 	role := NewRoleService(deps.Repos.Role)
 	session := NewSessionService(deps.Keycloak, role)
-	// permission := NewPermissionService("configs/privacy.conf", menu)
+	permission := NewPermissionService("configs/privacy.conf", menu)
 
 	amountType := NewAmountTypeService(deps.Repos.AmountType)
 	reagentType := NewReagentTypeService(deps.Repos.ReagentType, role)
@@ -53,10 +53,11 @@ func NewServices(deps Deps) *Services {
 	note := NewNoteService(deps.Repos.Notes)
 
 	return &Services{
-		MenuItem: menuItem,
-		Menu:     menu,
-		Role:     role,
-		Session:  session,
+		MenuItem:   menuItem,
+		Menu:       menu,
+		Role:       role,
+		Session:    session,
+		Permission: permission,
 
 		AmountType:  amountType,
 		ReagentType: reagentType,

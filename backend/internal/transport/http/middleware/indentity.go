@@ -45,6 +45,5 @@ func (m *Middleware) VerifyToken(c *gin.Context) {
 	}
 
 	c.Set(constants.CtxUser, *user)
-
 	c.Next()
 }

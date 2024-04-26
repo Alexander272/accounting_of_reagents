@@ -5,6 +5,7 @@ type Params struct {
 	Sort    []*Sort
 	Filters []*Filter
 	Search  *Search
+	User    *User
 }
 
 type Page struct {

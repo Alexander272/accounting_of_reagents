@@ -3,11 +3,13 @@ package reagent_type
 import (
 	"net/http"
 
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/middleware"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/error_bot"
+	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,17 +26,17 @@ func NewReagentTypeHandlers(service services.ReagentType) *ReagentTypeHandlers {
 func Register(api *gin.RouterGroup, service services.ReagentType, middleware *middleware.Middleware) {
 	handlers := NewReagentTypeHandlers(service)
 
-	// TODO добавить ограничения
-	reagentTypes := api.Group("/reagent-types")
+	reagentTypes := api.Group("/reagent-types", middleware.VerifyToken)
 	{
-		reagentTypes.GET(":role", handlers.getByRole)
-		reagentTypes.POST("", handlers.create)
-		reagentTypes.PUT("/:id", handlers.update)
-		reagentTypes.DELETE("/:id", handlers.delete)
+		reagentTypes.GET(":role", handlers.getByRole, middleware.CheckPermissions(constants.Types, constants.Read))
+		reagentTypes.POST("", handlers.create, middleware.CheckPermissions(constants.Types, constants.Write))
+		reagentTypes.PUT("/:id", handlers.update, middleware.CheckPermissions(constants.Types, constants.Write))
+		reagentTypes.DELETE("/:id", handlers.delete, middleware.CheckPermissions(constants.Types, constants.Write))
 	}
 }
 
 func (h *ReagentTypeHandlers) getByRole(c *gin.Context) {
+	logger.Debug("getByRole")
 	role := c.Param("role")
 	if role == "" {
 		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id типа реагента не задан")

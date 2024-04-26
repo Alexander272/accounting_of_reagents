@@ -6,7 +6,6 @@ import (
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository"
-	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 )
 
 type ReagentTypeService struct {
@@ -54,16 +53,15 @@ func (s *ReagentTypeService) GetByRole(ctx context.Context, role string) ([]*mod
 	}
 
 	types := []*models.ReagentType{}
+	for _, rt := range reagentTypes {
+		if rt.RoleId == foundedRole.Id {
+			types = append(types, rt)
+		}
+	}
 
 	extends := foundedRole.Extends
 	for len(extends) > 0 {
-		for _, rt := range reagentTypes {
-			if rt.RoleId == foundedRole.Id {
-				types = append(types, rt)
-			}
-		}
-
-		for i := index; i > 0; i-- {
+		for i := index; i >= 0; i-- {
 			if roles[i].Id == extends[0] {
 				foundedRole = roles[i]
 				index = i
@@ -71,12 +69,15 @@ func (s *ReagentTypeService) GetByRole(ctx context.Context, role string) ([]*mod
 				extends = append(extends, foundedRole.Extends...)
 			}
 		}
-		// roles[index].Extends
+
+		for _, rt := range reagentTypes {
+			if rt.RoleId == foundedRole.Id {
+				types = append(types, rt)
+			}
+		}
 	}
 
-	logger.Debug("types", logger.AnyAttr("value", types))
-
-	return nil, fmt.Errorf("not implemented")
+	return types, nil
 }
 
 func (s *ReagentTypeService) Create(ctx context.Context, dto *models.ReagentTypeDTO) (string, error) {

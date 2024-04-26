@@ -80,7 +80,7 @@ func main() {
 			log.Fatalf("error occurred while running http server: %s\n", err.Error())
 		}
 	}()
-	logger.Info("Application started on port: %s", conf.Http.Port)
+	logger.Info("Application started on port: " + conf.Http.Port)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)

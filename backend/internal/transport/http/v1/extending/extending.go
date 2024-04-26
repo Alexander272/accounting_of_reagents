@@ -3,6 +3,7 @@ package extending
 import (
 	"net/http"
 
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
@@ -24,13 +25,12 @@ func NewExtendingHandlers(service services.Extending) *ExtendingHandlers {
 func Register(api *gin.RouterGroup, service services.Extending, middleware *middleware.Middleware) {
 	handlers := NewExtendingHandlers(service)
 
-	// TODO добавить ограничения
-	extending := api.Group("/extending")
+	extending := api.Group("/extending", middleware.VerifyToken)
 	{
-		extending.GET(":reagentId", handlers.getByReagentId)
-		extending.POST("", handlers.create)
-		extending.PUT("/:id", handlers.update)
-		extending.DELETE("/:id", handlers.delete)
+		extending.GET(":reagentId", handlers.getByReagentId, middleware.CheckPermissions(constants.Reagent, constants.Read))
+		extending.POST("", handlers.create, middleware.CheckPermissions(constants.Reagent, constants.Write))
+		extending.PUT("/:id", handlers.update, middleware.CheckPermissions(constants.Reagent, constants.Write))
+		extending.DELETE("/:id", handlers.delete, middleware.CheckPermissions(constants.Reagent, constants.Write))
 	}
 }
 

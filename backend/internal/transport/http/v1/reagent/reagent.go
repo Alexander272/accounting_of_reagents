@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
@@ -26,17 +27,23 @@ func NewReagentHandlers(service services.Reagent) *ReagentHandlers {
 func Register(api *gin.RouterGroup, service services.Reagent, middleware *middleware.Middleware) {
 	handlers := NewReagentHandlers(service)
 
-	reagents := api.Group("/reagents")
+	reagents := api.Group("/reagents", middleware.VerifyToken)
 	{
-		reagents.GET("", handlers.get)
-		reagents.POST("", handlers.create)
-		reagents.PUT("/:id", handlers.update)
-		reagents.DELETE("/:id", handlers.delete)
+		reagents.GET("", handlers.get, middleware.CheckPermissions(constants.Reagent, constants.Read))
+		reagents.POST("", handlers.create, middleware.CheckPermissions(constants.Reagent, constants.Write))
+		reagents.PUT("/:id", handlers.update, middleware.CheckPermissions(constants.Reagent, constants.Write))
+		reagents.DELETE("/:id", handlers.delete, middleware.CheckPermissions(constants.Reagent, constants.Write))
 	}
 }
 
 func (h *ReagentHandlers) get(c *gin.Context) {
-	params := &models.Params{}
+	params := &models.Params{
+		Page:    &models.Page{},
+		Sort:    []*models.Sort{},
+		Filters: []*models.Filter{},
+		Search:  &models.Search{},
+		User:    &models.User{},
+	}
 
 	page := c.Query("page")
 	size := c.Query("size")
@@ -96,6 +103,15 @@ func (h *ReagentHandlers) get(c *gin.Context) {
 	}
 
 	//TODO дописать поиск
+
+	u, exists := c.Get(constants.CtxUser)
+	if !exists {
+		response.NewErrorResponse(c, http.StatusUnauthorized, "empty user", "сессия не найдена")
+		return
+	}
+
+	user := u.(models.User)
+	params.User = &user
 
 	list, err := h.service.Get(c, params)
 	if err != nil {

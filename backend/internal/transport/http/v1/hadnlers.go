@@ -4,8 +4,14 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/config"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/middleware"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/amount_type"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/auth"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/extending"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/note"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/reagent"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/reagent_type"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/roles"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/spending"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,7 +42,12 @@ func (h *Handler) Init(group *gin.RouterGroup) {
 
 	roles.Register(v1, h.services.Role, h.middleware)
 
-	// reagent_type.Register(v1, h.services.)
+	reagent_type.Register(v1, h.services.ReagentType, h.middleware)
+	amount_type.Register(v1, h.services.AmountType, h.middleware)
+	reagent.Register(v1, h.services.Reagent, h.middleware)
+	spending.Register(v1, h.services.Spending, h.middleware)
+	extending.Register(v1, h.services.Extending, h.middleware)
+	note.Register(v1, h.services.Note, h.middleware)
 
 	//TODO можно попробовать ограничивать не только по разделам, но и по видам реактивов
 }

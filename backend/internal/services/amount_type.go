@@ -21,6 +21,7 @@ func NewAmountTypeService(repo repository.AmountType) *AmountTypeService {
 type AmountType interface {
 	GetAll(context.Context) ([]*models.AmountType, error)
 	Create(context.Context, *models.AmountTypeDTO) (string, error)
+	CreateSeveral(context.Context, []*models.AmountTypeDTO) error
 	Update(context.Context, *models.AmountTypeDTO) error
 	UpdateSeveral(context.Context, []*models.AmountTypeDTO) error
 	Delete(context.Context, *models.DeleteAmountTypeDTO) error
@@ -42,6 +43,13 @@ func (s *AmountTypeService) Create(ctx context.Context, dto *models.AmountTypeDT
 	return id, nil
 }
 
+func (s *AmountTypeService) CreateSeveral(ctx context.Context, dto []*models.AmountTypeDTO) error {
+	if err := s.repo.CreateSeveral(ctx, dto); err != nil {
+		return fmt.Errorf("failed to create several amount type. error: %w", err)
+	}
+	return nil
+}
+
 func (s *AmountTypeService) Update(ctx context.Context, dto *models.AmountTypeDTO) error {
 	if err := s.repo.Update(ctx, dto); err != nil {
 		return fmt.Errorf("failed to update amount type. error: %w", err)
@@ -51,7 +59,7 @@ func (s *AmountTypeService) Update(ctx context.Context, dto *models.AmountTypeDT
 
 func (s *AmountTypeService) UpdateSeveral(ctx context.Context, dto []*models.AmountTypeDTO) error {
 	if err := s.repo.UpdateSeveral(ctx, dto); err != nil {
-		return fmt.Errorf("failed to several update amount type. error: %w", err)
+		return fmt.Errorf("failed to update several amount type. error: %w", err)
 	}
 	return nil
 }

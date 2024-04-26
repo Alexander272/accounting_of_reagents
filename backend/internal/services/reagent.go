@@ -3,11 +3,10 @@ package services
 import (
 	"context"
 	"fmt"
+	"strings"
 
-	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository"
-	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 )
 
 type ReagentService struct {
@@ -30,10 +29,38 @@ type Reagent interface {
 }
 
 func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.ReagentList, error) {
-	user := ctx.Value(constants.CtxUser)
-	logger.Debug("context", logger.AnyAttr("user", user))
+	reagentTypes, err := s.reagentType.GetByRole(ctx, req.User.Role)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, fmt.Errorf("not implemented")
+	isEmpty := true
+	for _, f := range req.Filters {
+		if f.Field == "reagentTypeId" {
+			isEmpty = false
+			break
+		}
+	}
+	if isEmpty {
+		values := []string{}
+		for _, v := range reagentTypes {
+			values = append(values, v.Id)
+		}
+		req.Filters = append(req.Filters, &models.Filter{
+			Field: "reagentTypeId",
+			Values: []*models.FilterValue{{
+				CompareType: "in",
+				Value:       strings.Join(values, ","),
+			}},
+		})
+	}
+
+	list, err := s.repo.Get(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get reagents list. error: %w", err)
+	}
+
+	return list, nil
 }
 
 func (s *ReagentService) Create(ctx context.Context, dto *models.ReagentDTO) (string, error) {

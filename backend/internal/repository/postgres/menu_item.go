@@ -30,7 +30,7 @@ func (r *MenuItemRepo) GetAll(ctx context.Context) ([]*models.MenuItem, error) {
 	query := fmt.Sprintf(`SELECT id, name, description, is_show FROM %s`, MenuItemTable)
 	items := []*models.MenuItem{}
 
-	if err := r.db.SelectContext(ctx, items, query); err != nil {
+	if err := r.db.SelectContext(ctx, &items, query); err != nil {
 		return nil, fmt.Errorf("failed to execute query. error: %w", err)
 	}
 	return items, nil

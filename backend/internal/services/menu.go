@@ -10,11 +10,13 @@ import (
 
 type MenuService struct {
 	repo repository.Menu
+	item MenuItem
 }
 
-func NewMenuService(repo repository.Menu) *MenuService {
+func NewMenuService(repo repository.Menu, item MenuItem) *MenuService {
 	return &MenuService{
 		repo: repo,
+		item: item,
 	}
 }
 
@@ -26,43 +28,45 @@ type Menu interface {
 }
 
 func (s *MenuService) GetAll(ctx context.Context) ([]*models.MenuFull, error) {
-	// m, err := s.repo.GetAll(ctx)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to get all menu. error: %w", err)
-	// }
+	menu, err := s.repo.GetAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all menu. error: %w", err)
+	}
 
-	// api, err := s.api.GetAll(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	items, err := s.item.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	// for i, m2 := range m {
-	// 	item := models.MenuItem{}
-	// 	for _, mi := range api {
-	// 		if mi.Id == m2.MenuItemId {
-	// 			item = mi
-	// 			break
-	// 		}
-	// 	}
+	menuFull := []*models.MenuFull{}
 
-	// 	if i == 0 || menu[len(menu)-1].Id != m2.RoleId {
-	// 		menu = append(menu, models.MenuFull{
-	// 			Id: m2.RoleId,
-	// 			Role: models.RoleFull{
-	// 				Id:      m2.RoleId,
-	// 				Name:    m2.RoleName,
-	// 				Level:   m2.RoleLevel,
-	// 				Extends: m2.RoleExtends,
-	// 			},
-	// 			MenuItems: []models.MenuItem{item},
-	// 		})
-	// 	} else {
-	// 		menu[len(menu)-1].MenuItems = append(menu[len(menu)-1].MenuItems, item)
-	// 	}
-	// }
+	for i, m := range menu {
+		menuItem := &models.MenuItem{}
+		for _, item := range items {
+			if m.MenuItemId == item.Id {
+				menuItem = item
+				break
+			}
+		}
 
-	// return menu, nil
-	return nil, fmt.Errorf("not implemented")
+		if i == 0 || menuFull[len(menuFull)-1].Id != m.RoleId {
+			menuFull = append(menuFull, &models.MenuFull{
+				Id: m.RoleId,
+				Role: models.RoleFull{
+					Id:      m.RoleId,
+					Name:    m.RoleName,
+					Level:   m.RoleLevel,
+					Extends: m.RoleExtends,
+				},
+				MenuItems: []*models.MenuItem{menuItem},
+			})
+		} else {
+			menuFull[len(menuFull)-1].MenuItems = append(menuFull[len(menuFull)-1].MenuItems, menuItem)
+		}
+
+	}
+
+	return menuFull, nil
 }
 
 func (s *MenuService) Create(ctx context.Context, menu *models.MenuDTO) error {

@@ -19,7 +19,7 @@ type Reagent struct {
 	Closet            string   `json:"place_closet" db:"closet"`
 	Shelf             int      `json:"place_shelf" db:"shelf"`
 	ReceiptDate       int      `json:"incomingControl_receiptData" db:"receipt_date"`
-	Amount            string   `json:"incomingControl_amount" db:"amount"` // TODO в базе это надо разбить на два поля
+	Amount            string   `json:"incomingControl_amount" db:"amount"`
 	ControlDate       int      `json:"incomingControl_date" db:"control_date"`
 	Protocol          string   `json:"incomingControl_protocol" db:"protocol"`
 	Result            bool     `json:"incomingControl_result" db:"result"`
@@ -30,7 +30,6 @@ type Reagent struct {
 	Disposal          string   `json:"disposalInformation" db:"disposal"`
 	Comments          []string `json:"comments" db:"comments"`
 	Notes             []string `json:"notes" db:"notes"`
-	//TODO добавить остальные поля
 }
 
 type EditReagent struct {

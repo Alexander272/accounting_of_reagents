@@ -3,6 +3,7 @@ package amount_type
 import (
 	"net/http"
 
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
@@ -24,14 +25,14 @@ func NewAmountTypeHandlers(services services.AmountType) *AmountTypeHandlers {
 func Register(api *gin.RouterGroup, service services.AmountType, middleware *middleware.Middleware) {
 	handlers := NewAmountTypeHandlers(service)
 
-	// TODO добавить ограничения
-	amountTypes := api.Group("/amount-types")
+	amountTypes := api.Group("/amount-types", middleware.VerifyToken)
 	{
-		amountTypes.GET("", handlers.getAll)
-		amountTypes.POST("", handlers.create)
-		amountTypes.PUT("/:id", handlers.update)
-		amountTypes.PUT("", handlers.updateSeveral)
-		amountTypes.DELETE("/:id", handlers.delete)
+		amountTypes.GET("", handlers.getAll, middleware.CheckPermissions(constants.Types, constants.Read))
+		amountTypes.POST("", handlers.create, middleware.CheckPermissions(constants.Types, constants.Write))
+		amountTypes.POST("/few", handlers.createSeveral, middleware.CheckPermissions(constants.Types, constants.Write))
+		amountTypes.PUT("/:id", handlers.update, middleware.CheckPermissions(constants.Types, constants.Write))
+		amountTypes.PUT("", handlers.updateSeveral, middleware.CheckPermissions(constants.Types, constants.Write))
+		amountTypes.DELETE("/:id", handlers.delete, middleware.CheckPermissions(constants.Types, constants.Write))
 	}
 }
 
@@ -63,6 +64,22 @@ func (h *AmountTypeHandlers) create(c *gin.Context) {
 	c.JSON(http.StatusCreated, response.IdResponse{Id: id, Message: "Единица измерения создана"})
 }
 
+func (h *AmountTypeHandlers) createSeveral(c *gin.Context) {
+	dto := []*models.AmountTypeDTO{}
+	if err := c.BindJSON(&dto); err != nil {
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Отправлены некорректные данные")
+		return
+	}
+
+	if err := h.service.CreateSeveral(c, dto); err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
+		error_bot.Send(c, err.Error(), dto)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.IdResponse{Message: "Единицы измерения созданы"})
+}
+
 func (h *AmountTypeHandlers) update(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -88,7 +105,7 @@ func (h *AmountTypeHandlers) update(c *gin.Context) {
 
 func (h *AmountTypeHandlers) updateSeveral(c *gin.Context) {
 	dto := []*models.AmountTypeDTO{}
-	if err := c.BindJSON(dto); err != nil {
+	if err := c.BindJSON(&dto); err != nil {
 		response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Отправлены некорректные данные")
 		return
 	}
