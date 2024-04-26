@@ -17,7 +17,7 @@ type ReagentDTO struct {
 	Shelf             int            `json:"place_shelf" db:"shelf"`
 	ReceiptDate       int            `json:"incomingControl_receiptData" db:"receipt_date"`
 	Amount            string         `json:"incomingControl_amount" db:"amount"`
-	ControlDate       int            `json:"incomingControl_date" db:"control_data"`
+	ControlDate       int            `json:"incomingControl_date" db:"control_date"`
 	Protocol          string         `json:"incomingControl_protocol" db:"protocol"`
 	Result            bool           `json:"incomingControl_result" db:"result"`
 	Spending          float64        `json:"spending" db:"spending"`
@@ -27,5 +27,5 @@ type ReagentDTO struct {
 	Disposal          string         `json:"disposalInformation" db:"disposal"`
 	Comments          pq.StringArray `json:"comments" db:"comments"`
 	Notes             pq.StringArray `json:"notes" db:"notes"`
-	Total             int            `db:"total"`
+	Total             int            `db:"total_count"`
 }

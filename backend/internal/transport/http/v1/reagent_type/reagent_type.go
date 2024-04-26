@@ -28,10 +28,10 @@ func Register(api *gin.RouterGroup, service services.ReagentType, middleware *mi
 
 	reagentTypes := api.Group("/reagent-types", middleware.VerifyToken)
 	{
-		reagentTypes.GET(":role", handlers.getByRole, middleware.CheckPermissions(constants.Types, constants.Read))
-		reagentTypes.POST("", handlers.create, middleware.CheckPermissions(constants.Types, constants.Write))
-		reagentTypes.PUT("/:id", handlers.update, middleware.CheckPermissions(constants.Types, constants.Write))
-		reagentTypes.DELETE("/:id", handlers.delete, middleware.CheckPermissions(constants.Types, constants.Write))
+		reagentTypes.GET(":role", middleware.CheckPermissions(constants.Types, constants.Read), handlers.getByRole)
+		reagentTypes.POST("", middleware.CheckPermissions(constants.Types, constants.Write), handlers.create)
+		reagentTypes.PUT("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.update)
+		reagentTypes.DELETE("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.delete)
 	}
 }
 

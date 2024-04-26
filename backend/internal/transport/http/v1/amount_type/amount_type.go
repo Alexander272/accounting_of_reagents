@@ -27,12 +27,12 @@ func Register(api *gin.RouterGroup, service services.AmountType, middleware *mid
 
 	amountTypes := api.Group("/amount-types", middleware.VerifyToken)
 	{
-		amountTypes.GET("", handlers.getAll, middleware.CheckPermissions(constants.Types, constants.Read))
-		amountTypes.POST("", handlers.create, middleware.CheckPermissions(constants.Types, constants.Write))
-		amountTypes.POST("/few", handlers.createSeveral, middleware.CheckPermissions(constants.Types, constants.Write))
-		amountTypes.PUT("/:id", handlers.update, middleware.CheckPermissions(constants.Types, constants.Write))
-		amountTypes.PUT("", handlers.updateSeveral, middleware.CheckPermissions(constants.Types, constants.Write))
-		amountTypes.DELETE("/:id", handlers.delete, middleware.CheckPermissions(constants.Types, constants.Write))
+		amountTypes.GET("", middleware.CheckPermissions(constants.Types, constants.Read), handlers.getAll)
+		amountTypes.POST("", middleware.CheckPermissions(constants.Types, constants.Write), handlers.create)
+		amountTypes.POST("/few", middleware.CheckPermissions(constants.Types, constants.Write), handlers.createSeveral)
+		amountTypes.PUT("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.update)
+		amountTypes.PUT("", middleware.CheckPermissions(constants.Types, constants.Write), handlers.updateSeveral)
+		amountTypes.DELETE("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.delete)
 	}
 }
 

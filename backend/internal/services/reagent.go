@@ -36,7 +36,7 @@ func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.R
 
 	isEmpty := true
 	for _, f := range req.Filters {
-		if f.Field == "reagentTypeId" {
+		if f.Field == "typeId" {
 			isEmpty = false
 			break
 		}
@@ -47,7 +47,7 @@ func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.R
 			values = append(values, v.Id)
 		}
 		req.Filters = append(req.Filters, &models.Filter{
-			Field: "reagentTypeId",
+			Field: "typeId",
 			Values: []*models.FilterValue{{
 				CompareType: "in",
 				Value:       strings.Join(values, ","),

@@ -27,15 +27,45 @@ type Reagent interface {
 	Update(context.Context, *models.ReagentDTO) error
 }
 
+func (r *ReagentRepo) getColumnName(field string) string {
+	columns := make(map[string]string)
+
+	columns["type"] = "type"
+	columns["typeId"] = "type_id"
+	columns["name"] = "name"
+	columns["uname"] = "uname"
+	columns["document"] = "document"
+	columns["purity"] = "purity"
+	columns["dateOfManufacture"] = "date_of_manufacture"
+	columns["consignment"] = "consignment"
+	columns["manufacturer"] = "manufacturer"
+	columns["shelfLife"] = "shelf_life"
+	columns["place_closet"] = "closet"
+	columns["place_shelf"] = "shelf"
+	columns["incomingControl_receiptData"] = "receipt_date"
+	columns["incomingControl_amount"] = "amount"
+	columns["incomingControl_date"] = "control_date"
+	columns["incomingControl_protocol"] = "protocol"
+	columns["incomingControl_result"] = "result"
+	// columns["spending"] = "spending"
+	columns["extending_date"] = "date_of_extending"
+	columns["extending_period"] = "period_of_extending"
+	columns["seizureInformation"] = "seizure"
+	columns["disposalInformation"] = "disposal"
+	// columns["type"] = "type"
+
+	return columns[field]
+}
+
 func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.ReagentList, error) {
 	params := []interface{}{}
 	count := 1
 
 	order := " ORDER BY "
 	for _, s := range req.Sort {
-		order += fmt.Sprintf("%s %s, ", s.Field, s.Type)
+		order += fmt.Sprintf("%s %s, ", r.getColumnName(s.Field), s.Type)
 	}
-	order += "created_at, id"
+	order += "r.created_at, r.id"
 
 	filter := ""
 	if len(req.Filters) > 0 {
@@ -44,7 +74,7 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 
 		for _, ns := range req.Filters {
 			for _, sv := range ns.Values {
-				filters = append(filters, getFilterLine(sv.CompareType, ns.Field, count))
+				filters = append(filters, getFilterLine(sv.CompareType, r.getColumnName(ns.Field), count))
 				if sv.CompareType == "in" {
 					sv.Value = strings.ReplaceAll(sv.Value, ",", "|")
 				}

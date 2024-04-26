@@ -27,10 +27,10 @@ func Register(api *gin.RouterGroup, service services.Note, middleware *middlewar
 
 	notes := api.Group("/notes", middleware.VerifyToken)
 	{
-		notes.GET(":reagentId", handlers.getByReagentId, middleware.CheckPermissions(constants.Reagent, constants.Read))
-		notes.POST("", handlers.create, middleware.CheckPermissions(constants.Reagent, constants.Write))
-		notes.PUT("/:id", handlers.update, middleware.CheckPermissions(constants.Reagent, constants.Write))
-		notes.DELETE("/:id", handlers.delete, middleware.CheckPermissions(constants.Reagent, constants.Write))
+		notes.GET(":reagentId", middleware.CheckPermissions(constants.Reagent, constants.Read), handlers.getByReagentId)
+		notes.POST("", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.create)
+		notes.PUT("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.update)
+		notes.DELETE("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.delete)
 	}
 }
 

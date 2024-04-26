@@ -99,8 +99,8 @@ func (s *SessionService) DecodeAccessToken(ctx context.Context, token string) (*
 		a := access.(map[string]interface{})["roles"]
 		roles := a.([]interface{})
 		for _, r := range roles {
-			if strings.Contains(r.(string), "sia") {
-				role = strings.Replace(r.(string), "sia_", "", 1)
+			if strings.Contains(r.(string), "reagents") {
+				role = strings.Replace(r.(string), "reagents_", "", 1)
 				break
 			}
 		}
