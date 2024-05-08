@@ -9,7 +9,6 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/middleware"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/error_bot"
-	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,25 +27,32 @@ func Register(api *gin.RouterGroup, service services.ReagentType, middleware *mi
 
 	reagentTypes := api.Group("/reagent-types", middleware.VerifyToken)
 	{
-		reagentTypes.GET(":role", middleware.CheckPermissions(constants.Types, constants.Read), handlers.getByRole)
+		reagentTypes.GET("", middleware.CheckPermissions(constants.Types, constants.Read), handlers.get)
 		reagentTypes.POST("", middleware.CheckPermissions(constants.Types, constants.Write), handlers.create)
 		reagentTypes.PUT("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.update)
 		reagentTypes.DELETE("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.delete)
 	}
 }
 
-func (h *ReagentTypeHandlers) getByRole(c *gin.Context) {
-	logger.Debug("getByRole")
-	role := c.Param("role")
-	if role == "" {
-		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id типа реагента не задан")
+func (h *ReagentTypeHandlers) get(c *gin.Context) {
+	// logger.Debug("getByRole")
+	// role := c.Param("role")
+	// if role == "" {
+	// 	response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id типа реагента не задан")
+	// 	return
+	// }
+	u, exists := c.Get(constants.CtxUser)
+	if !exists {
+		response.NewErrorResponse(c, http.StatusUnauthorized, "empty user", "сессия не найдена")
 		return
 	}
 
-	reagentTypes, err := h.service.GetByRole(c, role)
+	user := u.(models.User)
+
+	reagentTypes, err := h.service.GetByRole(c, user.Role)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
-		error_bot.Send(c, err.Error(), role)
+		error_bot.Send(c, err.Error(), user)
 		return
 	}
 

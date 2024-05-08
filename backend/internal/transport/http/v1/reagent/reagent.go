@@ -56,7 +56,6 @@ func (h *ReagentHandlers) get(c *gin.Context) {
 		params.Page.Limit = 15
 	} else {
 		params.Page.Limit = limit
-
 	}
 
 	p, err := strconv.Atoi(page)

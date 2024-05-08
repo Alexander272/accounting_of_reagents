@@ -30,7 +30,7 @@ type AmountType interface {
 }
 
 func (r *AmountTypeRepo) GetAll(ctx context.Context) ([]*models.AmountType, error) {
-	query := fmt.Sprintf(`SELECT id, name, number FROM %s ORDER BY number`, AmountTypeTable)
+	query := fmt.Sprintf(`SELECT id, name, description, number FROM %s ORDER BY number`, AmountTypeTable)
 	amountTypes := []*models.AmountType{}
 
 	if err := r.db.SelectContext(ctx, &amountTypes, query); err != nil {
@@ -40,7 +40,7 @@ func (r *AmountTypeRepo) GetAll(ctx context.Context) ([]*models.AmountType, erro
 }
 
 func (r *AmountTypeRepo) Create(ctx context.Context, dto *models.AmountTypeDTO) (string, error) {
-	query := fmt.Sprintf(`INSERT INTO %s (id, name, number) VALUES (:id, :name, :number)`, AmountTypeTable)
+	query := fmt.Sprintf(`INSERT INTO %s (id, name, description, number) VALUES (:id, :name, :description, :number)`, AmountTypeTable)
 	id := uuid.New()
 	dto.Id = id.String()
 
@@ -53,11 +53,11 @@ func (r *AmountTypeRepo) Create(ctx context.Context, dto *models.AmountTypeDTO) 
 func (r *AmountTypeRepo) CreateSeveral(ctx context.Context, dto []*models.AmountTypeDTO) error {
 	values := []string{}
 	args := []interface{}{}
-	c := 3
+	c := 4
 	for i, v := range dto {
 		id := uuid.New()
-		args = append(args, id, v.Name, v.Number)
-		values = append(values, fmt.Sprintf("($%d, $%d, $%d)", c*i+1, c*i+2, c*i+3))
+		args = append(args, id, v.Name, v.Description, v.Number)
+		values = append(values, fmt.Sprintf("($%d, $%d, $%d, $%d)", c*i+1, c*i+2, c*i+3, c*i+4))
 	}
 	query := fmt.Sprintf(`INSERT INTO %s (id, name, number) VALUES %s`, AmountTypeTable, strings.Join(values, ","))
 
@@ -68,7 +68,7 @@ func (r *AmountTypeRepo) CreateSeveral(ctx context.Context, dto []*models.Amount
 }
 
 func (r *AmountTypeRepo) Update(ctx context.Context, dto *models.AmountTypeDTO) error {
-	query := fmt.Sprintf(`UPDATE %s SET name=:name WHERE id=:id`, AmountTypeTable)
+	query := fmt.Sprintf(`UPDATE %s SET name=:name, description=:description WHERE id=:id`, AmountTypeTable)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)

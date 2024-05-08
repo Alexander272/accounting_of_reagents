@@ -27,7 +27,7 @@ type ReagentType interface {
 }
 
 func (r *ReagentTypeRepo) GetAll(ctx context.Context) ([]*models.ReagentType, error) {
-	query := fmt.Sprintf(`SELECT id, name, number, role_id FROM %s ORDER BY role_id, number`, ReagentTypesTable)
+	query := fmt.Sprintf(`SELECT id, name, number, description, role_id FROM %s ORDER BY role_id, number`, ReagentTypesTable)
 	reagentTypes := []*models.ReagentType{}
 
 	if err := r.db.SelectContext(ctx, &reagentTypes, query); err != nil {
@@ -37,7 +37,7 @@ func (r *ReagentTypeRepo) GetAll(ctx context.Context) ([]*models.ReagentType, er
 }
 
 func (r *ReagentTypeRepo) Create(ctx context.Context, dto *models.ReagentTypeDTO) (string, error) {
-	query := fmt.Sprintf(`INSERT INTO %s (id, name, number, role_id) VALUES (:id, :name, :number, :role_id)`, ReagentTypesTable)
+	query := fmt.Sprintf(`INSERT INTO %s (id, name, number, description, role_id) VALUES (:id, :name, :number, :description, :role_id)`, ReagentTypesTable)
 	id := uuid.New()
 	dto.Id = id.String()
 
@@ -48,7 +48,7 @@ func (r *ReagentTypeRepo) Create(ctx context.Context, dto *models.ReagentTypeDTO
 }
 
 func (r *ReagentTypeRepo) Update(ctx context.Context, dto *models.ReagentTypeDTO) error {
-	query := fmt.Sprintf(`UPDATE %s SET name=:name, role_id=:role_id, number=:number WHERE id=:id`, ReagentTypesTable)
+	query := fmt.Sprintf(`UPDATE %s SET name=:name, role_id=:role_id, number=:number, description=:description WHERE id=:id`, ReagentTypesTable)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)

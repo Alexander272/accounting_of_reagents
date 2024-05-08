@@ -89,8 +89,9 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 
 	//TODO решить как получать comments и notes
 	query := fmt.Sprintf(`SELECT r.id, t.name AS type, r.name, uname, document, purity, date_of_manufacture, consignment, manufacturer, shelf_life, closet, shelf,
-		receipt_date, (amount || ' ' || a.name) AS amount, control_date, protocol, result, e.date_of_extending, e.period_of_extending, seizure, disposal,
-		(SELECT SUM(amount) FROM %s WHERE reagent_id=r.id GROUP BY reagent_id) AS spending,
+		receipt_date, (amount || ' ' || a.name) AS amount, control_date, protocol, result, COALESCE(e.date_of_extending, 0) AS date_of_extending, 
+		COALESCE(e.period_of_extending, 0) AS period_of_extending,	seizure, disposal,
+		COALESCE((SELECT SUM(amount) FROM %s WHERE reagent_id=r.id GROUP BY reagent_id), 0) AS spending,
 		COUNT(*) OVER() as total_count
 		FROM %s AS r
 		LEFT JOIN %s AS t ON r.type_id=t.id

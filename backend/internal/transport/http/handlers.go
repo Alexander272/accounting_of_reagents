@@ -52,18 +52,4 @@ func (h *Handler) initAPI(router *gin.Engine, conf *config.Config) {
 	{
 		handlerV1.Init(api)
 	}
-
-	// allPaths := make(map[string]models.ApiDTO)
-	// routes := router.Routes()
-	// for _, v := range routes {
-	// 	if v.Path != "/api/ping" {
-	// 		allPaths[fmt.Sprintf("%s:%s", v.Path, v.Method)] = models.ApiDTO{
-	// 			Path:   v.Path,
-	// 			Method: v.Method,
-	// 		}
-	// 	}
-	// }
-	// if err := h.services.ApiPaths.Load(context.Background(), allPaths); err != nil {
-	// 	logger.Error("failed to load api paths. error: ", logger.ErrAttr(err))
-	// }
 }
