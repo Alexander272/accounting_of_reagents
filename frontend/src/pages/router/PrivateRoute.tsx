@@ -10,8 +10,7 @@ export default function PrivateRoute({ children }: PropsWithChildren) {
 	const token = useAppSelector(getToken)
 	const location = useLocation()
 
-	//TODO вернуть проверку
-	// if (!token) return <Navigate to={AppRoutes.AUTH} state={{ from: location }} />
+	if (!token) return <Navigate to={AppRoutes.AUTH} state={{ from: location }} />
 
 	return children
 }

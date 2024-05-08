@@ -1,5 +1,8 @@
-import { Titles } from './constants/titles'
+import dayjs from 'dayjs'
+
 import type { IColumn, IHeadColumn } from './types/table'
+import { DateFormat } from '@/constants/date'
+import { Titles } from './constants/titles'
 
 export const HeaderColumns: IHeadColumn[] = [
 	{
@@ -57,7 +60,7 @@ export const HeaderColumns: IHeadColumn[] = [
 		label: Titles.IncomingControl.Main,
 		children: [
 			{
-				key: 'incomingControl_receiptData',
+				key: 'incomingControl_receiptDate',
 				label: Titles.IncomingControl.ReceiptDate,
 			},
 			{
@@ -135,6 +138,10 @@ export const Columns: IColumn[] = [
 	{
 		key: 'dateOfManufacture',
 		label: Titles.DateOfManufacture,
+		formatter: value => {
+			if (value == 0) return '-'
+			else return dayjs((value as number) * 1000).format(DateFormat)
+		},
 	},
 	{
 		key: 'consignment',
@@ -157,8 +164,12 @@ export const Columns: IColumn[] = [
 		label: Titles.Place.Shelf,
 	},
 	{
-		key: 'incomingControl_receiptData',
+		key: 'incomingControl_receiptDate',
 		label: Titles.IncomingControl.ReceiptDate,
+		formatter: value => {
+			if (value == 0) return '-'
+			else return dayjs((value as number) * 1000).format(DateFormat)
+		},
 	},
 	{
 		key: 'incomingControl_amount',
@@ -167,6 +178,10 @@ export const Columns: IColumn[] = [
 	{
 		key: 'incomingControl_date',
 		label: Titles.IncomingControl.Date,
+		formatter: value => {
+			if (value == 0) return '-'
+			else return dayjs((value as number) * 1000).format(DateFormat)
+		},
 	},
 	{
 		key: 'incomingControl_protocol',
@@ -175,15 +190,34 @@ export const Columns: IColumn[] = [
 	{
 		key: 'incomingControl_result',
 		label: Titles.IncomingControl.Result,
+		formatter: value => {
+			if (value) return 'Соответствует'
+			else return 'Несоответствует'
+		},
 	},
-	{ key: 'spending', label: Titles.Spending },
+	{
+		key: 'spending',
+		label: Titles.Spending,
+		formatter: value => {
+			if (value == 0) return '-'
+			else return (value as number).toString()
+		},
+	},
 	{
 		key: 'extending_date',
 		label: Titles.Extending.Date,
+		formatter: value => {
+			if (value == 0) return '-'
+			else return dayjs((value as number) * 1000).format(DateFormat)
+		},
 	},
 	{
 		key: 'extending_period',
 		label: Titles.Extending.Period,
+		formatter: value => {
+			if (value == 0) return '-'
+			else return (value as number).toString()
+		},
 	},
 	{
 		key: 'seizureInformation',

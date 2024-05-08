@@ -1,5 +1,6 @@
+import type { ICreateDataItem, IDataItem, IParams } from './types/data'
 import { apiSlice } from '@/app/apiSlice'
-import type { IDataItem, IParams } from './types/data'
+import { API } from '@/app/api'
 import { buildSiUrlParams } from './utils/buildUrlParams'
 
 const tableApiSlice = apiSlice.injectEndpoints({
@@ -7,15 +8,29 @@ const tableApiSlice = apiSlice.injectEndpoints({
 	endpoints: builder => ({
 		getAll: builder.query<{ data: IDataItem[]; total: number }, IParams>({
 			query: params => ({
-				//TODO дописать api
-				url: '',
+				url: API.reagents,
 				method: 'GET',
 				params: buildSiUrlParams(params),
 			}),
 			providesTags: [{ type: 'DataItems', id: 'ALL' }],
 		}),
+		// не знаю правильно ли получать данные одним куском
+		getById: builder.query<{ data: IDataItem }, string>({
+			query: id => `${API.reagents}/${id}`,
+			providesTags: (_res, _err, id) => [{ type: 'DataItems', id: id }],
+		}),
+
+		create: builder.mutation<null, ICreateDataItem>({
+			query: data => ({
+				url: API.reagents,
+				method: 'POST',
+				body: data,
+			}),
+			invalidatesTags: [{ type: 'DataItems', id: 'ALL' }],
+		}),
 	}),
+
 	// TODO когда удается реагент можно делать ему метку, а потом проверять если метка старше 30 дней, то запись удаляется
 })
 
-export const { useGetAllQuery } = tableApiSlice
+export const { useGetAllQuery, useGetByIdQuery, useCreateMutation } = tableApiSlice

@@ -1,5 +1,19 @@
+export type ReagentType = 'main' | 'auxiliary' | 'experimental' | 'standard' | 'titling'
+
 export interface IDataItem {
 	id: string
+	type: ReagentType
+	name: string
+	uname: string
+	document: string
+	purity: string
+	dateOfManufacture: number
+	consignment: string
+	manufacturer: string
+	shelfLife: number
+	place_closet: string
+	place_shelf: number
+	//TODO дописать оставшиеся поля
 }
 
 export interface IParams {
@@ -24,4 +38,24 @@ export interface IFilter {
 export interface ISearch {
 	value: string
 	fields: string[]
+}
+
+export interface ICreateDataItem {
+	typeId: string
+	name: string
+	uname: string
+	document: string
+	purity: string
+	dateOfManufacture: number
+	consignment: string
+	manufacturer: string
+	shelfLife: number
+	place_closet: string
+	place_shelf: number
+	receiptDate: number
+	amount: number
+	amountTypeId: string
+	controlDate: number
+	protocol: string
+	result: boolean
 }

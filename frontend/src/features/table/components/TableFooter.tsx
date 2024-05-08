@@ -33,14 +33,14 @@ export const TableFooter = () => {
 				<span />
 			)}
 
-			{data?.data.length && (
+			{data?.data.length ? (
 				<Stack direction={'row'} alignItems={'center'} justifyContent={'flex-end'}>
 					<TableSize total={12 || 1} />
 					<Typography sx={{ ml: 2 }}>
 						{(page - 1) * size || 1}-{(page - 1) * size + (data?.data.length || 0)} из {data?.total}
 					</Typography>
 				</Stack>
-			)}
+			) : null}
 		</Box>
 	)
 }

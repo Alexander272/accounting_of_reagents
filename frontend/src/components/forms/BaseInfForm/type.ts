@@ -1,7 +1,5 @@
-export type ReagentType = 'main' | 'auxiliary' | 'experimental' | 'standard' | 'titling'
-
 export interface IBaseInfForm {
-	type: ReagentType
+	type: string
 	name: string
 	uname: string
 	document: string
@@ -9,9 +7,9 @@ export interface IBaseInfForm {
 	dateOfManufacture: number
 	consignment: string
 	manufacturer: string
-	shelfLife: number
+	shelfLife: string
 	place_closet: string
-	place_shelf: number
+	place_shelf: string
 }
 
 // (Вид реактива, Наименование по сопроводительной документации, Наименование по ИЮПАК, Нормативный документ, Степень чистоты, Дата изготовления, Партия, Производитель, Срок годности (в месяцах), Место хранения (шкаф и полка)

@@ -58,6 +58,9 @@ export const TableCellContainer = styled.div<CellProps>`
 `
 
 export const TableHeadContainer = styled.div`
+	background: #f5f5f5;
+	border-radius: 12px;
+	width: fit-content;
 	/* background-color: #f3f4f8;
 	border-radius: 18px;
 	width: fit-content; */
@@ -72,4 +75,5 @@ export const TableContainer = styled.div<TableProps>`
 	overflow-y: hidden;
 	overflow-x: auto;
 	position: relative;
+	margin-top: 8px;
 `

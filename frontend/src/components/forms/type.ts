@@ -17,8 +17,9 @@ export type LinkType = 'Link'
 export type RadioType = 'Radio'
 
 export type Options = {
-	value: string
-	label: string
+	id: string
+	name: string
+	description?: string
 }
 
 export type StringField<Keys> = FieldBase<Keys, StringType, { multiline?: boolean; minRows?: number }>
@@ -26,7 +27,7 @@ export type NumberField<Keys> = FieldBase<Keys, NumberType, unknown>
 export type DateField<Keys> = FieldBase<Keys, DateType, unknown>
 export type FileField<Keys> = FieldBase<Keys, FileType, unknown>
 export type BoolField<Keys> = FieldBase<Keys, BoolType, unknown>
-export type ListField<Keys> = FieldBase<Keys, ListType, { options: Options[] }>
+export type ListField<Keys> = FieldBase<Keys, ListType, { options?: Options[]; useGetOptions?: () => Options[] }>
 export type LinkField<Keys> = FieldBase<Keys, LinkType, unknown>
 export type RadioField<Keys> = FieldBase<Keys, RadioType, { options: Options[] }>
 

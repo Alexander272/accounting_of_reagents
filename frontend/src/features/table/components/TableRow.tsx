@@ -18,7 +18,13 @@ export const DataTableRow: FC<Props> = ({ data, sx }) => {
 		<TableRow sx={sx}>
 			{Columns.map(c => (
 				<TableCell key={data.id + c.key} width={c.width || ColWidth}>
-					<CellText value={data[c.key as keyof IDataItem] || '-'} />
+					<CellText
+						value={
+							c.formatter
+								? c.formatter(data[c.key as keyof IDataItem])
+								: data[c.key as keyof IDataItem]?.toString() || '-'
+						}
+					/>
 				</TableCell>
 			))}
 		</TableRow>
