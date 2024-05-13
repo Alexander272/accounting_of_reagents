@@ -12,3 +12,5 @@ export interface IAmountType {
 	description: string
 	number: number
 }
+
+export type CreateAmountType = Omit<IAmountType, 'id' | 'isNew'>

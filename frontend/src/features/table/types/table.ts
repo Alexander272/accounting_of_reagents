@@ -12,5 +12,7 @@ export interface IColumn {
 	label: string
 	width?: number
 	align?: 'center' | 'right' | 'left'
+	isShow?: boolean
+	allowSearch?: boolean
 	formatter?: (value: unknown) => string
 }

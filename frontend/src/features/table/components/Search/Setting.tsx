@@ -55,25 +55,29 @@ export const Setting = () => {
 			<Popover open={open} onClose={closeHandler} anchorEl={anchor.current}>
 				<FormProvider {...methods}>
 					<Stack spacing={1} sx={{ maxHeight: 300, overflow: 'auto', userSelect: 'none', pr: 1 }}>
-						{Columns.map(c => (
-							<Controller
-								key={c.key}
-								control={methods.control}
-								name={c.key}
-								render={({ field }) => (
-									<FormControlLabel
-										label={c.label}
-										control={<Checkbox checked={field.value || false} />}
-										onChange={field.onChange}
-										sx={{
-											transition: 'all 0.3s ease-in-out',
-											borderRadius: 3,
-											':hover': { backgroundColor: palette.action.hover },
-										}}
+						{Columns.map(c => {
+							if (c.allowSearch)
+								return (
+									<Controller
+										key={c.key}
+										control={methods.control}
+										name={c.key}
+										render={({ field }) => (
+											<FormControlLabel
+												label={c.label}
+												control={<Checkbox checked={field.value || false} />}
+												onChange={field.onChange}
+												sx={{
+													transition: 'all 0.3s ease-in-out',
+													borderRadius: 3,
+													':hover': { backgroundColor: palette.action.hover },
+												}}
+											/>
+										)}
 									/>
-								)}
-							/>
-						))}
+								)
+							return null
+						})}
 					</Stack>
 				</FormProvider>
 			</Popover>

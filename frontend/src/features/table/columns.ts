@@ -122,18 +122,22 @@ export const Columns: IColumn[] = [
 	{
 		key: 'name',
 		label: Titles.Name,
+		allowSearch: true,
 	},
 	{
 		key: 'uname',
 		label: Titles.UName,
+		allowSearch: true,
 	},
 	{
 		key: 'document',
 		label: Titles.Doc,
+		allowSearch: true,
 	},
 	{
 		key: 'purity',
 		label: Titles.Purity,
+		allowSearch: true,
 	},
 	{
 		key: 'dateOfManufacture',
@@ -230,9 +234,11 @@ export const Columns: IColumn[] = [
 	{
 		key: 'comments',
 		label: Titles.Comments,
+		allowSearch: true,
 	},
 	{
 		key: 'notes',
 		label: Titles.Notes,
+		allowSearch: true,
 	},
 ]

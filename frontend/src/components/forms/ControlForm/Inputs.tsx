@@ -18,6 +18,8 @@ import type { Field } from '../type'
 import type { IControlForm } from './type'
 import { typesApiSlice } from '@/features/table/modules/Types/typesApiSlice'
 import { Titles } from './titles'
+import { useAppDispatch } from '@/hooks/redux'
+import { changeModalIsOpen } from '@/features/modal/modalSlice'
 
 const fields: Field<keyof IControlForm>[] = [
 	{ key: 'receiptDate', type: 'Date', label: Titles.ReceiptDate + ' *', rules: { required: true } },
@@ -55,17 +57,20 @@ export const Inputs: FC<Props> = ({ disabled }) => {
 		}
 	})
 
+	const dispatch = useAppDispatch()
+
 	const {
 		register,
 		control,
 		formState: { errors },
 	} = useFormContext<IControlForm>()
 
-	// const editHandler = (event: MouseEvent<HTMLButtonElement>) => {
-	// 	event.preventDefault()
-	// 	event.stopPropagation()
-	// 	console.log('edit')
-	// }
+	const editHandler = (event: MouseEvent<HTMLButtonElement>) => {
+		event.preventDefault()
+		event.stopPropagation()
+		console.log('edit')
+		dispatch(changeModalIsOpen({ variant: 'amountType', isOpen: true }))
+	}
 
 	return (
 		<Stack spacing={2}>
@@ -113,33 +118,37 @@ export const Inputs: FC<Props> = ({ disabled }) => {
 					control={control}
 					name={fields[2].key}
 					render={({ field, fieldState: { error } }) => (
-						<Select
-							labelId={fields[2].key}
-							error={Boolean(error)}
-							value={field.value}
-							onChange={field.onChange}
-							fullWidth
-							sx={{
-								flexBasis: '28%',
-								ml: '-1px',
-								borderTopLeftRadius: 0,
-								borderBottomLeftRadius: 0,
-							}}
-						>
-							{((fields[2].type == 'List' && fields[2].options) || []).map(o => (
-								<MenuItem key={o.id} value={o.id}>
-									{o.description || o.name}
-								</MenuItem>
-							))}
-							{/* <Divider />
-							<Button
-								onClick={editHandler}
+						<FormControl sx={{ flexBasis: '28%', ml: '-1px' }}>
+							<InputLabel id={fields[2].key}>{fields[2].label}</InputLabel>
+							<Select
+								labelId={fields[2].key}
+								label={fields[2].label}
+								error={Boolean(error)}
+								value={field.value}
+								onChange={field.onChange}
 								fullWidth
-								sx={{ textTransform: 'capitalize', padding: '4px 8px' }}
+								sx={{
+									borderTopLeftRadius: 0,
+									borderBottomLeftRadius: 0,
+								}}
 							>
-								Изменить
-							</Button> */}
-						</Select>
+								{((fields[2].type == 'List' && fields[2].options) || []).map(o => (
+									<MenuItem key={o.id} value={o.id}>
+										{o.description || o.name}
+									</MenuItem>
+								))}
+								<Divider />
+								<MenuItem sx={{ padding: 0 }}>
+									<Button
+										onClick={editHandler}
+										fullWidth
+										sx={{ textTransform: 'capitalize', padding: '4px 8px' }}
+									>
+										Изменить
+									</Button>
+								</MenuItem>
+							</Select>
+						</FormControl>
 					)}
 				/>
 			</Stack>

@@ -28,7 +28,7 @@ export const Dialog = (props: IDialogProps) => {
 				{typeof body === 'string' ? <MuiDialogContentText>{body}</MuiDialogContentText> : body}
 			</MuiDialogContent>
 
-			<MuiDialogActions>{actions}</MuiDialogActions>
+			{actions && <MuiDialogActions>{actions}</MuiDialogActions>}
 		</MuiDialog>
 	)
 }

@@ -19,6 +19,7 @@ import { RefreshIcon } from '@/components/Icons/RefreshIcon'
 import { ControlForm } from '@/components/forms/ControlForm/ControlForm'
 import { changeModalIsOpen, getModalState } from '../modalSlice'
 import { Titles } from '../titles'
+import { AmountType } from './AmountType'
 
 export const Create = () => {
 	const modal = useAppSelector(getModalState('create'))
@@ -118,8 +119,8 @@ const CreateForm: FC<FormProps> = ({ closing }) => {
 			setControl(data)
 			if (closing || isForceSave.current) localStorage.setItem(localKeys.control, JSON.stringify(data))
 		}
-		isForceSave.current = false
-		if (!closing) {
+
+		if (!closing && !isForceSave.current) {
 			const data: ICreateDataItem = {
 				typeId: base.type,
 				name: base.name,
@@ -154,6 +155,7 @@ const CreateForm: FC<FormProps> = ({ closing }) => {
 				toast.error(fetchError.data.message, { autoClose: false })
 			}
 		}
+		isForceSave.current = false
 	}
 
 	const deleteHandler = () => {
@@ -181,6 +183,7 @@ const CreateForm: FC<FormProps> = ({ closing }) => {
 					</span>
 				</Tooltip>
 			</Stack>
+			<AmountType />
 
 			{isLoadingRTypes || isLoadingATypes ? (
 				<Fallback marginTop={5} marginBottom={3} />
