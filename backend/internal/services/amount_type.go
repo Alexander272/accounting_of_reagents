@@ -25,6 +25,7 @@ type AmountType interface {
 	Update(context.Context, *models.AmountTypeDTO) error
 	UpdateSeveral(context.Context, []*models.AmountTypeDTO) error
 	Delete(context.Context, *models.DeleteAmountTypeDTO) error
+	DeleteSeveral(context.Context, *models.DeleteSeveralAmountTypeDTO) error
 }
 
 func (s *AmountTypeService) GetAll(ctx context.Context) ([]*models.AmountType, error) {
@@ -67,6 +68,13 @@ func (s *AmountTypeService) UpdateSeveral(ctx context.Context, dto []*models.Amo
 func (s *AmountTypeService) Delete(ctx context.Context, dto *models.DeleteAmountTypeDTO) error {
 	if err := s.repo.Delete(ctx, dto); err != nil {
 		return fmt.Errorf("failed to delete amount type. error: %w", err)
+	}
+	return nil
+}
+
+func (s *AmountTypeService) DeleteSeveral(ctx context.Context, dto *models.DeleteSeveralAmountTypeDTO) error {
+	if err := s.repo.DeleteSeveral(ctx, dto); err != nil {
+		return fmt.Errorf("failed to delete several amount type. error: %w", err)
 	}
 	return nil
 }

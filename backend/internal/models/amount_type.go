@@ -14,6 +14,14 @@ type AmountTypeDTO struct {
 	Number      int    `json:"number" db:"number"`
 }
 
+type AmountTypeEditDTO struct {
+	Data    []*AmountTypeDTO `json:"data"`
+	Deleted []string         `json:"deleted"`
+}
+
 type DeleteAmountTypeDTO struct {
 	Id string `json:"id" db:"id"`
+}
+type DeleteSeveralAmountTypeDTO struct {
+	Ids []string
 }

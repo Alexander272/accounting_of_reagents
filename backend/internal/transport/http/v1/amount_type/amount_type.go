@@ -29,6 +29,7 @@ func Register(api *gin.RouterGroup, service services.AmountType, middleware *mid
 	{
 		amountTypes.GET("", middleware.CheckPermissions(constants.Types, constants.Read), handlers.getAll)
 		amountTypes.POST("", middleware.CheckPermissions(constants.Types, constants.Write), handlers.create)
+		amountTypes.POST("/edit", middleware.CheckPermissions(constants.Types, constants.Write), handlers.edit)
 		amountTypes.POST("/few", middleware.CheckPermissions(constants.Types, constants.Write), handlers.createSeveral)
 		amountTypes.PUT("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.update)
 		amountTypes.PUT("", middleware.CheckPermissions(constants.Types, constants.Write), handlers.updateSeveral)
@@ -78,6 +79,51 @@ func (h *AmountTypeHandlers) createSeveral(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.IdResponse{Message: "Единицы измерения созданы"})
+}
+
+func (h *AmountTypeHandlers) edit(c *gin.Context) {
+	dto := &models.AmountTypeEditDTO{
+		Data: []*models.AmountTypeDTO{},
+	}
+	if err := c.BindJSON(&dto); err != nil {
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Отправлены некорректные данные")
+		return
+	}
+
+	createDTO := []*models.AmountTypeDTO{}
+	updateDTO := []*models.AmountTypeDTO{}
+
+	for _, d := range dto.Data {
+		if d.Id != "" {
+			updateDTO = append(updateDTO, d)
+		} else {
+			createDTO = append(createDTO, d)
+		}
+	}
+
+	if len(createDTO) > 0 {
+		if err := h.service.CreateSeveral(c, createDTO); err != nil {
+			response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
+			error_bot.Send(c, err.Error(), dto)
+			return
+		}
+	}
+	if len(updateDTO) > 0 {
+		if err := h.service.UpdateSeveral(c, updateDTO); err != nil {
+			response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
+			error_bot.Send(c, err.Error(), dto)
+			return
+		}
+	}
+	if len(dto.Deleted) > 0 {
+		if err := h.service.DeleteSeveral(c, &models.DeleteSeveralAmountTypeDTO{Ids: dto.Deleted}); err != nil {
+			response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
+			error_bot.Send(c, err.Error(), dto)
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, response.IdResponse{Message: "Единицы измерения обновлены"})
 }
 
 func (h *AmountTypeHandlers) update(c *gin.Context) {

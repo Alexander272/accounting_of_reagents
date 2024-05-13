@@ -8,6 +8,7 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type AmountTypeRepo struct {
@@ -27,6 +28,7 @@ type AmountType interface {
 	Update(context.Context, *models.AmountTypeDTO) error
 	UpdateSeveral(context.Context, []*models.AmountTypeDTO) error
 	Delete(context.Context, *models.DeleteAmountTypeDTO) error
+	DeleteSeveral(context.Context, *models.DeleteSeveralAmountTypeDTO) error
 }
 
 func (r *AmountTypeRepo) GetAll(ctx context.Context) ([]*models.AmountType, error) {
@@ -59,7 +61,7 @@ func (r *AmountTypeRepo) CreateSeveral(ctx context.Context, dto []*models.Amount
 		args = append(args, id, v.Name, v.Description, v.Number)
 		values = append(values, fmt.Sprintf("($%d, $%d, $%d, $%d)", c*i+1, c*i+2, c*i+3, c*i+4))
 	}
-	query := fmt.Sprintf(`INSERT INTO %s (id, name, number) VALUES %s`, AmountTypeTable, strings.Join(values, ","))
+	query := fmt.Sprintf(`INSERT INTO %s (id, name, description, number) VALUES %s`, AmountTypeTable, strings.Join(values, ","))
 
 	if _, err := r.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -99,6 +101,15 @@ func (r *AmountTypeRepo) Delete(ctx context.Context, dto *models.DeleteAmountTyp
 	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, AmountTypeTable)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
+		return fmt.Errorf("failed to execute query. error: %w", err)
+	}
+	return nil
+}
+
+func (r *AmountTypeRepo) DeleteSeveral(ctx context.Context, dto *models.DeleteSeveralAmountTypeDTO) error {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=ANY($1)`, AmountTypeTable)
+
+	if _, err := r.db.ExecContext(ctx, query, pq.Array(dto.Ids)); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
 	}
 	return nil
