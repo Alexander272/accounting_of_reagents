@@ -14,6 +14,8 @@ export interface IDataItem {
 	place_closet: string
 	place_shelf: number
 	//TODO дописать оставшиеся поля
+
+	background?: string
 }
 
 export interface IParams {

@@ -2,13 +2,14 @@ import { Box, Stack, Typography } from '@mui/material'
 
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { Pagination } from '@/components/Pagination/Pagination'
-import { getTablePage, getTableSize, setPage } from '../tableSlice'
-import { TableSize } from './TableSize'
 import { useGetAllData } from '../hooks/query'
+import { getSelected, getTablePage, getTableSize, setPage } from '../tableSlice'
+import { TableSize } from './TableSize'
 
 export const TableFooter = () => {
 	const size = useAppSelector(getTableSize)
 	const page = useAppSelector(getTablePage)
+	const selected = useAppSelector(getSelected)
 
 	const dispatch = useAppDispatch()
 
@@ -23,8 +24,7 @@ export const TableFooter = () => {
 	return (
 		<Box display={'grid'} alignItems={'center'} gridTemplateColumns={'repeat(3, 1fr)'} mt={1} mx={2}>
 			<Typography pr={1.5} mr={'auto'}>
-				{/* //TODO указать кол-во выбранных строк */}
-				Строк выбрано: {0}
+				Строк выбрано: {Object.keys(selected).length}
 			</Typography>
 
 			{totalPages > 1 ? (

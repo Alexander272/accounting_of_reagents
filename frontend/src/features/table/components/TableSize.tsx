@@ -30,6 +30,7 @@ export const TableSize: FC<Props> = ({ total }) => {
 			<Typography>Строк на странице:</Typography>
 
 			<Select
+				name='table_size'
 				value={size}
 				onChange={changeSize}
 				sx={{

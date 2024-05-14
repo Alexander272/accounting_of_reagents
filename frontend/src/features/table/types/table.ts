@@ -16,3 +16,8 @@ export interface IColumn {
 	allowSearch?: boolean
 	formatter?: (value: unknown) => string
 }
+
+export interface ICoordinates {
+	mouseX: number
+	mouseY: number
+}

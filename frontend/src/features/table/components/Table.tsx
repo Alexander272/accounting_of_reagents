@@ -3,6 +3,7 @@ import { DataTableHead } from './TableHead'
 import { DataTableBody } from './TableBody'
 import { TableFooter } from './TableFooter'
 import { TableHeader } from './TableHeader'
+import { ContextMenu } from './ContextMenu/ContextMenu'
 
 export const DataTable = () => {
 	return (
@@ -11,6 +12,7 @@ export const DataTable = () => {
 			<Table>
 				<DataTableHead />
 				<DataTableBody />
+				<ContextMenu />
 			</Table>
 			<TableFooter />
 		</>

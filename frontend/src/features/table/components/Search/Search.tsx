@@ -5,7 +5,7 @@ import { useAppDispatch } from '@/hooks/redux'
 import { useDebounce } from '@/hooks/useDebounce'
 import { SearchIcon } from '@/components/Icons/SearchIcon'
 import { setSearch } from '@/features/table/tableSlice'
-import { Setting } from './Setting'
+// import { Setting } from './Setting'
 
 export const Search: FC = () => {
 	const dispatch = useAppDispatch()
@@ -23,6 +23,7 @@ export const Search: FC = () => {
 		<>
 			<TextField
 				// value={value}
+				name='search'
 				onChange={changeValueHandler}
 				InputProps={{
 					startAdornment: (
@@ -30,11 +31,11 @@ export const Search: FC = () => {
 							<SearchIcon fontSize={16} />
 						</InputAdornment>
 					),
-					endAdornment: (
-						<InputAdornment position='end'>
-							<Setting />
-						</InputAdornment>
-					),
+					// endAdornment: (
+					// 	<InputAdornment position='end'>
+					// 		<Setting />
+					// 	</InputAdornment>
+					// ),
 				}}
 				placeholder='Поиск...'
 				sx={{ width: 350 }}

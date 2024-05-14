@@ -121,7 +121,7 @@ const CreateForm: FC<FormProps> = ({ closing }) => {
 		}
 
 		if (!closing && !isForceSave.current) {
-			const data: ICreateDataItem = {
+			const newData: ICreateDataItem = {
 				typeId: base.type,
 				name: base.name,
 				uname: base.uname,
@@ -133,16 +133,16 @@ const CreateForm: FC<FormProps> = ({ closing }) => {
 				shelfLife: +base.shelfLife,
 				place_closet: base.place_closet,
 				place_shelf: +base.place_shelf,
-				receiptDate: control.receiptDate,
-				amount: +control.amount,
-				amountTypeId: control.amountType,
-				controlDate: control.controlDate,
-				protocol: control.protocol,
-				result: control.result,
+				receiptDate: data.receiptDate,
+				amount: +data.amount,
+				amountTypeId: data.amountType,
+				controlDate: data.controlDate,
+				protocol: data.protocol,
+				result: data.result,
 			}
 
 			try {
-				await create(data).unwrap()
+				await create(newData).unwrap()
 
 				localStorage.removeItem(localKeys.baseInfo)
 				localStorage.removeItem(localKeys.control)

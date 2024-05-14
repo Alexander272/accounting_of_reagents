@@ -1,16 +1,30 @@
 import type { CSSProperties } from 'react'
 import styled from '@emotion/styled'
+import { lighten } from '@mui/material'
 
 type RowProps = {
 	width?: number
 	height?: number
 	styles?: CSSProperties
 }
-export const TableRowContainer = styled.div<RowProps>({ display: 'flex' }, props => ({
-	width: props.width && props.width + 'px',
-	height: props.height && props.height + 'px',
-	...props.styles,
-}))
+export const TableRowContainer = styled.div<RowProps>(
+	{
+		display: 'flex',
+		cursor: 'pointer',
+		borderRadius: '8px',
+		transition: '.3s all ease-in-out',
+	},
+	props => ({
+		width: props.width && props.width + 'px',
+		height: props.height && props.height + 'px',
+
+		...props.styles,
+
+		':hover': {
+			background: props.styles?.background ? lighten(props.styles?.background.toString(), 0.4) : '#e6f4f4',
+		},
+	})
+)
 
 export const TableGroupContainer = styled.div`
 	position: relative;
@@ -65,6 +79,8 @@ export const TableHeadContainer = styled.div`
 	border-radius: 18px;
 	width: fit-content; */
 `
+
+export const TableBodyContainer = styled.div``
 
 type TableProps = {
 	columnWidth?: number | number[]
