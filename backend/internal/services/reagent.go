@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -23,12 +24,14 @@ func NewReagentService(repo repository.Reagent, reagentType ReagentType) *Reagen
 
 type Reagent interface {
 	Get(context.Context, *models.Params) (*models.ReagentList, error)
+	GetById(context.Context, string) (*models.EditReagent, error)
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 	Delete(context.Context, *models.DeleteReagentDTO) error
 }
 
 func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.ReagentList, error) {
+	//TODO из-за того что у меня есть одинаковые типы (для разных ролей) фильтр по id типа не выдает нужный мне результат
 	reagentTypes, err := s.reagentType.GetByRole(ctx, req.User.Role)
 	if err != nil {
 		return nil, err
@@ -61,6 +64,17 @@ func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.R
 	}
 
 	return list, nil
+}
+
+func (s *ReagentService) GetById(ctx context.Context, id string) (*models.EditReagent, error) {
+	reagent, err := s.repo.GetById(ctx, id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRows) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("failed to get reagent by id. error: %w", err)
+	}
+	return reagent, nil
 }
 
 func (s *ReagentService) Create(ctx context.Context, dto *models.ReagentDTO) (string, error) {

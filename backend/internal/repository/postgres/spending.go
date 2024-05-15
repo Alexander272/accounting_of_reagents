@@ -27,7 +27,7 @@ type Spending interface {
 }
 
 func (r *SpendingRepo) GetByReagentId(ctx context.Context, reagentId string) ([]*models.Spending, error) {
-	query := fmt.Sprintf(`SELECT id, date_of_spending, amount FROM %s WHERE reagent_id=$1`, SpendingTable)
+	query := fmt.Sprintf(`SELECT id, date_of_spending, amount FROM %s WHERE reagent_id=$1 ORDER BY date_of_spending DESC`, SpendingTable)
 	spending := []*models.Spending{}
 
 	if err := r.db.SelectContext(ctx, &spending, query, reagentId); err != nil {

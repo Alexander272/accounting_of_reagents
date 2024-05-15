@@ -51,7 +51,6 @@ type EditReagent struct {
 	ControlDate       int     `json:"controlDate" db:"control_date"`
 	Protocol          string  `json:"protocol" db:"protocol"`
 	Result            bool    `json:"result" db:"result"`
-	//TODO добавить остальные поля
 }
 
 type ReagentDTO struct {

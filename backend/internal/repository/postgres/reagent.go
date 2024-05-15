@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -23,6 +25,7 @@ func NewReagentRepo(db *sqlx.DB) *ReagentRepo {
 
 type Reagent interface {
 	Get(context.Context, *models.Params) (*models.ReagentList, error)
+	GetById(context.Context, string) (*models.EditReagent, error)
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 }
@@ -65,7 +68,7 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 	for _, s := range req.Sort {
 		order += fmt.Sprintf("%s %s, ", r.getColumnName(s.Field), s.Type)
 	}
-	order += "r.created_at, r.id"
+	order += "r.created_at DESC, r.id"
 
 	filter := ""
 	if len(req.Filters) > 0 {
@@ -85,6 +88,22 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 		filter += strings.Join(filters, " AND ")
 	}
 
+	search := ""
+	if req.Search != nil {
+		if len(filter) == 0 {
+			search = "WHERE "
+		} else {
+			search = " AND ("
+		}
+		list := []string{}
+		for _, f := range req.Search.Fields {
+			list = append(list, fmt.Sprintf("r.%s ILIKE '%%'||$%d||'%%'", r.getColumnName(f), count))
+		}
+		params = append(params, req.Search.Value)
+		count++
+		search += strings.Join(list, " OR ") + ")"
+	}
+
 	params = append(params, req.Page.Limit, req.Page.Offset)
 
 	//TODO решить как получать comments и notes
@@ -98,11 +117,13 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 		LEFT JOIN LATERAL (SELECT date_of_extending, period_of_extending FROM %s WHERE reagent_id=r.id ORDER BY date_of_extending 
 			DESC LIMIT 1) AS e ON true
 		LEFT JOIN %s AS a ON r.amount_type_id=a.id
-		%s%s LIMIT $%d OFFSET $%d`,
+		%s%s%s LIMIT $%d OFFSET $%d`,
 		SpendingTable, ReagentsTable, ReagentTypesTable, ExtendingTable, AmountTypeTable,
-		filter, order, count, count+1,
+		filter, search, order, count, count+1,
 	)
 	reagents := []*pq_models.ReagentDTO{}
+
+	// logger.Debug("get", logger.StringAttr("query", query))
 
 	if err := r.db.SelectContext(ctx, &reagents, query, params...); err != nil {
 		return nil, fmt.Errorf("failed to execute query. error: %w", err)
@@ -148,9 +169,21 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 	return list, nil
 }
 
-func (r *ReagentRepo) GetById(ctx context.Context, id string) (*models.Reagent, error) {
+func (r *ReagentRepo) GetById(ctx context.Context, id string) (*models.EditReagent, error) {
+	query := fmt.Sprintf(`SELECT id, type_id, name, uname, document, purity, date_of_manufacture, consignment, manufacturer, shelf_life, closet, 
+		shelf, receipt_date, amount, amount_type_id, control_date, protocol, result FROM %s WHERE id=$1`,
+		ReagentsTable,
+	)
 
-	return nil, fmt.Errorf("not implemented")
+	reagent := &models.EditReagent{}
+	if err := r.db.GetContext(ctx, reagent, query, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRows
+		}
+		return nil, fmt.Errorf("failed to execute query. error: %w", err)
+	}
+
+	return reagent, nil
 }
 
 func (r *ReagentRepo) Create(ctx context.Context, dto *models.ReagentDTO) (string, error) {

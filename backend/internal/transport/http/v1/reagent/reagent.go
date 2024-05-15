@@ -1,6 +1,7 @@
 package reagent
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ func Register(api *gin.RouterGroup, service services.Reagent, middleware *middle
 	reagents := api.Group("/reagents", middleware.VerifyToken)
 	{
 		reagents.GET("", middleware.CheckPermissions(constants.Reagent, constants.Read), handlers.get)
+		reagents.GET("/:id", middleware.CheckPermissions(constants.Reagent, constants.Read), handlers.getById)
 		reagents.POST("", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.create)
 		reagents.PUT("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.update)
 		reagents.DELETE("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.delete)
@@ -41,7 +43,6 @@ func (h *ReagentHandlers) get(c *gin.Context) {
 		Page:    &models.Page{},
 		Sort:    []*models.Sort{},
 		Filters: []*models.Filter{},
-		Search:  &models.Search{},
 		User:    &models.User{},
 	}
 
@@ -101,7 +102,13 @@ func (h *ReagentHandlers) get(c *gin.Context) {
 		params.Filters = append(params.Filters, f)
 	}
 
-	//TODO дописать поиск
+	search := c.QueryMap("search")
+	for key, value := range search {
+		params.Search = &models.Search{
+			Value:  value,
+			Fields: strings.Split(key, ","),
+		}
+	}
 
 	u, exists := c.Get(constants.CtxUser)
 	if !exists {
@@ -120,6 +127,26 @@ func (h *ReagentHandlers) get(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.DataResponse{Data: list.List, Total: list.Total})
+}
+
+func (h *ReagentHandlers) getById(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "id не задан")
+		return
+	}
+
+	reagent, err := h.service.GetById(c, id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRows) {
+			response.NewErrorResponse(c, http.StatusNotFound, err.Error(), err.Error())
+			return
+		}
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
+		error_bot.Send(c, err.Error(), id)
+		return
+	}
+	c.JSON(http.StatusOK, response.DataResponse{Data: reagent})
 }
 
 func (h *ReagentHandlers) create(c *gin.Context) {
