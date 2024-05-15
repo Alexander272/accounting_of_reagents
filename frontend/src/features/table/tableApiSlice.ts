@@ -1,4 +1,4 @@
-import type { ICreateDataItem, IDataItem, IParams } from './types/data'
+import type { ICreateDataItem, IDataItem, IParams, IUpdateDataItem } from './types/data'
 import { apiSlice } from '@/app/apiSlice'
 import { API } from '@/app/api'
 import { buildSiUrlParams } from './utils/buildUrlParams'
@@ -14,8 +14,7 @@ const tableApiSlice = apiSlice.injectEndpoints({
 			}),
 			providesTags: [{ type: 'DataItems', id: 'ALL' }],
 		}),
-		// не знаю правильно ли получать данные одним куском
-		getById: builder.query<{ data: IDataItem }, string>({
+		getById: builder.query<{ data: IUpdateDataItem }, string>({
 			query: id => `${API.reagents}/${id}`,
 			providesTags: (_res, _err, id) => [{ type: 'DataItems', id: id }],
 		}),
@@ -28,9 +27,20 @@ const tableApiSlice = apiSlice.injectEndpoints({
 			}),
 			invalidatesTags: [{ type: 'DataItems', id: 'ALL' }],
 		}),
+		update: builder.mutation<null, IUpdateDataItem>({
+			query: data => ({
+				url: `${API.reagents}/${data.id}`,
+				method: 'PUT',
+				body: data,
+			}),
+			invalidatesTags: (_res, _err, data) => [
+				{ type: 'DataItems', id: data.id },
+				{ type: 'DataItems', id: 'ALL' },
+			],
+		}),
 	}),
 
 	// TODO когда удается реагент можно делать ему метку, а потом проверять если метка старше 30 дней, то запись удаляется
 })
 
-export const { useGetAllQuery, useGetByIdQuery, useCreateMutation } = tableApiSlice
+export const { useGetAllQuery, useGetByIdQuery, useCreateMutation, useUpdateMutation } = tableApiSlice

@@ -1,10 +1,12 @@
 import { ListItemIcon, Menu, MenuItem } from '@mui/material'
 
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
-import { Update } from '@/features/modal/components/Update'
-import { EditIcon } from '@/components/Icons/EditIcon'
-import { getContextMenu, setContextMenu } from '../../tableSlice'
 import { ModalVariants, changeModalIsOpen } from '@/features/modal/modalSlice'
+import { Update } from '@/features/modal/components/Update'
+import { Spending } from '@/features/modal/components/Spending'
+import { EditIcon } from '@/components/Icons/EditIcon'
+import { FileIcon } from '@/components/Icons/FileIcon'
+import { getContextMenu, setContextMenu } from '../../tableSlice'
 
 export const ContextMenu = () => {
 	const contextMenu = useAppSelector(getContextMenu)
@@ -15,7 +17,7 @@ export const ContextMenu = () => {
 	}
 
 	const openFormHandler = (variant: ModalVariants) => () => {
-		closeHandler()
+		// closeHandler()
 		dispatch(changeModalIsOpen({ variant, isOpen: true }))
 	}
 
@@ -25,17 +27,24 @@ export const ContextMenu = () => {
 				open={Boolean(contextMenu)}
 				onClose={closeHandler}
 				anchorReference='anchorPosition'
-				anchorPosition={contextMenu ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined}
+				anchorPosition={
+					contextMenu ? { top: contextMenu.coords.mouseY, left: contextMenu.coords.mouseX } : undefined
+				}
 			>
+				<MenuItem onClick={openFormHandler('spending')}>
+					<ListItemIcon>
+						<FileIcon fontSize={20} fill={'#363636'} />
+					</ListItemIcon>
+					Расход
+				</MenuItem>
 				<MenuItem onClick={openFormHandler('edit')}>
 					<ListItemIcon>
-						<EditIcon fontSize={20} fill={'#363636'} />
+						<EditIcon fontSize={18} fill={'#363636'} />
 					</ListItemIcon>
 					Редактировать
 				</MenuItem>
 
 				{/* Продление срока годности */}
-				{/* Расход */}
 				{/* Сведения об изъятии */}
 				{/* Сведения об утилизации */}
 				{/* Комментарии  */}
@@ -43,6 +52,7 @@ export const ContextMenu = () => {
 			</Menu>
 
 			<Update />
+			<Spending />
 		</>
 	)
 }

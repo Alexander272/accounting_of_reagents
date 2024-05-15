@@ -61,3 +61,7 @@ export interface ICreateDataItem {
 	protocol: string
 	result: boolean
 }
+
+export interface IUpdateDataItem extends ICreateDataItem {
+	id: string
+}

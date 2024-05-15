@@ -17,6 +17,11 @@ export interface IColumn {
 	formatter?: (value: unknown) => string
 }
 
+export interface IContextMenu {
+	active: string
+	coords: ICoordinates
+}
+
 export interface ICoordinates {
 	mouseX: number
 	mouseY: number

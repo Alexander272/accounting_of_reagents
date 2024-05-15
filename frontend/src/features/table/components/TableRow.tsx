@@ -1,4 +1,4 @@
-import { CSSProperties, FC } from 'react'
+import { CSSProperties, FC, MouseEvent } from 'react'
 
 import type { IDataItem } from '../types/data'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -7,7 +7,7 @@ import { TableRow } from '@/components/Table/TableRow'
 import { TableCell } from '@/components/Table/TableCell'
 import { CellText } from '@/components/CellText/CellText'
 import { Columns } from '../columns'
-import { getSelected, setSelected } from '../tableSlice'
+import { getContextMenu, getSelected, setContextMenu, setSelected } from '../tableSlice'
 
 type Props = {
 	data: IDataItem
@@ -17,14 +17,33 @@ type Props = {
 export const DataTableRow: FC<Props> = ({ data, sx }) => {
 	//TODO цвет я наверное с сервера буду получать
 	const selected = useAppSelector(getSelected)
+	const contextMenu = useAppSelector(getContextMenu)
 	const dispatch = useAppDispatch()
 
 	const selectHandler = () => {
 		dispatch(setSelected(data.id))
 	}
 
+	const contextHandler = (event: MouseEvent<HTMLDivElement>) => {
+		event.preventDefault()
+		const menu = {
+			active: data.id,
+			coords: { mouseX: event.clientX + 2, mouseY: event.clientY - 6 },
+		}
+		dispatch(setContextMenu(menu))
+	}
+
+	const background = contextMenu?.active == data.id ? '#c6d6ff' : selected[data.id] ? '#dde6fd' : data.background
+
 	return (
-		<TableRow onClick={selectHandler} sx={{ ...sx, background: selected[data.id] ? '#dde6fd' : data.background }}>
+		<TableRow
+			onClick={selectHandler}
+			onContext={contextHandler}
+			sx={{
+				...sx,
+				background: background,
+			}}
+		>
 			{Columns.map(c => (
 				<TableCell key={data.id + c.key} width={c.width || ColWidth}>
 					<CellText

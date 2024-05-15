@@ -1,7 +1,7 @@
 import { type PayloadAction, createSlice } from '@reduxjs/toolkit'
 
 import type { ISort, ISearch, IFilter } from './types/data'
-import type { ICoordinates } from './types/table'
+import type { IContextMenu } from './types/table'
 import { Size } from '@/constants/defaultValues'
 import { RootState } from '@/app/store'
 import { localKeys } from './constants/localKeys'
@@ -13,7 +13,7 @@ interface ITableSlice {
 	filters: IFilter[]
 	search: ISearch
 	selected: { [id: string]: boolean }
-	contextMenu?: ICoordinates
+	contextMenu?: IContextMenu
 }
 
 const initialState: ITableSlice = {
@@ -75,7 +75,7 @@ const tableSlice = createSlice({
 			} else state.selected = {}
 		},
 
-		setContextMenu: (state, action: PayloadAction<ICoordinates | undefined>) => {
+		setContextMenu: (state, action: PayloadAction<IContextMenu | undefined>) => {
 			state.contextMenu = action.payload
 		},
 	},

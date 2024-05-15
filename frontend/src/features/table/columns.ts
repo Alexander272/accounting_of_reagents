@@ -166,6 +166,10 @@ export const Columns: IColumn[] = [
 	{
 		key: 'place_shelf',
 		label: Titles.Place.Shelf,
+		formatter: value => {
+			if (value == 0) return '-'
+			else return (value as number).toString()
+		},
 	},
 	{
 		key: 'incomingControl_receiptDate',
