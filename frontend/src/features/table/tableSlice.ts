@@ -78,6 +78,11 @@ const tableSlice = createSlice({
 		setContextMenu: (state, action: PayloadAction<IContextMenu | undefined>) => {
 			state.contextMenu = action.payload
 		},
+
+		resetTable: () => {
+			localStorage.removeItem(localKeys.page)
+			return initialState
+		},
 	},
 })
 
@@ -92,5 +97,14 @@ export const getContextMenu = (state: RootState) => state.table.contextMenu
 export const tablePath = tableSlice.name
 export const tableReducer = tableSlice.reducer
 
-export const { setPage, setSize, setSort, setSearch, setFilters, setSearchFields, setSelected, setContextMenu } =
-	tableSlice.actions
+export const {
+	setPage,
+	setSize,
+	setSort,
+	setSearch,
+	setFilters,
+	setSearchFields,
+	setSelected,
+	setContextMenu,
+	resetTable,
+} = tableSlice.actions

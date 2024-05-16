@@ -7,12 +7,20 @@ type Props = {
 	onContext?: (event: MouseEvent<HTMLDivElement>) => void
 	width?: number
 	height?: number
+	hover?: boolean
 	sx?: CSSProperties
 }
 
-export const TableRow: FC<PropsWithChildren<Props>> = ({ children, onClick, onContext, width, height, sx }) => {
+export const TableRow: FC<PropsWithChildren<Props>> = ({ children, onClick, onContext, width, height, hover, sx }) => {
 	return (
-		<TableRowContainer onClick={onClick} onContextMenu={onContext} width={width} height={height} styles={sx}>
+		<TableRowContainer
+			onClick={onClick}
+			onContextMenu={onContext}
+			width={width}
+			height={height}
+			hover={hover}
+			styles={sx}
+		>
 			{children}
 		</TableRowContainer>
 	)

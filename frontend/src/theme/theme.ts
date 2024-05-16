@@ -5,10 +5,12 @@ import { type IScrollbarParameters, generateScrollbarStyles } from '@/utils/gene
 declare module '@mui/material/styles' {
 	interface Palette {
 		gray: Palette['primary']
+		rowActive: Palette['primary']
 	}
 
 	interface PaletteOptions {
 		gray?: PaletteOptions['primary']
+		rowActive?: PaletteOptions['primary']
 	}
 }
 
@@ -46,6 +48,10 @@ export const theme = createTheme({
 			light: alpha(grayBase, 0.5),
 			dark: alpha(grayBase, 1),
 			contrastText: getContrastRatio(grayBase, '#fff') > 4.5 ? '#fff' : '#111',
+		},
+		rowActive: {
+			main: '#c6d6ff',
+			light: '#dde6fd',
 		},
 	},
 	components: {

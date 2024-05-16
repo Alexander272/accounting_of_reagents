@@ -5,6 +5,8 @@ const StyledGridOverlay = styled('div')(({ theme }) => ({
 	flexDirection: 'column',
 	alignItems: 'center',
 	justifyContent: 'center',
+	paddingTop: theme.spacing(1),
+	paddingBottom: theme.spacing(1),
 	height: '100%',
 	width: '100%',
 	position: 'absolute',

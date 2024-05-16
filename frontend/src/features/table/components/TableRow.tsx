@@ -8,6 +8,7 @@ import { TableCell } from '@/components/Table/TableCell'
 import { CellText } from '@/components/CellText/CellText'
 import { Columns } from '../columns'
 import { getContextMenu, getSelected, setContextMenu, setSelected } from '../tableSlice'
+import { useTheme } from '@mui/material'
 
 type Props = {
 	data: IDataItem
@@ -19,6 +20,8 @@ export const DataTableRow: FC<Props> = ({ data, sx }) => {
 	const selected = useAppSelector(getSelected)
 	const contextMenu = useAppSelector(getContextMenu)
 	const dispatch = useAppDispatch()
+
+	const { palette } = useTheme()
 
 	const selectHandler = () => {
 		dispatch(setSelected(data.id))
@@ -33,12 +36,21 @@ export const DataTableRow: FC<Props> = ({ data, sx }) => {
 		dispatch(setContextMenu(menu))
 	}
 
-	const background = contextMenu?.active == data.id ? '#c6d6ff' : selected[data.id] ? '#dde6fd' : data.background
+	let background = data.background
+	if (selected[data.id]) background = palette.rowActive.light
+	if (contextMenu?.active == data.id) background = palette.rowActive.main
+	// const background =
+	// 	contextMenu?.active == data.id
+	// 		? palette.rowActive.main
+	// 		: selected[data.id]
+	// 		? palette.rowActive.light
+	// 		: data.background
 
 	return (
 		<TableRow
 			onClick={selectHandler}
 			onContext={contextHandler}
+			hover
 			sx={{
 				...sx,
 				background: background,

@@ -5,6 +5,7 @@ import { lighten } from '@mui/material'
 type RowProps = {
 	width?: number
 	height?: number
+	hover?: boolean
 	styles?: CSSProperties
 }
 export const TableRowContainer = styled.div<RowProps>(
@@ -12,18 +13,23 @@ export const TableRowContainer = styled.div<RowProps>(
 		display: 'flex',
 		cursor: 'pointer',
 		borderRadius: '8px',
+		padding: '0 6px',
 		transition: '.3s all ease-in-out',
 	},
-	props => ({
-		width: props.width && props.width + 'px',
-		height: props.height && props.height + 'px',
-
-		...props.styles,
-
-		':hover': {
+	props => {
+		const hover = {
 			background: props.styles?.background ? lighten(props.styles?.background.toString(), 0.4) : '#e6f4f4',
-		},
-	})
+		}
+
+		return {
+			width: props.width && props.width + 'px',
+			height: props.height && props.height + 'px',
+
+			...props.styles,
+
+			':hover': props.hover ? hover : undefined,
+		}
+	}
 )
 
 export const TableGroupContainer = styled.div`
@@ -84,6 +90,7 @@ export const TableBodyContainer = styled.div``
 
 type TableProps = {
 	columnWidth?: number | number[]
+	styles?: CSSProperties
 }
 export const TableContainer = styled.div<TableProps>`
 	max-width: 100%;
@@ -92,4 +99,6 @@ export const TableContainer = styled.div<TableProps>`
 	overflow-x: auto;
 	position: relative;
 	margin-top: 8px;
+
+	${props => ({ ...props.styles })}
 `

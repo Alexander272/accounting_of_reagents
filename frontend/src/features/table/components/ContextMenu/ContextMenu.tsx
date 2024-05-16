@@ -4,8 +4,10 @@ import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { ModalVariants, changeModalIsOpen } from '@/features/modal/modalSlice'
 import { Update } from '@/features/modal/components/Update'
 import { Spending } from '@/features/modal/components/Spending'
+import { Extending } from '@/features/modal/components/Extending'
 import { EditIcon } from '@/components/Icons/EditIcon'
 import { FileIcon } from '@/components/Icons/FileIcon'
+import { ClockIcon } from '@/components/Icons/ClockIcon'
 import { getContextMenu, setContextMenu } from '../../tableSlice'
 
 export const ContextMenu = () => {
@@ -43,8 +45,13 @@ export const ContextMenu = () => {
 					</ListItemIcon>
 					Редактировать
 				</MenuItem>
+				<MenuItem onClick={openFormHandler('extending')}>
+					<ListItemIcon>
+						<ClockIcon fontSize={18} fill={'#363636'} />
+					</ListItemIcon>
+					Продление срока годности
+				</MenuItem>
 
-				{/* Продление срока годности */}
 				{/* Сведения об изъятии */}
 				{/* Сведения об утилизации */}
 				{/* Комментарии  */}
@@ -53,6 +60,7 @@ export const ContextMenu = () => {
 
 			<Update />
 			<Spending />
+			<Extending />
 		</>
 	)
 }

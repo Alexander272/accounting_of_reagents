@@ -39,7 +39,7 @@ export const DataTableBody = () => {
 				height={RowHeight * Size}
 				itemCount={data.data.length > (size || Size) ? size || Size : data.data.length}
 				itemSize={RowHeight}
-				width={Columns.reduce((ac, cur) => ac + (cur.width || ColWidth), 10)}
+				width={Columns.reduce((ac, cur) => ac + (cur.width || ColWidth), 12)}
 			>
 				{({ index, style }) => <DataTableRow data={data.data[index]} sx={style} />}
 			</FixedSizeList>
