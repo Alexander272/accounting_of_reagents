@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository"
 )
@@ -25,6 +27,7 @@ func NewReagentService(repo repository.Reagent, reagentType ReagentType) *Reagen
 type Reagent interface {
 	Get(context.Context, *models.Params) (*models.ReagentList, error)
 	GetById(context.Context, string) (*models.EditReagent, error)
+	GetRemainder(context.Context, string) (*models.Remainder, error)
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 	Delete(context.Context, *models.DeleteReagentDTO) error
@@ -63,6 +66,20 @@ func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.R
 		return nil, fmt.Errorf("failed to get reagents list. error: %w", err)
 	}
 
+	for _, i := range list.List {
+		shelfLife := time.Unix(int64(i.DateOfManufacture), 0)
+		shelfLife = shelfLife.AddDate(0, i.ShelfLife, 0)
+		shelfLife = shelfLife.AddDate(0, i.SumPeriod, 0)
+		now := time.Now()
+
+		if shelfLife.Compare(time.Date(now.Year(), now.Month()+1, now.Day(), now.Hour(), now.Minute(), 0, 0, now.Location())) <= 0 {
+			i.Background = constants.OrangeColor
+		}
+		if shelfLife.Compare(now) <= 0 {
+			i.Background = constants.RedColor
+		}
+	}
+
 	return list, nil
 }
 
@@ -75,6 +92,14 @@ func (s *ReagentService) GetById(ctx context.Context, id string) (*models.EditRe
 		return nil, fmt.Errorf("failed to get reagent by id. error: %w", err)
 	}
 	return reagent, nil
+}
+
+func (s *ReagentService) GetRemainder(ctx context.Context, id string) (*models.Remainder, error) {
+	remainder, err := s.repo.GetRemainder(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get remainder. error: %w", err)
+	}
+	return remainder, nil
 }
 
 func (s *ReagentService) Create(ctx context.Context, dto *models.ReagentDTO) (string, error) {

@@ -6,15 +6,18 @@ import (
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository"
+	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 )
 
 type SpendingService struct {
-	repo repository.Spending
+	repo    repository.Spending
+	reagent Reagent
 }
 
-func NewSpendingService(repo repository.Spending) *SpendingService {
+func NewSpendingService(repo repository.Spending, reagent Reagent) *SpendingService {
 	return &SpendingService{
-		repo: repo,
+		repo:    repo,
+		reagent: reagent,
 	}
 }
 
@@ -34,6 +37,16 @@ func (s *SpendingService) GetByReagentId(ctx context.Context, reagentId string) 
 }
 
 func (s *SpendingService) Create(ctx context.Context, dto *models.SpendingDTO) (string, error) {
+	remainder, err := s.reagent.GetRemainder(ctx, dto.ReagentId)
+	if err != nil {
+		return "", err
+	}
+
+	logger.Debug("Create", logger.AnyAttr("remainder", remainder))
+	if remainder.Value < dto.Amount {
+		return "", models.ErrBadValue
+	}
+
 	id, err := s.repo.Create(ctx, dto)
 	if err != nil {
 		return id, fmt.Errorf("failed to create spending. error: %w", err)

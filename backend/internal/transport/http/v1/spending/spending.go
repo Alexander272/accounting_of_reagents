@@ -1,6 +1,7 @@
 package spending
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
@@ -60,6 +61,11 @@ func (h *SpendingHandlers) create(c *gin.Context) {
 
 	id, err := h.service.Create(c, dto)
 	if err != nil {
+		if errors.Is(err, models.ErrBadValue) {
+			response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Попытка списать большее количество реактива, чем осталось")
+			return
+		}
+
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
 		error_bot.Send(c, err.Error(), dto)
 		return

@@ -27,7 +27,7 @@ type Extending interface {
 }
 
 func (r *ExtendingRepo) GetByReagentId(ctx context.Context, reagentId string) ([]*models.Extending, error) {
-	query := fmt.Sprintf(`SELECT id, date_of_extending, period_of_extending FROM %s WHERE reagent_id=$1`, ExtendingTable)
+	query := fmt.Sprintf(`SELECT id, date_of_extending, period_of_extending FROM %s WHERE reagent_id=$1 ORDER BY date_of_extending DESC`, ExtendingTable)
 	extending := []*models.Extending{}
 
 	if err := r.db.SelectContext(ctx, &extending, query, reagentId); err != nil {

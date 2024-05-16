@@ -23,13 +23,15 @@ type Reagent struct {
 	ControlDate       int      `json:"incomingControl_date" db:"control_date"`
 	Protocol          string   `json:"incomingControl_protocol" db:"protocol"`
 	Result            bool     `json:"incomingControl_result" db:"result"`
-	Spending          float64  `json:"spending" db:"spending"`
+	Spending          string   `json:"spending" db:"spending"`
 	DateOfExtending   int      `json:"extending_date" db:"date_of_extending"`
 	Period            int      `json:"extending_period" db:"period_of_extending"`
 	Seizure           string   `json:"seizureInformation" db:"seizure"`
 	Disposal          string   `json:"disposalInformation" db:"disposal"`
 	Comments          []string `json:"comments" db:"comments"`
 	Notes             []string `json:"notes" db:"notes"`
+	Background        string   `json:"background"`
+	SumPeriod         int      `json:"-"`
 }
 
 type EditReagent struct {
@@ -78,4 +80,8 @@ type ReagentDTO struct {
 
 type DeleteReagentDTO struct {
 	Id string `json:"id" db:"id"`
+}
+
+type Remainder struct {
+	Value float64 `db:"remainder"`
 }

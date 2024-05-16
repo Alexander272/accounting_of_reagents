@@ -26,6 +26,7 @@ func NewReagentRepo(db *sqlx.DB) *ReagentRepo {
 type Reagent interface {
 	Get(context.Context, *models.Params) (*models.ReagentList, error)
 	GetById(context.Context, string) (*models.EditReagent, error)
+	GetRemainder(context.Context, string) (*models.Remainder, error)
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 }
@@ -110,7 +111,8 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 	query := fmt.Sprintf(`SELECT r.id, t.name AS type, r.name, uname, document, purity, date_of_manufacture, consignment, manufacturer, shelf_life, closet, shelf,
 		receipt_date, (amount || ' ' || a.name) AS amount, control_date, protocol, result, COALESCE(e.date_of_extending, 0) AS date_of_extending, 
 		COALESCE(e.period_of_extending, 0) AS period_of_extending,	seizure, disposal,
-		COALESCE((SELECT SUM(amount) FROM %s WHERE reagent_id=r.id GROUP BY reagent_id), 0) AS spending,
+		COALESCE((SELECT SUM(amount) FROM %s WHERE reagent_id=r.id GROUP BY reagent_id), 0) || ' ' || a.name  AS spending,
+		COALESCE((SELECT SUM(period_of_extending) FROM %s WHERE reagent_id=r.id GROUP BY reagent_id), 0) AS sum_period,
 		COUNT(*) OVER() as total_count
 		FROM %s AS r
 		LEFT JOIN %s AS t ON r.type_id=t.id
@@ -118,7 +120,7 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 			DESC LIMIT 1) AS e ON true
 		LEFT JOIN %s AS a ON r.amount_type_id=a.id
 		%s%s%s LIMIT $%d OFFSET $%d`,
-		SpendingTable, ReagentsTable, ReagentTypesTable, ExtendingTable, AmountTypeTable,
+		SpendingTable, ExtendingTable, ReagentsTable, ReagentTypesTable, ExtendingTable, AmountTypeTable,
 		filter, search, order, count, count+1,
 	)
 	reagents := []*pq_models.ReagentDTO{}
@@ -162,6 +164,7 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 				Disposal:          r.Disposal,
 				Comments:          r.Comments,
 				Notes:             r.Notes,
+				SumPeriod:         r.SumPeriod,
 			})
 		}
 	}
@@ -184,6 +187,19 @@ func (r *ReagentRepo) GetById(ctx context.Context, id string) (*models.EditReage
 	}
 
 	return reagent, nil
+}
+
+func (r *ReagentRepo) GetRemainder(ctx context.Context, id string) (*models.Remainder, error) {
+	query := fmt.Sprintf(`SELECT amount - COALESCE((SELECT SUM(amount) FROM %s WHERE reagent_id=$1 GROUP BY reagent_id), 0) AS remainder
+		FROM %s WHERE id=$1`,
+		SpendingTable, ReagentsTable,
+	)
+
+	remainder := &models.Remainder{}
+	if err := r.db.GetContext(ctx, remainder, query, id); err != nil {
+		return nil, fmt.Errorf("failed to execute query. error: %w", err)
+	}
+	return remainder, nil
 }
 
 func (r *ReagentRepo) Create(ctx context.Context, dto *models.ReagentDTO) (string, error) {
