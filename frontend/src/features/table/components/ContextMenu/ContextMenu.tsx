@@ -5,11 +5,14 @@ import { ModalVariants, changeModalIsOpen } from '@/features/modal/modalSlice'
 import { Update } from '@/features/modal/components/Update'
 import { Spending } from '@/features/modal/components/Spending'
 import { Extending } from '@/features/modal/components/Extending'
+import { Disposal } from '@/features/modal/components/Disposal'
+import { Note } from '@/features/modal/components/Note'
 import { EditIcon } from '@/components/Icons/EditIcon'
 import { FileIcon } from '@/components/Icons/FileIcon'
 import { ClockIcon } from '@/components/Icons/ClockIcon'
+import { DisposalIcon } from '@/components/Icons/DisposalIcon'
+import { NotebookIcon } from '@/components/Icons/NotebookIcon'
 import { getContextMenu, setContextMenu } from '../../tableSlice'
-import { Disposal } from '@/features/modal/components/Disposal'
 
 export const ContextMenu = () => {
 	const contextMenu = useAppSelector(getContextMenu)
@@ -40,6 +43,12 @@ export const ContextMenu = () => {
 					</ListItemIcon>
 					Расход
 				</MenuItem>
+				<MenuItem onClick={openFormHandler('notes')}>
+					<ListItemIcon>
+						<NotebookIcon fontSize={20} fill={'#363636'} />
+					</ListItemIcon>
+					Комментарии
+				</MenuItem>
 				<MenuItem onClick={openFormHandler('edit')}>
 					<ListItemIcon>
 						<EditIcon fontSize={18} fill={'#363636'} />
@@ -53,13 +62,13 @@ export const ContextMenu = () => {
 					Продление срока годности
 				</MenuItem>
 				<MenuItem onClick={openFormHandler('disposal')}>
-					<ListItemIcon></ListItemIcon>
+					<ListItemIcon>
+						<DisposalIcon fontSize={18} fill={'#363636'} />
+					</ListItemIcon>
 					Сведения об утилизации
 				</MenuItem>
 
 				{/* Сведения об изъятии */}
-				{/* Сведения об утилизации */}
-				{/* Комментарии  */}
 				{/* Сформировать заказ? */}
 			</Menu>
 
@@ -67,6 +76,7 @@ export const ContextMenu = () => {
 			<Spending />
 			<Extending />
 			<Disposal />
+			<Note />
 		</>
 	)
 }
