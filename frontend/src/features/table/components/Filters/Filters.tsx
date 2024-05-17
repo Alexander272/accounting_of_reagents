@@ -1,10 +1,20 @@
 import { useRef, useState } from 'react'
-import { Button, Stack, useTheme } from '@mui/material'
+import { Button, Stack, Typography, useTheme } from '@mui/material'
 
+import type { IFilter } from '../../types/data'
 import { useAppSelector } from '@/hooks/redux'
-import { FilterIcon } from '@/components/Icons/FilterIcon'
 import { Popover } from '@/components/Popover/Popover'
+import { Badge } from '@/components/Badge/Badge'
+import { FilterIcon } from '@/components/Icons/FilterIcon'
 import { getFilters } from '../../tableSlice'
+import { Columns } from '../../columns'
+
+const defaultValues: IFilter = {
+	field: Columns[0].key,
+	fieldType: Columns[0].filter as 'string',
+	compareType: 'con',
+	value: '',
+}
 
 export const Filters = () => {
 	const [open, setOpen] = useState(false)
@@ -16,7 +26,9 @@ export const Filters = () => {
 
 	const toggleHandler = () => setOpen(prev => !prev)
 
-	const closeHandler = () => {}
+	const closeHandler = () => {
+		toggleHandler()
+	}
 
 	return (
 		<>
@@ -27,11 +39,36 @@ export const Filters = () => {
 				color='gray'
 				sx={{ minWidth: 30, paddingX: 1.5 }}
 			>
-				<FilterIcon fill={palette.gray.main} fontSize={16} mr={1} />
+				<Badge color='primary' variant={filters.length < 2 ? 'dot' : 'standard'} badgeContent={filters.length}>
+					<FilterIcon fill={palette.gray.main} fontSize={16} mr={1} />
+				</Badge>
 				Фильтр
 			</Button>
 
-			<Popover open={open} onClose={closeHandler} anchorEl={anchor.current}>
+			<Popover
+				open={open}
+				onClose={closeHandler}
+				anchorEl={anchor.current}
+				paperSx={{
+					maxWidth: 700,
+					'&:before': {
+						content: '""',
+						display: 'block',
+						position: 'absolute',
+						top: 0,
+						left: '66%',
+						width: 10,
+						height: 10,
+						bgcolor: 'background.paper',
+						transform: 'translate(-50%, -50%) rotate(45deg)',
+						zIndex: 0,
+					},
+				}}
+			>
+				<Stack direction={'row'}>
+					<Typography fontSize={'1.1rem'}>Применить фильтр</Typography>
+				</Stack>
+
 				{filters.map((f, i) => (
 					<Stack key={f.field + i} direction={'row'} spacing={2}>
 						{/* <Select></Select> */}

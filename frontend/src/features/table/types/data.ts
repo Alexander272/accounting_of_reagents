@@ -64,4 +64,6 @@ export interface ICreateDataItem {
 
 export interface IUpdateDataItem extends ICreateDataItem {
 	id: string
+	seizure: string
+	disposal: string
 }

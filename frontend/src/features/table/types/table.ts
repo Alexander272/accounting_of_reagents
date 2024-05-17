@@ -14,6 +14,7 @@ export interface IColumn {
 	align?: 'center' | 'right' | 'left'
 	isShow?: boolean
 	allowSearch?: boolean
+	filter?: 'number' | 'string' | 'date'
 	formatter?: (value: unknown) => string
 }
 

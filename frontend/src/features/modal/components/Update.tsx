@@ -135,6 +135,8 @@ const UpdateForm = () => {
 			controlDate: form.controlDate,
 			protocol: form.protocol,
 			result: form.result,
+			disposal: data.data.disposal,
+			seizure: data.data.seizure,
 		}
 
 		try {

@@ -13,7 +13,7 @@ export const TableRowContainer = styled.div<RowProps>(
 		display: 'flex',
 		cursor: 'pointer',
 		borderRadius: '8px',
-		padding: '0 6px',
+		// padding: '0 6px',
 		transition: '.3s all ease-in-out',
 	},
 	props => {

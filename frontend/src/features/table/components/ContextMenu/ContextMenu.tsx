@@ -9,6 +9,7 @@ import { EditIcon } from '@/components/Icons/EditIcon'
 import { FileIcon } from '@/components/Icons/FileIcon'
 import { ClockIcon } from '@/components/Icons/ClockIcon'
 import { getContextMenu, setContextMenu } from '../../tableSlice'
+import { Disposal } from '@/features/modal/components/Disposal'
 
 export const ContextMenu = () => {
 	const contextMenu = useAppSelector(getContextMenu)
@@ -51,6 +52,10 @@ export const ContextMenu = () => {
 					</ListItemIcon>
 					Продление срока годности
 				</MenuItem>
+				<MenuItem onClick={openFormHandler('disposal')}>
+					<ListItemIcon></ListItemIcon>
+					Сведения об утилизации
+				</MenuItem>
 
 				{/* Сведения об изъятии */}
 				{/* Сведения об утилизации */}
@@ -61,6 +66,7 @@ export const ContextMenu = () => {
 			<Update />
 			<Spending />
 			<Extending />
+			<Disposal />
 		</>
 	)
 }

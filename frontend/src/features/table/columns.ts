@@ -118,30 +118,36 @@ export const Columns: IColumn[] = [
 	{
 		key: 'type',
 		label: Titles.Type,
+		filter: 'string',
 	},
 	{
 		key: 'name',
 		label: Titles.Name,
 		allowSearch: true,
+		filter: 'string',
 	},
 	{
 		key: 'uname',
 		label: Titles.UName,
 		allowSearch: true,
+		filter: 'string',
 	},
 	{
 		key: 'document',
 		label: Titles.Doc,
 		allowSearch: true,
+		filter: 'string',
 	},
 	{
 		key: 'purity',
 		label: Titles.Purity,
 		allowSearch: true,
+		filter: 'string',
 	},
 	{
 		key: 'dateOfManufacture',
 		label: Titles.DateOfManufacture,
+		filter: 'date',
 		formatter: value => {
 			if (value == 0) return '-'
 			else return dayjs((value as number) * 1000).format(DateFormat)
@@ -150,18 +156,22 @@ export const Columns: IColumn[] = [
 	{
 		key: 'consignment',
 		label: Titles.Consignment,
+		filter: 'string',
 	},
 	{
 		key: 'manufacturer',
 		label: Titles.Manufacturer,
+		filter: 'string',
 	},
 	{
 		key: 'shelfLife',
 		label: Titles.ShelfLife,
+		filter: 'number',
 	},
 	{
 		key: 'place_closet',
 		label: Titles.Place.Closet,
+		filter: 'string',
 	},
 	{
 		key: 'place_shelf',
@@ -174,6 +184,7 @@ export const Columns: IColumn[] = [
 	{
 		key: 'incomingControl_receiptDate',
 		label: Titles.IncomingControl.ReceiptDate,
+		filter: 'date',
 		formatter: value => {
 			if (value == 0) return '-'
 			else return dayjs((value as number) * 1000).format(DateFormat)
@@ -186,6 +197,7 @@ export const Columns: IColumn[] = [
 	{
 		key: 'incomingControl_date',
 		label: Titles.IncomingControl.Date,
+		filter: 'date',
 		formatter: value => {
 			if (value == 0) return '-'
 			else return dayjs((value as number) * 1000).format(DateFormat)
@@ -194,6 +206,7 @@ export const Columns: IColumn[] = [
 	{
 		key: 'incomingControl_protocol',
 		label: Titles.IncomingControl.Protocol,
+		filter: 'string',
 	},
 	{
 		key: 'incomingControl_result',
@@ -234,15 +247,18 @@ export const Columns: IColumn[] = [
 	{
 		key: 'disposalInformation',
 		label: Titles.DisposalInformation,
+		filter: 'string',
 	},
 	{
 		key: 'comments',
 		label: Titles.Comments,
 		allowSearch: true,
+		filter: 'string',
 	},
 	{
 		key: 'notes',
 		label: Titles.Notes,
 		allowSearch: true,
+		filter: 'string',
 	},
 ]

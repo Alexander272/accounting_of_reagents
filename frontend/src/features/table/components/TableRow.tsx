@@ -53,6 +53,7 @@ export const DataTableRow: FC<Props> = ({ data, sx }) => {
 			hover
 			sx={{
 				...sx,
+				padding: '0 6px',
 				background: background,
 			}}
 		>

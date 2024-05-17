@@ -11,7 +11,7 @@ import { SortDownIcon } from '@/components/Icons/SortDownIcon'
 import { getTableSort, setSort } from '../tableSlice'
 import { Columns, HeaderColumns } from '../columns'
 
-const width = Columns.reduce((ac, cur) => ac + (cur.width || ColWidth), 0)
+const width = Columns.reduce((ac, cur) => ac + (cur.width || ColWidth), 12)
 const height = 2 * RowHeight
 
 export const DataTableHead = () => {
@@ -90,7 +90,7 @@ export const DataTableHead = () => {
 
 	return (
 		<TableHead>
-			<TableRow width={width} height={height}>
+			<TableRow width={width} height={height} sx={{ padding: '0 6px' }}>
 				{renderHeader()}
 			</TableRow>
 		</TableHead>

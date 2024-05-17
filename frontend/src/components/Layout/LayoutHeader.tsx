@@ -4,6 +4,7 @@ import { useAppSelector } from '@/hooks/redux'
 import { useSignOutMutation } from '@/features/auth/authApiSlice'
 import { getToken } from '@/features/user/userSlice'
 import { NavButton } from './header.style'
+import logo from '@/assets/logo.webp'
 
 export const LayoutHeader = () => {
 	const [signOut] = useSignOutMutation()
@@ -25,7 +26,9 @@ export const LayoutHeader = () => {
 					// marginX: 'auto',
 				}}
 			>
-				<Box>{/* LOGO */}</Box>
+				<Box alignSelf={'center'} display={'flex'}>
+					<img height={46} width={157} src={logo} alt='logo' />
+				</Box>
 				{token && (
 					<Stack direction={'row'} spacing={3} minHeight={'100%'}>
 						{/* <NavLink to='/'>Главная</NavLink> */}

@@ -1,7 +1,7 @@
 import { RootState } from '@/app/store'
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 
-export type ModalVariants = 'create' | 'edit' | 'amountType' | 'spending' | 'extending'
+export type ModalVariants = 'create' | 'edit' | 'amountType' | 'spending' | 'extending' | 'disposal' | 'seizure'
 
 interface IModalOptions {
 	isOpen: boolean
@@ -20,6 +20,8 @@ const initialState: IModalState = {
 	amountType: { isOpen: false },
 	spending: { isOpen: false },
 	extending: { isOpen: false },
+	disposal: { isOpen: false },
+	seizure: { isOpen: false },
 }
 
 const modalSlice = createSlice({

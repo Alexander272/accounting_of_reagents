@@ -1,9 +1,11 @@
-import { Menu, MenuProps } from '@mui/material'
+import { Menu, MenuProps, SxProps, Theme } from '@mui/material'
 import { FC, PropsWithChildren } from 'react'
 
-interface Props extends MenuProps {}
+interface Props extends MenuProps {
+	paperSx?: SxProps<Theme>
+}
 
-export const Popover: FC<PropsWithChildren<Props>> = ({ children, open, onClose, anchorEl, ...props }) => {
+export const Popover: FC<PropsWithChildren<Props>> = ({ children, open, onClose, anchorEl, paperSx, ...props }) => {
 	return (
 		<Menu
 			open={open}
@@ -38,6 +40,7 @@ export const Popover: FC<PropsWithChildren<Props>> = ({ children, open, onClose,
 							transform: 'translate(-50%, -50%) rotate(45deg)',
 							zIndex: 0,
 						},
+						...paperSx,
 					},
 				},
 			}}
