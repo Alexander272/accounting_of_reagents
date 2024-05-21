@@ -28,6 +28,7 @@ type Deps struct {
 	AccessTokenTTL  time.Duration
 	RefreshTokenTTL time.Duration
 	BotUrl          string
+	ChannelId       string
 	ErrorBotUrl     string
 }
 
@@ -45,10 +46,12 @@ func NewServices(deps Deps) *Services {
 	session := NewSessionService(deps.Keycloak, role)
 	permission := NewPermissionService("configs/privacy.conf", menu)
 
+	most := NewMostService(deps.BotUrl, deps.ChannelId)
+
 	amountType := NewAmountTypeService(deps.Repos.AmountType)
 	reagentType := NewReagentTypeService(deps.Repos.ReagentType, role)
-	reagent := NewReagentService(deps.Repos.Reagent, reagentType)
-	spending := NewSpendingService(deps.Repos.Spending, reagent)
+	reagent := NewReagentService(deps.Repos.Reagent, reagentType, most)
+	spending := NewSpendingService(deps.Repos.Spending, reagent, most)
 	extending := NewExtendingService(deps.Repos.Extending)
 	note := NewNoteService(deps.Repos.Notes)
 

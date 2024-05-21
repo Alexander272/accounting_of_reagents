@@ -26,11 +26,11 @@ type NotificationSubTime struct {
 }
 
 type Notification struct {
-	MostId  string       `json:"userId"`
-	Type    string       `json:"type"`
-	Status  string       `json:"status"`
-	Message string       `json:"message"`
-	SI      []SelectedSI `json:"si"`
+	UserId    string     `json:"userId"`
+	ChannelId string     `json:"channelId"`
+	Type      string     `json:"type"`
+	Message   string     `json:"message"`
+	Data      []*Reagent `json:"data"`
 }
 
 type SelectedSI struct {
@@ -73,7 +73,8 @@ type FormField struct {
 }
 
 type CreatePostDTO struct {
-	UserId      string                   `json:"userId" binding:"required"`
+	UserId      string                   `json:"userId"`
+	ChannelId   string                   `json:"channelId"`
 	Message     string                   `json:"message" binding:"required"`
 	Props       []*Props                 `json:"props"`
 	Actions     []*model.PostAction      `json:"actions"`

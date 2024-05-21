@@ -15,22 +15,27 @@ import (
 type ReagentService struct {
 	repo        repository.Reagent
 	reagentType ReagentType
+	most        Most
 }
 
-func NewReagentService(repo repository.Reagent, reagentType ReagentType) *ReagentService {
+func NewReagentService(repo repository.Reagent, reagentType ReagentType, most Most) *ReagentService {
 	return &ReagentService{
 		repo:        repo,
 		reagentType: reagentType,
+		most:        most,
 	}
 }
 
 type Reagent interface {
 	Get(context.Context, *models.Params) (*models.ReagentList, error)
 	GetById(context.Context, string) (*models.EditReagent, error)
-	GetRemainder(context.Context, string) (*models.Remainder, error)
+	GetByIdList(context.Context, []string) ([]*models.Reagent, error)
+	GetRemainder(context.Context, string) (*models.ReagentWithRemainder, error)
+	PrepareOrder(context.Context, []string) error
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 	Delete(context.Context, *models.DeleteReagentDTO) error
+	SetNotification(context.Context, *models.ReagentNotificationDTO) error
 }
 
 func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.ReagentList, error) {
@@ -67,6 +72,7 @@ func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.R
 	}
 
 	for _, i := range list.List {
+		//TODO думаю когда реактив закончился нужно менять подсветку или делать другим цвет текста
 		shelfLife := time.Unix(int64(i.DateOfManufacture), 0)
 		shelfLife = shelfLife.AddDate(0, i.ShelfLife, 0)
 		shelfLife = shelfLife.AddDate(0, i.SumPeriod, 0)
@@ -78,6 +84,10 @@ func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.R
 		if shelfLife.Compare(now) <= 0 {
 			i.Background = constants.RedColor
 		}
+		if i.Seizure != "" {
+			i.Background = constants.BeigeColor
+		}
+		// if i.HasRunOut {}
 	}
 
 	return list, nil
@@ -94,12 +104,36 @@ func (s *ReagentService) GetById(ctx context.Context, id string) (*models.EditRe
 	return reagent, nil
 }
 
-func (s *ReagentService) GetRemainder(ctx context.Context, id string) (*models.Remainder, error) {
+func (s *ReagentService) GetByIdList(ctx context.Context, list []string) ([]*models.Reagent, error) {
+	reagents, err := s.repo.GetByIdList(ctx, list)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get reagents by id list. error: %w", err)
+	}
+	return reagents, nil
+}
+
+func (s *ReagentService) GetRemainder(ctx context.Context, id string) (*models.ReagentWithRemainder, error) {
 	remainder, err := s.repo.GetRemainder(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get remainder. error: %w", err)
 	}
 	return remainder, nil
+}
+
+func (s *ReagentService) PrepareOrder(ctx context.Context, idList []string) error {
+	reagents, err := s.GetByIdList(ctx, idList)
+	if err != nil {
+		return err
+	}
+
+	notification := &models.Notification{
+		Message: "Данные для заказа",
+		Data:    reagents,
+	}
+	if err := s.most.Send(ctx, notification); err != nil {
+		return fmt.Errorf("failed to send notification. error: %w", err)
+	}
+	return nil
 }
 
 func (s *ReagentService) Create(ctx context.Context, dto *models.ReagentDTO) (string, error) {
@@ -113,6 +147,13 @@ func (s *ReagentService) Create(ctx context.Context, dto *models.ReagentDTO) (st
 func (s *ReagentService) Update(ctx context.Context, dto *models.ReagentDTO) error {
 	if err := s.repo.Update(ctx, dto); err != nil {
 		return fmt.Errorf("failed to update reagent. error: %w", err)
+	}
+	return nil
+}
+
+func (s *ReagentService) SetNotification(ctx context.Context, dto *models.ReagentNotificationDTO) error {
+	if err := s.repo.SetNotification(ctx, dto); err != nil {
+		return fmt.Errorf("failed to set has_notification and has_run_out. error: %w", err)
 	}
 	return nil
 }

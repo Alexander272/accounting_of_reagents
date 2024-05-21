@@ -91,7 +91,8 @@ type (
 	}
 
 	BotConfig struct {
-		Url string `yaml:"bot_url" env:"BOT_URL"`
+		Url       string `yaml:"bot_url" env:"BOT_URL"`
+		ChannelId string `yaml:"channel_id" env:"CHANNEL_ID"`
 	}
 )
 

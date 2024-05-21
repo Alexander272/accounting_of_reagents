@@ -64,6 +64,7 @@ func main() {
 		RefreshTokenTTL: conf.Auth.RefreshTokenTTL,
 		ErrorBotUrl:     conf.ErrorBot.Url,
 		BotUrl:          conf.Bot.Url,
+		ChannelId:       conf.Bot.ChannelId,
 	})
 
 	handlers := transport.NewHandler(services, keycloak)

@@ -32,6 +32,7 @@ func Register(api *gin.RouterGroup, service services.Reagent, middleware *middle
 	{
 		reagents.GET("", middleware.CheckPermissions(constants.Reagent, constants.Read), handlers.get)
 		reagents.GET("/:id", middleware.CheckPermissions(constants.Reagent, constants.Read), handlers.getById)
+		reagents.POST("/order", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.prepareOrder)
 		reagents.POST("", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.create)
 		reagents.PUT("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.update)
 		reagents.DELETE("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.delete)
@@ -147,6 +148,21 @@ func (h *ReagentHandlers) getById(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, response.DataResponse{Data: reagent})
+}
+
+func (h *ReagentHandlers) prepareOrder(c *gin.Context) {
+	dto := &models.ReagentOrderDTO{}
+	if err := c.BindJSON(dto); err != nil {
+		response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Отправлены некорректные данные")
+		return
+	}
+
+	if err := h.service.PrepareOrder(c, dto.List); err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
+		error_bot.Send(c, err.Error(), dto)
+		return
+	}
+	c.JSON(http.StatusOK, response.IdResponse{Message: "Заказ сформирован"})
 }
 
 func (h *ReagentHandlers) create(c *gin.Context) {

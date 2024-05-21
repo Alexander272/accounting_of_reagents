@@ -6,18 +6,19 @@ import (
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository"
-	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 )
 
 type SpendingService struct {
 	repo    repository.Spending
 	reagent Reagent
+	most    Most
 }
 
-func NewSpendingService(repo repository.Spending, reagent Reagent) *SpendingService {
+func NewSpendingService(repo repository.Spending, reagent Reagent, most Most) *SpendingService {
 	return &SpendingService{
 		repo:    repo,
 		reagent: reagent,
+		most:    most,
 	}
 }
 
@@ -42,8 +43,7 @@ func (s *SpendingService) Create(ctx context.Context, dto *models.SpendingDTO) (
 		return "", err
 	}
 
-	logger.Debug("Create", logger.AnyAttr("remainder", remainder))
-	if remainder.Value < dto.Amount {
+	if remainder.Remainder < dto.Amount {
 		return "", models.ErrBadValue
 	}
 
@@ -51,6 +51,37 @@ func (s *SpendingService) Create(ctx context.Context, dto *models.SpendingDTO) (
 	if err != nil {
 		return id, fmt.Errorf("failed to create spending. error: %w", err)
 	}
+
+	// проверять осталось ли больше 30 % от изначальной массы. если меньше отправлять уведомление. думаю хватит одного уведомления, а это значит нужно какой-то флаг добавить
+	if (remainder.Remainder-dto.Amount)/remainder.Amount <= .3 {
+		reagentNotification := &models.ReagentNotificationDTO{
+			Id:        remainder.Id,
+			HasRunOut: (remainder.Remainder + dto.Amount) == remainder.Amount,
+		}
+		//TODO если расход удаляется надо наверное и уведомление заново слать при новом расходе
+		if err := s.reagent.SetNotification(ctx, reagentNotification); err != nil {
+			return "", err
+		}
+
+		if remainder.HasNotification {
+			return id, nil
+		}
+
+		notification := &models.Notification{
+			Message: "Заканчивается реактив.",
+			Data: []*models.Reagent{{
+				Id:           remainder.Id,
+				Name:         remainder.Name,
+				Document:     remainder.Document,
+				Purity:       remainder.Purity,
+				Manufacturer: remainder.Manufacturer,
+			}},
+		}
+		if err := s.most.Send(ctx, notification); err != nil {
+			return "", fmt.Errorf("failed to send notification. error: %w", err)
+		}
+	}
+
 	return id, nil
 }
 

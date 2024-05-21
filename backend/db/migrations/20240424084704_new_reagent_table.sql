@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS public.reagents
     result boolean DEFAULT true,
     seizure text COLLATE pg_catalog."default" DEFAULT ''::text,
     disposal text COLLATE pg_catalog."default" DEFAULT ''::text,
+    has_run_out boolean DEFAULT false,
+    has_notification boolean DEFAULT false,
+    deleted boolean DEFAULT false,
     created_at timestamp with time zone DEFAULT now(),
     CONSTRAINT reagents_pkey PRIMARY KEY (id),
     CONSTRAINT reagents_type_id_fkey FOREIGN KEY (type_id)
