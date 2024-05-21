@@ -1,6 +1,6 @@
 import { useAppSelector } from '@/hooks/redux'
 import { useGetAllQuery } from '../tableApiSlice'
-import { getSearch, getTablePage, getTableSize, getTableSort } from '../tableSlice'
+import { getFilters, getSearch, getTablePage, getTableSize, getTableSort } from '../tableSlice'
 
 export const useGetAllData = () => {
 	const page = useAppSelector(getTablePage)
@@ -8,9 +8,9 @@ export const useGetAllData = () => {
 
 	const search = useAppSelector(getSearch)
 	const sort = useAppSelector(getTableSort)
-	// const filter = useAppSelector(getTableFilter)
+	const filters = useAppSelector(getFilters)
 
-	const query = useGetAllQuery({ page, size, search, sort }, { pollingInterval: 5 * 60000 })
+	const query = useGetAllQuery({ page, size, search, sort, filters }, { pollingInterval: 5 * 60000 })
 
 	return query
 }

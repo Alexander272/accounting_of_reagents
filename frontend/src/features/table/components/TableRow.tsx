@@ -16,7 +16,6 @@ type Props = {
 }
 
 export const DataTableRow: FC<Props> = ({ data, sx }) => {
-	//TODO цвет я наверное с сервера буду получать
 	const selected = useAppSelector(getSelected)
 	const contextMenu = useAppSelector(getContextMenu)
 	const dispatch = useAppDispatch()

@@ -151,7 +151,9 @@ const UpdateForm = () => {
 		}
 	}
 
-	const deleteHandler = async () => {}
+	const deleteHandler = async () => {
+		//TODO дописать удаление
+	}
 
 	return (
 		<Stack mt={-2.5} overflow={'hidden'}>

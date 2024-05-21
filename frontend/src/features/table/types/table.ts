@@ -7,6 +7,7 @@ export interface IHeadColumn {
 	children?: IHeadColumn[]
 }
 
+export type FilterType = 'number' | 'string' | 'date'
 export interface IColumn {
 	key: string
 	label: string
@@ -14,7 +15,7 @@ export interface IColumn {
 	align?: 'center' | 'right' | 'left'
 	isShow?: boolean
 	allowSearch?: boolean
-	filter?: 'number' | 'string' | 'date'
+	filter?: FilterType
 	formatter?: (value: unknown) => string
 }
 

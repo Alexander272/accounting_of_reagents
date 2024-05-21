@@ -5,5 +5,6 @@ export const Titles = Object.freeze({
 	Spending: 'Расходование',
 	Extending: 'Продление срока годности',
 	Disposal: 'Утилизация',
+	Seizure: 'Изъять',
 	Notes: 'Комментарии ',
 })

@@ -19,14 +19,17 @@ export const buildSiUrlParams = (req: IParams): URLSearchParams => {
 		params.push(['sort_by', sort.join(',')])
 	}
 
-	// if (req.filter) {
-	// 	req.filter.forEach(f => {
-	// 		params.push([`filters[${f.field}]`, f.fieldType])
-	// 		f.values.forEach(v => {
-	// 			params.push([`${f.field}[${v.compareType}]`, v.value])
-	// 		})
-	// 	})
-	// }
+	if (req.filters) {
+		for (let i = 0; i < req.filters.length; i++) {
+			const f = req.filters[i]
+
+			console.log(i)
+			if (i == 0 || f.field != req.filters[i - 1].field) {
+				params.push([`filters[${f.field}]`, f.fieldType])
+			}
+			params.push([`${f.field}[${f.compareType}]`, f.value])
+		}
+	}
 
 	return new URLSearchParams(params)
 }

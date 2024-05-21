@@ -23,6 +23,7 @@ export interface IParams {
 	size?: number
 	sort: ISort
 	search?: ISearch
+	filters?: IFilter[]
 }
 
 export interface ISort {

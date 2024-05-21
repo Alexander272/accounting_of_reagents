@@ -118,7 +118,6 @@ export const Columns: IColumn[] = [
 	{
 		key: 'type',
 		label: Titles.Type,
-		filter: 'string',
 	},
 	{
 		key: 'name',

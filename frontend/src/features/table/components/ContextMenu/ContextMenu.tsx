@@ -6,13 +6,16 @@ import { Update } from '@/features/modal/components/Update'
 import { Spending } from '@/features/modal/components/Spending'
 import { Extending } from '@/features/modal/components/Extending'
 import { Disposal } from '@/features/modal/components/Disposal'
+import { Seizure } from '@/features/modal/components/Seizure'
 import { Note } from '@/features/modal/components/Note'
 import { EditIcon } from '@/components/Icons/EditIcon'
 import { FileIcon } from '@/components/Icons/FileIcon'
 import { ClockIcon } from '@/components/Icons/ClockIcon'
 import { DisposalIcon } from '@/components/Icons/DisposalIcon'
 import { NotebookIcon } from '@/components/Icons/NotebookIcon'
+import { ExchangeRefreshIcon } from '@/components/Icons/ExchangeRefreshIcon'
 import { getContextMenu, setContextMenu } from '../../tableSlice'
+import { PrepareOrder } from './PrepareOrder'
 
 export const ContextMenu = () => {
 	const contextMenu = useAppSelector(getContextMenu)
@@ -49,6 +52,7 @@ export const ContextMenu = () => {
 					</ListItemIcon>
 					Комментарии
 				</MenuItem>
+				<PrepareOrder />
 				<MenuItem onClick={openFormHandler('edit')}>
 					<ListItemIcon>
 						<EditIcon fontSize={18} fill={'#363636'} />
@@ -61,6 +65,13 @@ export const ContextMenu = () => {
 					</ListItemIcon>
 					Продление срока годности
 				</MenuItem>
+				<MenuItem onClick={openFormHandler('seizure')}>
+					<ListItemIcon>
+						{/* <ChangeExchangeIcon fontSize={18} fill={'#363636'} /> */}
+						<ExchangeRefreshIcon fontSize={18} fill={'#363636'} />
+					</ListItemIcon>
+					Сведения об изъятии
+				</MenuItem>
 				<MenuItem onClick={openFormHandler('disposal')}>
 					<ListItemIcon>
 						<DisposalIcon fontSize={18} fill={'#363636'} />
@@ -68,7 +79,6 @@ export const ContextMenu = () => {
 					Сведения об утилизации
 				</MenuItem>
 
-				{/* Сведения об изъятии */}
 				{/* Сформировать заказ? */}
 			</Menu>
 
@@ -77,6 +87,7 @@ export const ContextMenu = () => {
 			<Extending />
 			<Disposal />
 			<Note />
+			<Seizure />
 		</>
 	)
 }
