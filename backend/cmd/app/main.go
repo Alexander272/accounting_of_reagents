@@ -69,6 +69,10 @@ func main() {
 
 	handlers := transport.NewHandler(services, keycloak)
 
+	if err := services.Scheduler.Start(&conf.Scheduler); err != nil {
+		log.Fatalf("failed to start scheduler. error: %s\n", err.Error())
+	}
+
 	//* HTTP Server
 
 	// if err := services.Notification.Start(&conf.Notification); err != nil {

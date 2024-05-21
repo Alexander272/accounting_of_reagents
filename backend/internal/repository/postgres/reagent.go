@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository/postgres/pq_models"
@@ -32,6 +33,11 @@ type Reagent interface {
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 	SetNotification(context.Context, *models.ReagentNotificationDTO) error
+	SetIsOverdue(context.Context, []string) error
+	ClearIsOverdue(context.Context, string) error
+	SetDeleteStamp(context.Context, string) error
+	DeleteOld(context.Context) error
+	Delete(context.Context, *models.DeleteReagentDTO) error
 }
 
 func (r *ReagentRepo) getColumnName(field string) string {
@@ -74,9 +80,9 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 	}
 	order += "r.created_at DESC, r.id"
 
-	filter := ""
+	filter := "WHERE deleted IS NULL"
 	if len(req.Filters) > 0 {
-		filter = "WHERE "
+		filter += " AND "
 		filters := []string{}
 
 		for _, ns := range req.Filters {
@@ -94,11 +100,8 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 
 	search := ""
 	if req.Search != nil {
-		if len(filter) == 0 {
-			search = "WHERE "
-		} else {
-			search = " AND ("
-		}
+		search = " AND ("
+
 		list := []string{}
 		for _, f := range req.Search.Fields {
 			list = append(list, fmt.Sprintf("r.%s ILIKE '%%'||$%d||'%%'", r.getColumnName(f), count))
@@ -111,7 +114,8 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 	params = append(params, req.Page.Limit, req.Page.Offset)
 
 	query := fmt.Sprintf(`SELECT r.id, t.name AS type, r.name, uname, document, purity, date_of_manufacture, consignment, manufacturer, shelf_life, closet, shelf,
-		receipt_date, (amount || ' ' || a.name) AS amount, control_date, protocol, result, COALESCE(e.date_of_extending, 0) AS date_of_extending, has_run_out,
+		receipt_date, (amount || ' ' || a.name) AS amount, control_date, protocol, result, COALESCE(e.date_of_extending, 0) AS date_of_extending, 
+		has_run_out, is_overdue,
 		COALESCE(e.period_of_extending, 0) AS period_of_extending, seizure, disposal, COALESCE(comment,'') AS comment, COALESCE(note,'') AS note,
 		COALESCE((SELECT SUM(amount) FROM %s WHERE reagent_id=r.id GROUP BY reagent_id), 0) || ' ' || a.name  AS spending,
 		COALESCE((SELECT SUM(period_of_extending) FROM %s WHERE reagent_id=r.id GROUP BY reagent_id), 0) AS sum_period,
@@ -168,6 +172,7 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 				Comments:          r.Comments,
 				Notes:             r.Notes,
 				HasRunOut:         r.HasRunOut,
+				IsOverdue:         r.IsOverdue,
 				SumPeriod:         r.SumPeriod,
 			})
 		}
@@ -248,6 +253,52 @@ func (r *ReagentRepo) Update(ctx context.Context, dto *models.ReagentDTO) error 
 
 func (r *ReagentRepo) SetNotification(ctx context.Context, dto *models.ReagentNotificationDTO) error {
 	query := fmt.Sprintf(`UPDATE %s SET has_notification=true, has_run_out=:has_run_out WHERE id=:id`, ReagentsTable)
+
+	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
+		return fmt.Errorf("failed to execute query. error: %w", err)
+	}
+	return nil
+}
+
+func (r *ReagentRepo) SetIsOverdue(ctx context.Context, idList []string) error {
+	query := fmt.Sprintf(`UPDATE %s SET is_overdue=true WHERE id=ANY($1::uuid[])`, ReagentsTable)
+
+	if _, err := r.db.ExecContext(ctx, query, pq.Array(idList)); err != nil {
+		return fmt.Errorf("failed to execute query. error: %w", err)
+	}
+	return nil
+}
+func (r *ReagentRepo) ClearIsOverdue(ctx context.Context, id string) error {
+	query := fmt.Sprintf(`UPDATE %s SET is_overdue=false WHERE id=$1`, ReagentsTable)
+
+	if _, err := r.db.ExecContext(ctx, query, id); err != nil {
+		return fmt.Errorf("failed to execute query. error: %w", err)
+	}
+	return nil
+}
+
+func (r *ReagentRepo) SetDeleteStamp(ctx context.Context, id string) error {
+	query := fmt.Sprintf(`UPDATE %s SET deleted=$1 WHERE id=$2`, ReagentsTable)
+
+	if _, err := r.db.ExecContext(ctx, query, time.Now(), id); err != nil {
+		return fmt.Errorf("failed to execute query. error: %w", err)
+	}
+	return nil
+}
+func (r *ReagentRepo) DeleteOld(ctx context.Context) error {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE deleted<$1`, ReagentsTable)
+
+	now := time.Now()
+	date := time.Date(now.Year(), now.Month()-1, now.Day(), now.Hour(), 0, 0, 0, now.Location())
+
+	if _, err := r.db.ExecContext(ctx, query, date); err != nil {
+		return fmt.Errorf("failed to execute query. error: %w", err)
+	}
+	return nil
+}
+
+func (r *ReagentRepo) Delete(ctx context.Context, dto *models.DeleteReagentDTO) error {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, ReagentsTable)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)

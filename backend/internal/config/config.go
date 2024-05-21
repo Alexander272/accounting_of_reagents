@@ -12,15 +12,14 @@ type (
 		Environment string `yaml:"environment" env:"APP_ENV" env-default:"dev"`
 		LogLevel    string `yaml:"log_level" env-default:"info"`
 		LogSource   bool   `yaml:"log_source" env-default:"false"`
-		// Redis        RedisConfig
-		Postgres     PostgresConfig
-		Auth         AuthConfig
-		Keycloak     KeycloakConfig
-		Http         HttpConfig
-		Limiter      LimiterConfig
-		Notification NotificationConfig
-		Bot          BotConfig
-		ErrorBot     ErrorBotConfig
+		Postgres    PostgresConfig
+		Auth        AuthConfig
+		Keycloak    KeycloakConfig
+		Http        HttpConfig
+		Limiter     LimiterConfig
+		Scheduler   SchedulerConfig
+		Bot         BotConfig
+		ErrorBot    ErrorBotConfig
 	}
 
 	HttpConfig struct {
@@ -71,19 +70,9 @@ type (
 		TTL   time.Duration `yaml:"ttl" env:"TTL" env-default:"10m"`
 	}
 
-	NotificationConfig struct {
-		StartTime int                `yaml:"start_time" env-default:"12"` // 12 hours (noon)
-		Interval  time.Duration      `yaml:"interval" env-default:"24h"`
-		Times     []NotificationTime `yaml:"times"`
-	}
-	NotificationTime struct {
-		Id    string
-		Type  string `yaml:"type"`
-		Title string
-		Time  time.Duration `yaml:"time"`
-		Date  time.Duration `yaml:"date"`
-		Add   time.Duration `yaml:"add"`
-		Sub   time.Duration `yaml:"sub"`
+	SchedulerConfig struct {
+		StartTime int           `yaml:"start_time" env-default:"12"` // 12 hours (noon)
+		Interval  time.Duration `yaml:"interval" env-default:"24h"`
 	}
 
 	ErrorBotConfig struct {

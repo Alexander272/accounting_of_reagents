@@ -6,9 +6,10 @@ require (
 	github.com/Nerzal/gocloak/v13 v13.9.0
 	github.com/casbin/casbin/v2 v2.87.1
 	github.com/gin-gonic/gin v1.9.1
+	github.com/go-co-op/gocron/v2 v2.5.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/goccy/go-json v0.10.2
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.4
@@ -39,6 +40,7 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/graph-gophers/graphql-go v1.3.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/jonboulle/clockwork v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
@@ -59,6 +61,8 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
@@ -71,6 +75,7 @@ require (
 	github.com/wiggin77/srslog v1.0.1 // indirect
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
+	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

@@ -31,6 +31,7 @@ type Reagent struct {
 	Comments          string `json:"comments" db:"comments"`
 	Notes             string `json:"notes" db:"notes"`
 	HasRunOut         bool   `json:"hasRunOut" db:"has_run_out"`
+	IsOverdue         bool   `json:"isOverdue" db:"is_overdue"`
 	Background        string `json:"background"`
 	SumPeriod         int    `json:"-"`
 }

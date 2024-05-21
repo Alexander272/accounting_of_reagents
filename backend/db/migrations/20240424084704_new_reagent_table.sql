@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS public.reagents
     disposal text COLLATE pg_catalog."default" DEFAULT ''::text,
     has_run_out boolean DEFAULT false,
     has_notification boolean DEFAULT false,
-    deleted boolean DEFAULT false,
+    is_overdue boolean DEFAULT false,
+    deleted timestamp with time zone,
     created_at timestamp with time zone DEFAULT now(),
     CONSTRAINT reagents_pkey PRIMARY KEY (id),
     CONSTRAINT reagents_type_id_fkey FOREIGN KEY (type_id)

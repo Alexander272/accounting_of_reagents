@@ -211,9 +211,8 @@ func (h *ReagentHandlers) delete(c *gin.Context) {
 		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id не задан")
 		return
 	}
-	dto := &models.DeleteReagentDTO{Id: id}
 
-	if err := h.service.Delete(c, dto); err != nil {
+	if err := h.service.SetDeleteStamp(c, id); err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
 		error_bot.Send(c, err.Error(), id)
 		return

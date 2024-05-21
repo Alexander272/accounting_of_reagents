@@ -31,11 +31,17 @@ type Reagent interface {
 	GetById(context.Context, string) (*models.EditReagent, error)
 	GetByIdList(context.Context, []string) ([]*models.Reagent, error)
 	GetRemainder(context.Context, string) (*models.ReagentWithRemainder, error)
+	GetOverdue(context.Context) ([]*models.Reagent, error)
+	SendOverdue(context.Context) error
 	PrepareOrder(context.Context, []string) error
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
-	Delete(context.Context, *models.DeleteReagentDTO) error
 	SetNotification(context.Context, *models.ReagentNotificationDTO) error
+	SetIsOverdue(context.Context, []string) error
+	ClearIsOverdue(context.Context, string) error
+	SetDeleteStamp(context.Context, string) error
+	DeleteOld(context.Context) error
+	Delete(context.Context, *models.DeleteReagentDTO) error
 }
 
 func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.ReagentList, error) {
@@ -120,6 +126,56 @@ func (s *ReagentService) GetRemainder(ctx context.Context, id string) (*models.R
 	return remainder, nil
 }
 
+func (s *ReagentService) GetOverdue(ctx context.Context) ([]*models.Reagent, error) {
+	list, err := s.repo.Get(ctx, &models.Params{Page: &models.Page{Limit: 999999}})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get reagents list. error: %w", err)
+	}
+
+	newList := []*models.Reagent{}
+	for _, i := range list.List {
+		shelfLife := time.Unix(int64(i.DateOfManufacture), 0)
+		shelfLife = shelfLife.AddDate(0, i.ShelfLife, 0)
+		shelfLife = shelfLife.AddDate(0, i.SumPeriod, 0)
+		now := time.Now()
+
+		if shelfLife.Compare(time.Date(now.Year(), now.Month()+1, now.Day(), now.Hour(), now.Minute(), 0, 0, now.Location())) <= 0 &&
+			!i.IsOverdue && i.Seizure == "" {
+			newList = append(newList, i)
+		}
+	}
+
+	return newList, nil
+}
+func (s *ReagentService) SendOverdue(ctx context.Context) error {
+	reagents, err := s.GetOverdue(ctx)
+	if err != nil {
+		return err
+	}
+
+	if len(reagents) == 0 {
+		return nil
+	}
+
+	notification := &models.Notification{
+		Message: "У следующих реактивов истекает срок годности",
+		Data:    reagents,
+	}
+	if err := s.most.Send(ctx, notification); err != nil {
+		return fmt.Errorf("failed to send notification. error: %w", err)
+	}
+
+	idList := []string{}
+	for _, r := range reagents {
+		idList = append(idList, r.Id)
+	}
+	if err := s.SetIsOverdue(ctx, idList); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *ReagentService) PrepareOrder(ctx context.Context, idList []string) error {
 	reagents, err := s.GetByIdList(ctx, idList)
 	if err != nil {
@@ -158,6 +214,35 @@ func (s *ReagentService) SetNotification(ctx context.Context, dto *models.Reagen
 	return nil
 }
 
+func (s *ReagentService) SetIsOverdue(ctx context.Context, idList []string) error {
+	if err := s.repo.SetIsOverdue(ctx, idList); err != nil {
+		return fmt.Errorf("failed to set is overdue. error: %w", err)
+	}
+	return nil
+}
+func (s *ReagentService) ClearIsOverdue(ctx context.Context, id string) error {
+	if err := s.repo.ClearIsOverdue(ctx, id); err != nil {
+		return fmt.Errorf("failed to clear is overdue. error: %w", err)
+	}
+	return nil
+}
+
+func (s *ReagentService) SetDeleteStamp(ctx context.Context, id string) error {
+	if err := s.repo.SetDeleteStamp(ctx, id); err != nil {
+		return fmt.Errorf("failed to set deleted stamp by id. error: %w", err)
+	}
+	return nil
+}
+
+func (s *ReagentService) DeleteOld(ctx context.Context) error {
+	if err := s.repo.DeleteOld(ctx); err != nil {
+		return fmt.Errorf("failed to delete old. error: %w", err)
+	}
+	return nil
+}
 func (s *ReagentService) Delete(ctx context.Context, dto *models.DeleteReagentDTO) error {
-	return fmt.Errorf("not implemented")
+	if err := s.repo.Delete(ctx, dto); err != nil {
+		return fmt.Errorf("failed to delete. error: %w", err)
+	}
+	return nil
 }

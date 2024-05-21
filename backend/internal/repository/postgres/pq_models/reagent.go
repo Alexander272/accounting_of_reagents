@@ -26,6 +26,7 @@ type ReagentDTO struct {
 	Comments          string `json:"comments" db:"comment"`
 	Notes             string `json:"notes" db:"note"`
 	HasRunOut         bool   `db:"has_run_out"`
+	IsOverdue         bool   `db:"is_overdue"`
 	SumPeriod         int    `db:"sum_period"`
 	Total             int    `db:"total_count"`
 }

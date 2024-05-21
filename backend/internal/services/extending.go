@@ -9,12 +9,14 @@ import (
 )
 
 type ExtendingService struct {
-	repo repository.Extending
+	repo    repository.Extending
+	reagent Reagent
 }
 
-func NewExtendingService(repo repository.Extending) *ExtendingService {
+func NewExtendingService(repo repository.Extending, reagent Reagent) *ExtendingService {
 	return &ExtendingService{
-		repo: repo,
+		repo:    repo,
+		reagent: reagent,
 	}
 }
 
@@ -38,6 +40,11 @@ func (s *ExtendingService) Create(ctx context.Context, dto *models.ExtendingDTO)
 	if err != nil {
 		return id, fmt.Errorf("failed to create extending. error: %w", err)
 	}
+
+	if err := s.reagent.ClearIsOverdue(ctx, dto.ReagentId); err != nil {
+		return id, err
+	}
+
 	return id, nil
 }
 

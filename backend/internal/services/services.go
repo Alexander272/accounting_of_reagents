@@ -20,6 +20,8 @@ type Services struct {
 	Spending
 	Extending
 	Note
+
+	Scheduler
 }
 
 type Deps struct {
@@ -52,8 +54,10 @@ func NewServices(deps Deps) *Services {
 	reagentType := NewReagentTypeService(deps.Repos.ReagentType, role)
 	reagent := NewReagentService(deps.Repos.Reagent, reagentType, most)
 	spending := NewSpendingService(deps.Repos.Spending, reagent, most)
-	extending := NewExtendingService(deps.Repos.Extending)
+	extending := NewExtendingService(deps.Repos.Extending, reagent)
 	note := NewNoteService(deps.Repos.Notes)
+
+	scheduler := NewSchedulerService(reagent)
 
 	return &Services{
 		MenuItem:   menuItem,
@@ -68,5 +72,7 @@ func NewServices(deps Deps) *Services {
 		Spending:    spending,
 		Extending:   extending,
 		Note:        note,
+
+		Scheduler: scheduler,
 	}
 }
