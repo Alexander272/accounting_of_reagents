@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
-	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository/postgres/pq_models"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -27,30 +26,43 @@ type Menu interface {
 	Delete(context.Context, string) error
 }
 
+// func (r *MenuRepo) GetAll(ctx context.Context) ([]*models.Menu, error) {
+// 	var data []*pq_models.MenuDTO
+// 	query := fmt.Sprintf(`SELECT m.id, role_id, name, level, menu_item_id, CASE WHEN extends IS NOT NULL THEN
+// 		ARRAY(SELECT name FROM %s WHERE ARRAY[id] <@ r.extends) ELSE '{}' END AS extends
+// 		FROM %s AS m INNER JOIN %s AS r ON role_id=r.id ORDER BY level, name`,
+// 		RoleTable, MenuTable, RoleTable,
+// 	)
+
+// 	if err := r.db.SelectContext(ctx, &data, query); err != nil {
+// 		return nil, fmt.Errorf("failed to execute query. error: %w", err)
+// 	}
+
+// 	menu := []*models.Menu{}
+// 	for _, mpd := range data {
+// 		menu = append(menu, &models.Menu{
+// 			Id:          mpd.Id,
+// 			RoleId:      mpd.RoleId,
+// 			RoleName:    mpd.RoleName,
+// 			RoleLevel:   mpd.RoleLevel,
+// 			RoleExtends: mpd.RoleExtends,
+// 			MenuItemId:  mpd.MenuItemId,
+// 		})
+// 	}
+
+// 	return menu, nil
+// }
+
 func (r *MenuRepo) GetAll(ctx context.Context) ([]*models.Menu, error) {
-	var data []*pq_models.MenuDTO
-	query := fmt.Sprintf(`SELECT m.id, role_id, name, level, menu_item_id, CASE WHEN extends IS NOT NULL THEN
-		ARRAY(SELECT name FROM %s WHERE ARRAY[id] <@ r.extends) ELSE '{}' END AS extends
-		FROM %s AS m INNER JOIN %s AS r ON role_id=r.id ORDER BY level, name`,
-		RoleTable, MenuTable, RoleTable,
+	query := fmt.Sprintf(`SELECT m.id, r.name, role_id, menu_item_id, i.name AS item_name, i.method
+		FROM %s AS m INNER JOIN %s AS r ON role_id=r.id INNER JOIN %s AS i ON i.id=menu_item_id ORDER BY level`,
+		MenuTable, RoleTable, MenuItemTable,
 	)
 
-	if err := r.db.SelectContext(ctx, &data, query); err != nil {
+	var menu []*models.Menu
+	if err := r.db.SelectContext(ctx, &menu, query); err != nil {
 		return nil, fmt.Errorf("failed to execute query. error: %w", err)
 	}
-
-	menu := []*models.Menu{}
-	for _, mpd := range data {
-		menu = append(menu, &models.Menu{
-			Id:          mpd.Id,
-			RoleId:      mpd.RoleId,
-			RoleName:    mpd.RoleName,
-			RoleLevel:   mpd.RoleLevel,
-			RoleExtends: mpd.RoleExtends,
-			MenuItemId:  mpd.MenuItemId,
-		})
-	}
-
 	return menu, nil
 }
 

@@ -11,7 +11,8 @@ type RoleWithMenuDTO struct {
 	Id      string         `json:"id" db:"id"`
 	Name    string         `json:"name" db:"name"`
 	Extends pq.StringArray `db:"extends"`
-	Menu    string         `db:"menu"`
+	Menu    pq.StringArray `db:"menu"`
+	// Menu    string         `db:"menu"`
 }
 
 type RoleFull struct {

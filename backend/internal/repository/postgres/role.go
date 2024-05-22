@@ -22,6 +22,7 @@ func NewRoleRepo(db *sqlx.DB) *RoleRepo {
 
 type Role interface {
 	GetAll(context.Context, *models.GetRolesDTO) ([]*models.RoleFull, error)
+	GetAllWithNames(context.Context, *models.GetRolesDTO) ([]*models.RoleFull, error)
 	Get(context.Context, string) (*models.Role, error)
 	Create(context.Context, *models.RoleDTO) error
 	Update(context.Context, *models.RoleDTO) error
@@ -53,14 +54,46 @@ func (r *RoleRepo) GetAll(ctx context.Context, req *models.GetRolesDTO) ([]*mode
 	return roles, nil
 }
 
+func (r *RoleRepo) GetAllWithNames(ctx context.Context, req *models.GetRolesDTO) ([]*models.RoleFull, error) {
+	var data []*models.RoleFullDTO
+	query := fmt.Sprintf(`SELECT r.id, name, level, CASE WHEN extends IS NOT NULL THEN
+		ARRAY(SELECT name FROM roles WHERE ARRAY[id] <@ r.extends) ELSE '{}' END AS extends
+		FROM %s AS r ORDER BY level, name`,
+		RoleTable,
+	)
+
+	if err := r.db.SelectContext(ctx, &data, query); err != nil {
+		return nil, fmt.Errorf("failed to execute query. error: %w", err)
+	}
+
+	roles := []*models.RoleFull{}
+	for _, rfd := range data {
+		roles = append(roles, &models.RoleFull{
+			Id:          rfd.Id,
+			Name:        rfd.Name,
+			Level:       rfd.Level,
+			Extends:     rfd.Extends,
+			Description: rfd.Description,
+		})
+	}
+
+	return roles, nil
+}
+
 func (r *RoleRepo) Get(ctx context.Context, roleName string) (*models.Role, error) {
 	var data []models.RoleWithMenuDTO
-	query := fmt.Sprintf(`SELECT r.id, r.name, COALESCE(extends, '{}') AS extends, i.name AS menu
-		FROM %s AS r 
-		LEFT JOIN %s AS m ON r.id=role_id 
-		LEFT JOIN %s AS i ON menu_item_id=i.id
-		WHERE i.is_show=true ORDER BY level`,
-		RoleTable, MenuTable, MenuItemTable,
+	// query := fmt.Sprintf(`SELECT r.id, r.name, COALESCE(extends, '{}') AS extends, i.name AS menu
+	// 	FROM %s AS r
+	// 	LEFT JOIN %s AS m ON r.id=role_id
+	// 	LEFT JOIN %s AS i ON menu_item_id=i.id
+	// 	WHERE i.is_show=true ORDER BY level`,
+	// 	RoleTable, MenuTable, MenuItemTable,
+	// )
+	query := fmt.Sprintf(`SELECT r.id, name, COALESCE(extends, '{}') AS extends,
+		ARRAY(SELECT DISTINCT(i.name || ':' || i.method) FROM %s AS m INNER JOIN menu_item AS i ON m.menu_item_id=i.id WHERE role_id=r.id) AS menu
+		FROM %s AS r
+		ORDER BY level, name`,
+		MenuTable, RoleTable,
 	)
 
 	if err := r.db.SelectContext(ctx, &data, query); err != nil {
@@ -75,7 +108,7 @@ func (r *RoleRepo) Get(ctx context.Context, roleName string) (*models.Role, erro
 	for _, r := range data {
 		m, exist := menu[r.Id]
 		if !exist {
-			menu[r.Id] = []string{r.Menu}
+			menu[r.Id] = r.Menu
 
 			if r.Name == roleName {
 				role.Id = r.Id
@@ -86,7 +119,7 @@ func (r *RoleRepo) Get(ctx context.Context, roleName string) (*models.Role, erro
 				}
 			}
 		} else {
-			m = append(m, r.Menu)
+			m = append(m, r.Menu...)
 			menu[r.Id] = m
 		}
 	}
@@ -103,8 +136,15 @@ func (r *RoleRepo) Get(ctx context.Context, roleName string) (*models.Role, erro
 		}
 	}
 
+	roleMenu := map[string]struct{}{}
 	for k := range extends {
-		role.Menu = append(role.Menu, menu[k]...)
+		for _, v := range menu[k] {
+			roleMenu[v] = struct{}{}
+		}
+		// role.Menu = append(role.Menu, menu[k]...)
+	}
+	for k := range roleMenu {
+		role.Menu = append(role.Menu, k)
 	}
 
 	return role, nil

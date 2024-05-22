@@ -1,5 +1,5 @@
 log_level: debug
-log_source: true
+log_source: false
 
 http:
     port: 9000

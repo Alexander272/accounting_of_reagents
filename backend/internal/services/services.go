@@ -46,7 +46,7 @@ func NewServices(deps Deps) *Services {
 	menu := NewMenuService(deps.Repos.Menu, menuItem)
 	role := NewRoleService(deps.Repos.Role)
 	session := NewSessionService(deps.Keycloak, role)
-	permission := NewPermissionService("configs/privacy.conf", menu)
+	permission := NewPermissionService("configs/privacy.conf", menu, role)
 
 	most := NewMostService(deps.BotUrl, deps.ChannelId)
 

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
+	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
@@ -15,21 +17,21 @@ type PermissionService struct {
 }
 
 type Permission interface {
-	Register(confPath string, menu Menu) error
+	Register(confPath string, menu Menu, role Role) error
 	Enforce(params ...interface{}) (bool, error)
 }
 
-func NewPermissionService(confPath string, menu Menu) *PermissionService {
+func NewPermissionService(confPath string, menu Menu, role Role) *PermissionService {
 	permission := &PermissionService{}
-	if err := permission.Register(confPath, menu); err != nil {
+	if err := permission.Register(confPath, menu, role); err != nil {
 		log.Fatalf("failed to initialize permission service. error: %s", err.Error())
 	}
 	return permission
 }
 
-func (s *PermissionService) Register(path string, menu Menu) error {
+func (s *PermissionService) Register(path string, menu Menu, role Role) error {
 	var err error
-	adapter := NewPolicyAdapter(menu)
+	adapter := NewPolicyAdapter(menu, role)
 
 	s.enforcer, err = casbin.NewEnforcer(path, adapter)
 	if err != nil {
@@ -49,11 +51,13 @@ func (s *PermissionService) Enforce(params ...interface{}) (bool, error) {
 
 type PolicyAdapter struct {
 	menu Menu
+	role Role
 }
 
-func NewPolicyAdapter(menu Menu) *PolicyAdapter {
+func NewPolicyAdapter(menu Menu, role Role) *PolicyAdapter {
 	return &PolicyAdapter{
 		menu: menu,
+		role: role,
 	}
 }
 
@@ -71,23 +75,56 @@ func (s *PolicyAdapter) LoadPolicy(model model.Model) error {
 		return err
 	}
 
-	for _, m := range menu {
-		for _, mi := range m.MenuItems {
-			line := fmt.Sprintf("p, %s, %s, %s", m.Role.Name, mi.Name, mi.Method)
-			if err := persist.LoadPolicyLine(line, model); err != nil {
-				return fmt.Errorf("failed to load policy. error: %w", err)
-			}
-		}
+	roles, err := s.role.GetAllWithNames(context.Background(), &models.GetRolesDTO{})
+	if err != nil {
+		return err
+	}
 
-		if len(m.Role.Extends) == 0 {
-			line := fmt.Sprintf("g, %s, ", m.Role.Name)
+	// for _, m := range menu {
+	// 	for _, mi := range m.MenuItems {
+	// 		line := fmt.Sprintf("p, %s, %s, %s", m.Role.Name, mi.Name, mi.Method)
+	// 		logger.Debug("permissions", logger.StringAttr("menu item", line))
+	// 		if err := persist.LoadPolicyLine(line, model); err != nil {
+	// 			return fmt.Errorf("failed to load policy. error: %w", err)
+	// 		}
+	// 	}
+
+	// 	if len(m.Role.Extends) == 0 {
+	// 		line := fmt.Sprintf("g, %s, ", m.Role.Name)
+	// 		logger.Debug("permissions", logger.StringAttr("role", line))
+	// 		if err := persist.LoadPolicyLine(line, model); err != nil {
+	// 			return fmt.Errorf("failed to load group policy. error: %w", err)
+	// 		}
+	// 	}
+
+	// 	for _, v := range m.Role.Extends {
+	// 		line := fmt.Sprintf("g, %s, %s", m.Role.Name, v)
+	// 		logger.Debug("permissions", logger.StringAttr("extends", line))
+	// 		if err := persist.LoadPolicyLine(line, model); err != nil {
+	// 			return fmt.Errorf("failed to load group policy. error: %w", err)
+	// 		}
+	// 	}
+	// }
+
+	for _, m := range menu {
+		line := fmt.Sprintf("p, %s, %s, %s", m.RoleName, m.ItemName, m.ItemMethod)
+		logger.Debug("permissions", logger.StringAttr("menu item", line))
+		if err := persist.LoadPolicyLine(line, model); err != nil {
+			return fmt.Errorf("failed to load policy. error: %w", err)
+		}
+	}
+
+	for _, r := range roles {
+		if len(r.Extends) == 0 {
+			line := fmt.Sprintf("g, %s, ", r.Name)
+			logger.Debug("permissions", logger.StringAttr("role", line))
 			if err := persist.LoadPolicyLine(line, model); err != nil {
 				return fmt.Errorf("failed to load group policy. error: %w", err)
 			}
 		}
-
-		for _, v := range m.Role.Extends {
-			line := fmt.Sprintf("g, %s, %s", m.Role.Name, v)
+		for _, v := range r.Extends {
+			line := fmt.Sprintf("g, %s, %s", r.Name, v)
+			logger.Debug("permissions", logger.StringAttr("extends", line))
 			if err := persist.LoadPolicyLine(line, model); err != nil {
 				return fmt.Errorf("failed to load group policy. error: %w", err)
 			}

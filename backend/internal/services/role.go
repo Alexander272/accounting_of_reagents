@@ -20,6 +20,7 @@ func NewRoleService(repo repository.Role) *RoleService {
 
 type Role interface {
 	GetAll(context.Context, *models.GetRolesDTO) ([]*models.RoleFull, error)
+	GetAllWithNames(context.Context, *models.GetRolesDTO) ([]*models.RoleFull, error)
 	Get(context.Context, string) (*models.Role, error)
 	Create(context.Context, *models.RoleDTO) error
 	Update(context.Context, *models.RoleDTO) error
@@ -30,6 +31,14 @@ func (s *RoleService) GetAll(ctx context.Context, req *models.GetRolesDTO) ([]*m
 	roles, err := s.repo.GetAll(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all roles. error: %w", err)
+	}
+	return roles, nil
+}
+
+func (s *RoleService) GetAllWithNames(ctx context.Context, req *models.GetRolesDTO) ([]*models.RoleFull, error) {
+	roles, err := s.repo.GetAllWithNames(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all roles with names. error: %w", err)
 	}
 	return roles, nil
 }

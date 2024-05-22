@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository"
@@ -38,25 +39,24 @@ func (s *ReagentTypeService) GetByRole(ctx context.Context, role string) ([]*mod
 		return nil, fmt.Errorf("failed to get all reagent types. error: %w", err)
 	}
 
-	//TODO
-	if role == "" {
-		return reagentTypes, nil
-	}
-
 	index := -1
 	foundedRole := &models.RoleFull{}
 	for i, r := range roles {
 		if r.Name == role {
 			index = i
 			foundedRole = r
+			break
 		}
 	}
 
 	types := []*models.ReagentType{}
 	for _, rt := range reagentTypes {
-		if rt.RoleId == foundedRole.Id {
-			types = append(types, rt)
+		for _, rId := range rt.RoleId {
+			if rId == foundedRole.Id {
+				types = append(types, rt)
+			}
 		}
+
 	}
 
 	extends := foundedRole.Extends
@@ -67,15 +67,26 @@ func (s *ReagentTypeService) GetByRole(ctx context.Context, role string) ([]*mod
 				index = i
 				extends = append(extends[:0], extends[1:]...)
 				extends = append(extends, foundedRole.Extends...)
+				break
 			}
 		}
 
 		for _, rt := range reagentTypes {
-			if rt.RoleId == foundedRole.Id {
-				types = append(types, rt)
+			for _, rId := range rt.RoleId {
+				if rId == foundedRole.Id {
+					types = append(types, rt)
+				}
 			}
+			// if rt.RoleId == foundedRole.Id {
+			// 	types = append(types, rt)
+			// }
 		}
+
 	}
+
+	sort.Slice(types, func(i, j int) bool {
+		return types[i].Number < types[j].Number
+	})
 
 	return types, nil
 }
