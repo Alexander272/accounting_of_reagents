@@ -38,6 +38,16 @@ const tableApiSlice = apiSlice.injectEndpoints({
 				{ type: 'DataItems', id: 'ALL' },
 			],
 		}),
+		delete: builder.mutation<null, string>({
+			query: id => ({
+				url: `${API.reagents}/${id}`,
+				method: 'DELETE',
+			}),
+			invalidatesTags: (_res, _err, id) => [
+				{ type: 'DataItems', id: id },
+				{ type: 'DataItems', id: 'ALL' },
+			],
+		}),
 
 		prepareOrder: builder.mutation<null, { list: string[] }>({
 			query: data => ({
@@ -51,5 +61,11 @@ const tableApiSlice = apiSlice.injectEndpoints({
 	// TODO когда удается реагент можно делать ему метку, а потом проверять если метка старше 30 дней, то запись удаляется
 })
 
-export const { useGetAllQuery, useGetByIdQuery, useCreateMutation, useUpdateMutation, usePrepareOrderMutation } =
-	tableApiSlice
+export const {
+	useGetAllQuery,
+	useGetByIdQuery,
+	useCreateMutation,
+	useUpdateMutation,
+	useDeleteMutation,
+	usePrepareOrderMutation,
+} = tableApiSlice

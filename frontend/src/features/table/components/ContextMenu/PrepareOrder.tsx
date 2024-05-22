@@ -3,6 +3,7 @@ import { toast } from 'react-toastify'
 
 import type { IFetchError } from '@/app/types/error'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
+import { OrderIcon } from '@/components/Icons/OrderIcon'
 import { usePrepareOrderMutation } from '../../tableApiSlice'
 import { getSelected, setContextMenu } from '../../tableSlice'
 
@@ -28,7 +29,9 @@ export const PrepareOrder = () => {
 
 	return (
 		<MenuItem onClick={orderHandler}>
-			<ListItemIcon></ListItemIcon>
+			<ListItemIcon>
+				<OrderIcon fontSize={18} fill={'#363636'} />
+			</ListItemIcon>
 			Сформировать заказ
 		</MenuItem>
 	)

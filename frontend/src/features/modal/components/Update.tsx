@@ -7,7 +7,7 @@ import type { IUpdateDataItem } from '@/features/table/types/data'
 import type { IBaseInfForm } from '@/components/forms/BaseInfForm/type'
 import type { IControlForm } from '@/components/forms/ControlForm/type'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
-import { useGetByIdQuery, useUpdateMutation } from '@/features/table/tableApiSlice'
+import { useDeleteMutation, useGetByIdQuery, useUpdateMutation } from '@/features/table/tableApiSlice'
 import { getContextMenu, setContextMenu } from '@/features/table/tableSlice'
 import { useGetAmountTypesQuery, useGetReagentTypesQuery } from '@/features/table/modules/Types/typesApiSlice'
 import { Dialog } from '@/components/Dialog/Dialog'
@@ -64,6 +64,7 @@ const UpdateForm = () => {
 	const { data, isLoading } = useGetByIdQuery(contextMenu?.active || '', { skip: !contextMenu?.active })
 
 	const [update] = useUpdateMutation()
+	const [remove] = useDeleteMutation()
 
 	useEffect(() => {
 		if (!data) return
@@ -152,7 +153,17 @@ const UpdateForm = () => {
 	}
 
 	const deleteHandler = async () => {
-		//TODO дописать удаление
+		if (!data) return
+
+		try {
+			await remove(data.data.id).unwrap()
+			toast.success('Реактив удален')
+			setActiveStep(0)
+			closeHandler()
+		} catch (error) {
+			const fetchError = error as IFetchError
+			toast.error(fetchError.data.message, { autoClose: false })
+		}
 	}
 
 	return (
