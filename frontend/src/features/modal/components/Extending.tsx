@@ -54,14 +54,14 @@ export const Extending = () => {
 	)
 }
 
-const defaultValues = {
-	date: dayjs().unix(),
-	period: '',
-}
-
 export const ExtendingForm = () => {
 	const [selected, setSelected] = useState<number>()
 	const contextMenu = useAppSelector(getContextMenu)
+
+	const defaultValues = {
+		date: dayjs().unix(),
+		period: '',
+	}
 
 	const { palette } = useTheme()
 

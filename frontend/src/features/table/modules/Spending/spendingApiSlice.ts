@@ -37,6 +37,7 @@ const spendingApiSlice = apiSlice.injectEndpoints({
 		deleteSpending: builder.mutation<null, ISpending>({
 			query: data => ({
 				url: `${API.spending}/${data.id}`,
+				params: new URLSearchParams({ reagentId: data.reagentId }),
 				method: 'DELETE',
 			}),
 			invalidatesTags: (_res, _err, data) => [

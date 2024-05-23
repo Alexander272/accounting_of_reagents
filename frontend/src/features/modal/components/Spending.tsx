@@ -55,14 +55,14 @@ export const Spending = () => {
 	)
 }
 
-const defaultValues = {
-	date: dayjs().unix(),
-	amount: '',
-}
-
 const SpendingForm = () => {
 	const [selected, setSelected] = useState<number>()
 	const contextMenu = useAppSelector(getContextMenu)
+
+	const defaultValues = {
+		date: dayjs().unix(),
+		amount: '',
+	}
 
 	const { palette } = useTheme()
 
