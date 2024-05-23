@@ -35,15 +35,9 @@ export const DataTableRow: FC<Props> = ({ data, sx }) => {
 		dispatch(setContextMenu(menu))
 	}
 
-	let background = data.background
+	let background = data.itemStyle?.background
 	if (selected[data.id]) background = palette.rowActive.light
 	if (contextMenu?.active == data.id) background = palette.rowActive.main
-	// const background =
-	// 	contextMenu?.active == data.id
-	// 		? palette.rowActive.main
-	// 		: selected[data.id]
-	// 		? palette.rowActive.light
-	// 		: data.background
 
 	return (
 		<TableRow
@@ -64,6 +58,7 @@ export const DataTableRow: FC<Props> = ({ data, sx }) => {
 								? c.formatter(data[c.key as keyof IDataItem])
 								: data[c.key as keyof IDataItem]?.toString() || '-'
 						}
+						color={data.itemStyle?.textColor}
 					/>
 				</TableCell>
 			))}

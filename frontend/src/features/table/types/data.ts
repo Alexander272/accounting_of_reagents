@@ -13,9 +13,25 @@ export interface IDataItem {
 	shelfLife: number
 	place_closet: string
 	place_shelf: number
-	//TODO дописать оставшиеся поля
-
+	incomingControl_receiptDate: number
+	incomingControl_amount: number
+	incomingControl_date: number
+	incomingControl_protocol: string
+	incomingControl_result: boolean
+	spending: string
+	extending_date: number
+	extending_period: number
+	seizureInformation: string
+	disposalInformation: string
+	comments: string
+	notes: string
+	hasRunOut: boolean
+	isOverdue: boolean
+	itemStyle?: IItemStyles
+}
+export interface IItemStyles {
 	background?: string
+	textColor?: string
 }
 
 export interface IParams {

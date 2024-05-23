@@ -71,7 +71,7 @@ export const Filters = () => {
 
 		const groupedMap = new Map<string, IFilter[]>()
 		for (const e of form.filters) {
-			e.field = e.field.split('@')[1]
+			e.field = e.field.split('@')[0]
 			let thisList = groupedMap.get(e.field)
 			if (thisList === undefined) {
 				thisList = []

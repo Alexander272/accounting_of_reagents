@@ -1,3 +1,6 @@
+import { toast } from 'react-toastify'
+
+import type { IBaseFetchError } from '@/app/types/error'
 import type { ICreateDataItem, IDataItem, IParams, IUpdateDataItem } from './types/data'
 import { apiSlice } from '@/app/apiSlice'
 import { API } from '@/app/api'
@@ -12,6 +15,15 @@ const tableApiSlice = apiSlice.injectEndpoints({
 				method: 'GET',
 				params: buildSiUrlParams(params),
 			}),
+			onQueryStarted: async (_arg, api) => {
+				try {
+					await api.queryFulfilled
+				} catch (error) {
+					console.log(error)
+					const fetchError = (error as IBaseFetchError).error
+					toast.error(fetchError.data.message, { autoClose: false })
+				}
+			},
 			providesTags: [{ type: 'DataItems', id: 'ALL' }],
 		}),
 		getById: builder.query<{ data: IUpdateDataItem }, string>({
@@ -57,13 +69,12 @@ const tableApiSlice = apiSlice.injectEndpoints({
 			}),
 		}),
 	}),
-
-	// TODO когда удается реагент можно делать ему метку, а потом проверять если метка старше 30 дней, то запись удаляется
 })
 
 export const {
 	useGetAllQuery,
 	useGetByIdQuery,
+	useLazyGetByIdQuery,
 	useCreateMutation,
 	useUpdateMutation,
 	useDeleteMutation,

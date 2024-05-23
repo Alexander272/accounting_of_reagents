@@ -16,6 +16,7 @@ import { NotebookIcon } from '@/components/Icons/NotebookIcon'
 import { ExchangeRefreshIcon } from '@/components/Icons/ExchangeRefreshIcon'
 import { getContextMenu, setContextMenu } from '../../tableSlice'
 import { PrepareOrder } from './PrepareOrder'
+import { CreateOnBase } from './CreateOnBase'
 
 export const ContextMenu = () => {
 	const contextMenu = useAppSelector(getContextMenu)
@@ -53,6 +54,7 @@ export const ContextMenu = () => {
 					Комментарии
 				</MenuItem>
 				<PrepareOrder />
+				<CreateOnBase />
 				<MenuItem onClick={openFormHandler('edit')}>
 					<ListItemIcon>
 						<EditIcon fontSize={18} fill={'#363636'} />

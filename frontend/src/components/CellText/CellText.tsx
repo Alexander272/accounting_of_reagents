@@ -3,10 +3,11 @@ import { FC, useEffect, useRef, useState } from 'react'
 
 type Props = {
 	value: string
+	color?: string
 	align?: 'right' | 'left' | 'center' | 'inherit' | 'justify'
 }
 
-export const CellText: FC<Props> = ({ value, align = 'center' }) => {
+export const CellText: FC<Props> = ({ value, align = 'center', color }) => {
 	const [isOverflow, setIsOverflow] = useState<boolean>(false)
 	const overflowingText = useRef<HTMLParagraphElement | null>(null)
 
@@ -30,6 +31,7 @@ export const CellText: FC<Props> = ({ value, align = 'center' }) => {
 				overflow: 'hidden',
 				textOverflow: 'ellipsis',
 				whiteSpace: 'nowrap',
+				color: color,
 			}}
 		>
 			{value}

@@ -13,14 +13,14 @@ import { DataTableRow } from './TableRow'
 export const DataTableBody = () => {
 	const size = useAppSelector(getTableSize)
 
-	const { data, isFetching } = useGetAllData()
+	const { data, isFetching, isLoading } = useGetAllData()
 
 	//TODO NoRowsOverlay занимает только часть экрана и при скроле не двигается
-	if (!data || !data.total) return <NoRowsOverlay />
+	if (!isLoading && !data?.total) return <NoRowsOverlay />
 
 	return (
 		<TableBody>
-			{isFetching && (
+			{isFetching || isLoading ? (
 				<Fallback
 					position={'absolute'}
 					top={'50%'}
@@ -32,17 +32,19 @@ export const DataTableBody = () => {
 					zIndex={15}
 					backgroundColor={'#fafafa'}
 				/>
-			)}
+			) : null}
 
-			<FixedSizeList
-				overscanCount={10}
-				height={RowHeight * Size}
-				itemCount={data.data.length > (size || Size) ? size || Size : data.data.length}
-				itemSize={RowHeight}
-				width={Columns.reduce((ac, cur) => ac + (cur.width || ColWidth), 12)}
-			>
-				{({ index, style }) => <DataTableRow data={data.data[index]} sx={style} />}
-			</FixedSizeList>
+			{data && (
+				<FixedSizeList
+					overscanCount={10}
+					height={RowHeight * Size}
+					itemCount={data.data.length > (size || Size) ? size || Size : data.data.length}
+					itemSize={RowHeight}
+					width={Columns.reduce((ac, cur) => ac + (cur.width || ColWidth), 12)}
+				>
+					{({ index, style }) => <DataTableRow data={data.data[index]} sx={style} />}
+				</FixedSizeList>
+			)}
 		</TableBody>
 	)
 }
