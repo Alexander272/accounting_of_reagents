@@ -6,6 +6,7 @@ import (
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository"
+	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 )
 
 type SpendingService struct {
@@ -54,11 +55,15 @@ func (s *SpendingService) Create(ctx context.Context, dto *models.SpendingDTO) (
 
 	// проверять осталось ли больше 30 % от изначальной массы. если меньше отправлять уведомление. думаю хватит одного уведомления, а это значит нужно какой-то флаг добавить
 	if (remainder.Remainder-dto.Amount)/remainder.Amount <= .3 {
+		logger.Debug("create spending", logger.Float64Attr("spending", remainder.Remainder+dto.Amount), logger.Float64Attr("amount", dto.Amount))
+
 		reagentNotification := &models.ReagentNotificationDTO{
-			Id:        remainder.Id,
-			HasRunOut: (remainder.Remainder + dto.Amount) == remainder.Amount,
+			Id:              remainder.Id,
+			HasNotification: true,
+			HasRunOut:       (remainder.Remainder - dto.Amount) == 0,
 		}
 		//TODO если расход удаляется надо наверное и уведомление заново слать при новом расходе
+		//TODO и флаг что реактив закончился убирать
 		if err := s.reagent.SetNotification(ctx, reagentNotification); err != nil {
 			return "", err
 		}
@@ -93,8 +98,23 @@ func (s *SpendingService) Update(ctx context.Context, dto *models.SpendingDTO) e
 }
 
 func (s *SpendingService) Delete(ctx context.Context, dto *models.DeleteSpendingDTO) error {
-	if err := s.repo.Delete(ctx, dto); err != nil {
+	remainder, err := s.reagent.GetRemainder(ctx, dto.ReagentId)
+	if err != nil {
+		return err
+	}
+
+	amount, err := s.repo.Delete(ctx, dto)
+	if err != nil {
 		return fmt.Errorf("failed to delete spending. error: %w", err)
+	}
+
+	reagentNotification := &models.ReagentNotificationDTO{
+		Id:              remainder.Id,
+		HasNotification: (remainder.Remainder+amount)/remainder.Amount <= .3,
+		HasRunOut:       false,
+	}
+	if err := s.reagent.SetNotification(ctx, reagentNotification); err != nil {
+		return err
 	}
 	return nil
 }

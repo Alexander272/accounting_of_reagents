@@ -6,14 +6,10 @@ CREATE TABLE IF NOT EXISTS public.reagent_types
     name text COLLATE pg_catalog."default" NOT NULL,
     description text COLLATE pg_catalog."default" DEFAULT ''::text,
     number integer NOT NULL,
-    role_id uuid NOT NULL,
+    role_id uuid[] NOT NULL DEFAULT '{}'::uuid[],
     created_at timestamp with time zone DEFAULT now(),
     -- role text COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT reagent_types_pkey PRIMARY KEY (id),
-    CONSTRAINT reagents_types_role_id_fkey FOREIGN KEY (role_id)
-        REFERENCES public.roles (id) MATCH SIMPLE
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
+    CONSTRAINT reagent_types_pkey PRIMARY KEY (id)
 )
 TABLESPACE pg_default;
 

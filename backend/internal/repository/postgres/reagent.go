@@ -252,7 +252,7 @@ func (r *ReagentRepo) Update(ctx context.Context, dto *models.ReagentDTO) error 
 }
 
 func (r *ReagentRepo) SetNotification(ctx context.Context, dto *models.ReagentNotificationDTO) error {
-	query := fmt.Sprintf(`UPDATE %s SET has_notification=true, has_run_out=:has_run_out WHERE id=:id`, ReagentsTable)
+	query := fmt.Sprintf(`UPDATE %s SET has_notification=:has_notification, has_run_out=:has_run_out WHERE id=:id`, ReagentsTable)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)

@@ -72,6 +72,7 @@ func (s *SchedulerService) Stop() error {
 func (s *SchedulerService) job() {
 	logger.Debug("job was started")
 
+	// Удаление всех реактивов с пометкой старше месяца
 	if err := s.reagent.DeleteOld(context.Background()); err != nil {
 		error_bot.Send(
 			&gin.Context{
@@ -83,6 +84,7 @@ func (s *SchedulerService) job() {
 		)
 	}
 
+	// Отправка списка реактивов у которых заканчивается срок годности
 	if err := s.reagent.SendOverdue(context.Background()); err != nil {
 		error_bot.Send(
 			&gin.Context{

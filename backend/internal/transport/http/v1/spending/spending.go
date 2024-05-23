@@ -103,7 +103,17 @@ func (h *SpendingHandlers) delete(c *gin.Context) {
 		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id не задан")
 		return
 	}
-	dto := &models.DeleteSpendingDTO{Id: id}
+
+	reagentId := c.Query("reagentId")
+	if reagentId == "" {
+		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id реактива не задан")
+		return
+	}
+
+	dto := &models.DeleteSpendingDTO{
+		Id:        id,
+		ReagentId: reagentId,
+	}
 
 	if err := h.service.Delete(c, dto); err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())

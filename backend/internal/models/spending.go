@@ -15,5 +15,6 @@ type SpendingDTO struct {
 }
 
 type DeleteSpendingDTO struct {
-	Id string `json:"id" db:"id"`
+	Id        string `json:"id" db:"id"`
+	ReagentId string `json:"reagentId" db:"reagent_id"`
 }

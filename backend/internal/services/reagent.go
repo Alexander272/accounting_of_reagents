@@ -45,7 +45,6 @@ type Reagent interface {
 }
 
 func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.ReagentList, error) {
-	//TODO из-за того что у меня есть одинаковые типы (для разных ролей) фильтр по id типа не выдает нужный мне результат
 	reagentTypes, err := s.reagentType.GetByRole(ctx, req.User.Role)
 	if err != nil {
 		return nil, err
@@ -78,22 +77,25 @@ func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.R
 	}
 
 	for _, i := range list.List {
-		//TODO думаю когда реактив закончился нужно менять подсветку или делать другим цвет текста
 		shelfLife := time.Unix(int64(i.DateOfManufacture), 0)
 		shelfLife = shelfLife.AddDate(0, i.ShelfLife, 0)
 		shelfLife = shelfLife.AddDate(0, i.SumPeriod, 0)
 		now := time.Now()
 
+		i.ItemStyle = &models.Styles{}
 		if shelfLife.Compare(time.Date(now.Year(), now.Month()+1, now.Day(), now.Hour(), now.Minute(), 0, 0, now.Location())) <= 0 {
-			i.Background = constants.OrangeColor
+			i.ItemStyle.Background = constants.OrangeColor
 		}
 		if shelfLife.Compare(now) <= 0 {
-			i.Background = constants.RedColor
+			i.ItemStyle.Background = constants.RedColor
 		}
 		if i.Seizure != "" {
-			i.Background = constants.BeigeColor
+			i.ItemStyle.Background = constants.BeigeColor
 		}
-		// if i.HasRunOut {}
+		if i.HasRunOut {
+			i.ItemStyle.Background = ""
+			i.ItemStyle.TextColor = "#828282"
+		}
 	}
 
 	return list, nil

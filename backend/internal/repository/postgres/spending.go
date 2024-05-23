@@ -23,11 +23,11 @@ type Spending interface {
 	GetByReagentId(context.Context, string) ([]*models.Spending, error)
 	Create(context.Context, *models.SpendingDTO) (string, error)
 	Update(context.Context, *models.SpendingDTO) error
-	Delete(context.Context, *models.DeleteSpendingDTO) error
+	Delete(context.Context, *models.DeleteSpendingDTO) (float64, error)
 }
 
 func (r *SpendingRepo) GetByReagentId(ctx context.Context, reagentId string) ([]*models.Spending, error) {
-	query := fmt.Sprintf(`SELECT id, date_of_spending, amount FROM %s WHERE reagent_id=$1 ORDER BY date_of_spending DESC`, SpendingTable)
+	query := fmt.Sprintf(`SELECT id, reagent_id, date_of_spending, amount FROM %s WHERE reagent_id=$1 ORDER BY date_of_spending DESC`, SpendingTable)
 	spending := []*models.Spending{}
 
 	if err := r.db.SelectContext(ctx, &spending, query, reagentId); err != nil {
@@ -56,11 +56,22 @@ func (r *SpendingRepo) Update(ctx context.Context, dto *models.SpendingDTO) erro
 	return nil
 }
 
-func (r *SpendingRepo) Delete(ctx context.Context, dto *models.DeleteSpendingDTO) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, SpendingTable)
+func (r *SpendingRepo) Delete(ctx context.Context, dto *models.DeleteSpendingDTO) (float64, error) {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=$1 RETURNING amount`, SpendingTable)
 
-	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
-		return fmt.Errorf("failed to execute query. error: %w", err)
+	row := r.db.QueryRowxContext(ctx, query, dto.Id)
+	if row.Err() != nil {
+		return 0, fmt.Errorf("failed to execute query. error: %w", row.Err())
 	}
-	return nil
+
+	var amount float64
+	if err := row.Scan(&amount); err != nil {
+		return 0, fmt.Errorf("failed to scan result. error: %w", err)
+	}
+	return amount, nil
+
+	// if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
+	// 	return 0, fmt.Errorf("failed to execute query. error: %w", err)
+	// }
+	// return nil
 }
