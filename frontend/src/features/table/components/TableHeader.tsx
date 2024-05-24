@@ -5,7 +5,7 @@ import { Create } from '@/features/modal/components/Create'
 import { changeModalIsOpen } from '@/features/modal/modalSlice'
 import { PlusIcon } from '@/components/Icons/PlusIcon'
 import { Search } from './Search/Search'
-// import { Setting } from './Setting/Setting'
+import { Setting } from './Setting/Setting'
 import { Filters } from './Filters/Filters'
 
 export const TableHeader = () => {
@@ -22,7 +22,7 @@ export const TableHeader = () => {
 			<Search />
 
 			<Stack direction={'row'} alignItems={'center'} spacing={2}>
-				{/* <Setting /> */}
+				<Setting />
 				<Filters />
 
 				<Button onClick={createHandler} variant='outlined'>

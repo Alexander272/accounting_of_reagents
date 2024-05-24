@@ -431,7 +431,7 @@ const ListFilter: FC<FilterProps> = ({ index }) => {
 		<Controller
 			control={methods.control}
 			name={`filters.${index}.value`}
-			// rules={{ required: true }}
+			rules={{ required: true }}
 			render={({ field, fieldState: { error } }) => (
 				<FormControl fullWidth>
 					<InputLabel id={`filters.${index}.value`}>Значение</InputLabel>

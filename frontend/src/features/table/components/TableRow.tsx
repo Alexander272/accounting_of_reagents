@@ -1,4 +1,5 @@
 import { CSSProperties, FC, MouseEvent } from 'react'
+import { useTheme } from '@mui/material'
 
 import type { IDataItem } from '../types/data'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
@@ -7,8 +8,7 @@ import { TableRow } from '@/components/Table/TableRow'
 import { TableCell } from '@/components/Table/TableCell'
 import { CellText } from '@/components/CellText/CellText'
 import { Columns } from '../columns'
-import { getContextMenu, getSelected, setContextMenu, setSelected } from '../tableSlice'
-import { useTheme } from '@mui/material'
+import { getContextMenu, getHidden, getSelected, setContextMenu, setSelected } from '../tableSlice'
 
 type Props = {
 	data: IDataItem
@@ -17,6 +17,7 @@ type Props = {
 
 export const DataTableRow: FC<Props> = ({ data, sx }) => {
 	const selected = useAppSelector(getSelected)
+	const hidden = useAppSelector(getHidden)
 	const contextMenu = useAppSelector(getContextMenu)
 	const dispatch = useAppDispatch()
 
@@ -50,18 +51,18 @@ export const DataTableRow: FC<Props> = ({ data, sx }) => {
 				background: background,
 			}}
 		>
-			{Columns.map(c => (
-				<TableCell key={data.id + c.key} width={c.width || ColWidth}>
-					<CellText
-						value={
-							c.formatter
-								? c.formatter(data[c.key as keyof IDataItem])
-								: data[c.key as keyof IDataItem]?.toString() || '-'
-						}
-						color={data.itemStyle?.textColor}
-					/>
-				</TableCell>
-			))}
+			{Columns.map(c => {
+				if (hidden[c.key]) return null
+
+				let value = data[c.key as keyof IDataItem]?.toString() || '-'
+				if (c.formatter) value = c.formatter(data[c.key as keyof IDataItem])
+
+				return (
+					<TableCell key={data.id + c.key} width={c.width || ColWidth}>
+						<CellText value={value} color={data.itemStyle?.textColor} />
+					</TableCell>
+				)
+			})}
 		</TableRow>
 	)
 }

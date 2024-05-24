@@ -34,3 +34,7 @@ export interface ICoordinates {
 	mouseX: number
 	mouseY: number
 }
+
+export interface ISelect {
+	[id: string]: boolean
+}

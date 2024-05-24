@@ -1,7 +1,7 @@
 import { type PayloadAction, createSlice } from '@reduxjs/toolkit'
 
 import type { ISort, ISearch, IFilter } from './types/data'
-import type { IContextMenu } from './types/table'
+import type { IContextMenu, ISelect } from './types/table'
 import { Size } from '@/constants/defaultValues'
 import { RootState } from '@/app/store'
 import { localKeys } from './constants/localKeys'
@@ -12,8 +12,9 @@ interface ITableSlice {
 	sort: ISort
 	filters: IFilter[]
 	search: ISearch
-	selected: { [id: string]: boolean }
+	selected: ISelect
 	contextMenu?: IContextMenu
+	hidden: ISelect
 }
 
 const initialState: ITableSlice = {
@@ -26,6 +27,7 @@ const initialState: ITableSlice = {
 		fields: ['name', 'uname'],
 	},
 	selected: {},
+	hidden: JSON.parse(localStorage.getItem(localKeys.hidden) || '{}'),
 }
 
 const tableSlice = createSlice({
@@ -79,6 +81,12 @@ const tableSlice = createSlice({
 			state.contextMenu = action.payload
 		},
 
+		setHidden: (state, action: PayloadAction<ISelect | undefined>) => {
+			if (action.payload) state.hidden = action.payload
+			else state.hidden = {}
+			localStorage.setItem(localKeys.hidden, JSON.stringify(state.hidden))
+		},
+
 		resetTable: () => {
 			localStorage.removeItem(localKeys.page)
 			return initialState
@@ -93,6 +101,7 @@ export const getFilters = (state: RootState) => state.table.filters
 export const getSearch = (state: RootState) => state.table.search
 export const getSelected = (state: RootState) => state.table.selected
 export const getContextMenu = (state: RootState) => state.table.contextMenu
+export const getHidden = (state: RootState) => state.table.hidden
 
 export const tablePath = tableSlice.name
 export const tableReducer = tableSlice.reducer
@@ -106,5 +115,6 @@ export const {
 	setSearchFields,
 	setSelected,
 	setContextMenu,
+	setHidden,
 	resetTable,
 } = tableSlice.actions
