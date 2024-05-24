@@ -20,16 +20,4 @@ postgres:
 # notification:
 #     # start_time: 10
 #     # interval: 30s
-#     times:
-#         - type: sub
-#           sub: 240h
-#           time: 72h
-#         - type: add
-#           add: 72h
-#           time: 72h
-#         - type: add
-#           add: 72h
-#           time: 72h
-#         - type: add
-#           add: 24h
-#           time: 72h
+

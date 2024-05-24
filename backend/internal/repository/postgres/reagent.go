@@ -41,31 +41,30 @@ type Reagent interface {
 }
 
 func (r *ReagentRepo) getColumnName(field string) string {
-	columns := make(map[string]string)
-
-	columns["type"] = "type"
-	columns["typeId"] = "type_id"
-	columns["name"] = "name"
-	columns["uname"] = "uname"
-	columns["document"] = "document"
-	columns["purity"] = "purity"
-	columns["dateOfManufacture"] = "date_of_manufacture"
-	columns["consignment"] = "consignment"
-	columns["manufacturer"] = "manufacturer"
-	columns["shelfLife"] = "shelf_life"
-	columns["place_closet"] = "closet"
-	columns["place_shelf"] = "shelf"
-	columns["incomingControl_receiptData"] = "receipt_date"
-	columns["incomingControl_amount"] = "amount"
-	columns["incomingControl_date"] = "control_date"
-	columns["incomingControl_protocol"] = "protocol"
-	columns["incomingControl_result"] = "result"
-	// columns["spending"] = "spending"
-	columns["extending_date"] = "date_of_extending"
-	columns["extending_period"] = "period_of_extending"
-	columns["seizureInformation"] = "seizure"
-	columns["disposalInformation"] = "disposal"
-	// columns["type"] = "type"
+	columns := map[string]string{
+		"type":                        "t.name",
+		"typeId":                      "type_id",
+		"name":                        "r.name",
+		"uname":                       "uname",
+		"document":                    "document",
+		"purity":                      "purity",
+		"dateOfManufacture":           "date_of_manufacture",
+		"consignment":                 "consignment",
+		"manufacturer":                "manufacturer",
+		"shelfLife":                   "shelf_life",
+		"place_closet":                "closet",
+		"place_shelf":                 "shelf",
+		"incomingControl_receiptDate": "receipt_date",
+		"incomingControl_amount":      "amount",
+		"incomingControl_date":        "control_date",
+		"incomingControl_protocol":    "protocol",
+		"incomingControl_result":      "result",
+		// "spending":"spending",
+		"extending_date":      "date_of_extending",
+		"extending_period":    "period_of_extending",
+		"seizureInformation":  "seizure",
+		"disposalInformation": "disposal",
+	}
 
 	return columns[field]
 }

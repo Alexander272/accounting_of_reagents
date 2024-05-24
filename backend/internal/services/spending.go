@@ -6,7 +6,6 @@ import (
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository"
-	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 )
 
 type SpendingService struct {
@@ -55,15 +54,11 @@ func (s *SpendingService) Create(ctx context.Context, dto *models.SpendingDTO) (
 
 	// проверять осталось ли больше 30 % от изначальной массы. если меньше отправлять уведомление. думаю хватит одного уведомления, а это значит нужно какой-то флаг добавить
 	if (remainder.Remainder-dto.Amount)/remainder.Amount <= .3 {
-		logger.Debug("create spending", logger.Float64Attr("spending", remainder.Remainder+dto.Amount), logger.Float64Attr("amount", dto.Amount))
-
 		reagentNotification := &models.ReagentNotificationDTO{
 			Id:              remainder.Id,
 			HasNotification: true,
 			HasRunOut:       (remainder.Remainder - dto.Amount) == 0,
 		}
-		//TODO если расход удаляется надо наверное и уведомление заново слать при новом расходе
-		//TODO и флаг что реактив закончился убирать
 		if err := s.reagent.SetNotification(ctx, reagentNotification); err != nil {
 			return "", err
 		}
