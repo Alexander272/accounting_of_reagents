@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import type { IColumn, IHeadColumn } from './types/table'
 import { DateFormat } from '@/constants/date'
 import { Titles } from './constants/titles'
+import { useGetReagentTypesQuery } from './modules/Types/typesApiSlice'
 
 export const HeaderColumns: IHeadColumn[] = [
 	{
@@ -118,6 +119,10 @@ export const Columns: IColumn[] = [
 	{
 		key: 'type',
 		label: Titles.Type,
+		filter: {
+			type: 'list',
+			getOptions: useGetReagentTypesQuery,
+		},
 	},
 	{
 		key: 'name',
@@ -213,6 +218,13 @@ export const Columns: IColumn[] = [
 		formatter: value => {
 			if (value) return 'Соответствует'
 			else return 'Несоответствует'
+		},
+		filter: {
+			type: 'switch',
+			options: {
+				true: 'Соответствует',
+				false: 'Несоответствует',
+			},
 		},
 	},
 	{

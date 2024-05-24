@@ -1,13 +1,17 @@
-import { FC, useRef, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import {
 	Button,
+	CircularProgress,
 	FormControl,
+	FormControlLabel,
 	IconButton,
 	InputLabel,
 	MenuItem,
+	OutlinedInput,
 	Select,
 	SelectChangeEvent,
 	Stack,
+	Switch,
 	TextField,
 	Typography,
 	useTheme,
@@ -17,6 +21,8 @@ import { DatePicker } from '@mui/x-date-pickers'
 import dayjs from 'dayjs'
 
 import type { CompareTypes, IFilter } from '../../types/data'
+import type { IFullFilter } from '../../types/table'
+import type { IReagentType } from '../../modules/Types/types'
 import { useAppDispatch, useAppSelector } from '@/hooks/redux'
 import { Popover } from '@/components/Popover/Popover'
 import { Badge } from '@/components/Badge/Badge'
@@ -30,8 +36,8 @@ import { Columns } from '../../columns'
 const columns = Columns.filter(c => c.filter)
 
 const defaultValue: IFilter = {
-	field: `${columns[0].key}@${columns[0].filter}`,
-	fieldType: columns[0].filter as 'string',
+	field: `${columns[1].key}@${columns[1].filter}`,
+	fieldType: columns[1].filter as 'string',
 	compareType: 'con',
 	value: '',
 }
@@ -158,6 +164,14 @@ const compareTypes = new Map([
 	['string', 'con'],
 	['date', 'eq'],
 	['number', 'eq'],
+	['switch', 'eq'],
+	['list', 'in'],
+])
+const defaultValues = new Map([
+	['string', ''],
+	['date', dayjs().unix().toString()],
+	['number', ''],
+	['switch', 'false'],
 ])
 
 type FilterItemProps = {
@@ -171,7 +185,7 @@ const FilterItem: FC<FilterItemProps> = ({ index, remove }) => {
 	const removeHandler = () => remove(index)
 
 	return (
-		<Stack direction={'row'} spacing={1}>
+		<Stack direction={'row'} spacing={1} alignItems={'center'}>
 			<Controller
 				control={methods.control}
 				name={`filters.${index}.field`}
@@ -189,6 +203,7 @@ const FilterItem: FC<FilterItemProps> = ({ index, remove }) => {
 										`filters.${index}.compareType`,
 										(compareTypes.get(newType) || 'con') as CompareTypes
 									)
+									methods.setValue(`filters.${index}.value`, defaultValues.get(newType) || '')
 								}
 								field.onChange(event.target.value)
 							}}
@@ -197,7 +212,10 @@ const FilterItem: FC<FilterItemProps> = ({ index, remove }) => {
 							error={Boolean(error)}
 						>
 							{columns.map(c => (
-								<MenuItem key={c.key} value={`${c.key}@${c.filter}`}>
+								<MenuItem
+									key={c.key}
+									value={`${c.key}@${typeof c.filter == 'string' ? c.filter : c.filter?.type}`}
+								>
 									{c.label}
 								</MenuItem>
 							))}
@@ -206,6 +224,29 @@ const FilterItem: FC<FilterItemProps> = ({ index, remove }) => {
 				)}
 			/>
 
+			{type == 'string' && <StringFilter index={index} />}
+			{type == 'number' && <NumberFilter index={index} />}
+			{type == 'date' && <DateFilter index={index} />}
+			{type == 'switch' && <SwitchFilter index={index} />}
+			{type == 'list' && <ListFilter index={index} />}
+
+			{index != 0 && (
+				<IconButton onClick={removeHandler}>
+					<TimesIcon fontSize={18} padding={0.4} />
+				</IconButton>
+			)}
+		</Stack>
+	)
+}
+
+type FilterProps = {
+	index: number
+}
+const StringFilter: FC<FilterProps> = ({ index }) => {
+	const methods = useFormContext<{ filters: IFilter[] }>()
+
+	return (
+		<>
 			<Controller
 				name={`filters.${index}.compareType`}
 				control={methods.control}
@@ -220,107 +261,202 @@ const FilterItem: FC<FilterItemProps> = ({ index, remove }) => {
 							labelId={`filters.${index}.compareType`}
 							label='Условие'
 						>
-							{type == 'number' && NumberOptions}
-							{type == 'date' && DateOptions}
-							{type == 'string' && StringOptions}
+							<MenuItem key='con' value='con'>
+								Содержит
+							</MenuItem>
+							<MenuItem key='like' value='like'>
+								Равен
+							</MenuItem>
+							<MenuItem key='start' value='start'>
+								Начинается с
+							</MenuItem>
+							<MenuItem key='end' value='end'>
+								Заканчивается на
+							</MenuItem>
 						</Select>
 					</FormControl>
 				)}
 			/>
 
-			{type == 'string' && (
-				<TextField
-					label='Значение'
-					{...methods.register(`filters.${index}.value`, { required: true })}
-					error={Boolean(
-						methods.formState.errors?.filters && methods.formState.errors?.filters[index]?.value
-					)}
-					fullWidth
-				/>
-			)}
-			{type == 'number' && (
-				<TextField
-					label='Значение'
-					type='number'
-					{...methods.register(`filters.${index}.value`, { required: true })}
-					error={Boolean(
-						methods.formState.errors?.filters && methods.formState.errors?.filters[index]?.value
-					)}
-					fullWidth
-				/>
-			)}
-			{type == 'date' && (
-				<Controller
-					control={methods.control}
-					name={`filters.${index}.value`}
-					rules={{ required: true }}
-					render={({ field, fieldState: { error } }) => (
-						<DatePicker
-							{...field}
-							value={field.value ? dayjs(+field.value * 1000) : null}
-							onChange={value => field.onChange(value?.startOf('d').unix())}
-							label={'Значение'}
-							showDaysOutsideCurrentMonth
-							fixedWeekNumber={6}
-							slotProps={{
-								textField: {
-									fullWidth: true,
-									error: Boolean(error),
-								},
-							}}
-						/>
-					)}
-				/>
-			)}
+			<TextField
+				label='Значение'
+				{...methods.register(`filters.${index}.value`, { required: true })}
+				error={Boolean(methods.formState.errors?.filters && methods.formState.errors?.filters[index]?.value)}
+				fullWidth
+			/>
+		</>
+	)
+}
+const NumberFilter: FC<FilterProps> = ({ index }) => {
+	const methods = useFormContext<{ filters: IFilter[] }>()
 
-			{index != 0 && (
-				<IconButton onClick={removeHandler}>
-					<TimesIcon fontSize={18} padding={0.4} />
-				</IconButton>
-			)}
-		</Stack>
+	return (
+		<>
+			<Controller
+				name={`filters.${index}.compareType`}
+				control={methods.control}
+				rules={{ required: true }}
+				render={({ field, fieldState: { error } }) => (
+					<FormControl fullWidth sx={{ maxWidth: 170 }}>
+						<InputLabel id={`filters.${index}.compareType`}>Условие</InputLabel>
+
+						<Select
+							{...field}
+							error={Boolean(error)}
+							labelId={`filters.${index}.compareType`}
+							label='Условие'
+						>
+							<MenuItem key='n_eq' value='eq'>
+								Равно
+							</MenuItem>
+							<MenuItem key='n_gte' value='gte'>
+								Больше или равно
+							</MenuItem>
+							<MenuItem key='n_lte' value='lte'>
+								Меньше или равно
+							</MenuItem>
+						</Select>
+					</FormControl>
+				)}
+			/>
+
+			<TextField
+				label='Значение'
+				type='number'
+				{...methods.register(`filters.${index}.value`, { required: true })}
+				error={Boolean(methods.formState.errors?.filters && methods.formState.errors?.filters[index]?.value)}
+				fullWidth
+			/>
+		</>
+	)
+}
+const DateFilter: FC<FilterProps> = ({ index }) => {
+	const methods = useFormContext<{ filters: IFilter[] }>()
+
+	return (
+		<>
+			<Controller
+				name={`filters.${index}.compareType`}
+				control={methods.control}
+				rules={{ required: true }}
+				render={({ field, fieldState: { error } }) => (
+					<FormControl fullWidth sx={{ maxWidth: 170 }}>
+						<InputLabel id={`filters.${index}.compareType`}>Условие</InputLabel>
+
+						<Select
+							{...field}
+							error={Boolean(error)}
+							labelId={`filters.${index}.compareType`}
+							label='Условие'
+						>
+							<MenuItem key='d_eq' value='eq'>
+								Равна
+							</MenuItem>
+							<MenuItem key='d_gte' value='gte'>
+								Больше или равна
+							</MenuItem>
+							<MenuItem key='d_lte' value='lte'>
+								Меньше или равна
+							</MenuItem>
+						</Select>
+					</FormControl>
+				)}
+			/>
+
+			<Controller
+				control={methods.control}
+				name={`filters.${index}.value`}
+				rules={{ required: true }}
+				render={({ field, fieldState: { error } }) => (
+					<DatePicker
+						{...field}
+						value={field.value ? dayjs(+field.value * 1000) : null}
+						onChange={value => field.onChange(value?.startOf('d').unix())}
+						label={'Значение'}
+						showDaysOutsideCurrentMonth
+						fixedWeekNumber={6}
+						slotProps={{
+							textField: {
+								fullWidth: true,
+								error: Boolean(error),
+							},
+						}}
+					/>
+				)}
+			/>
+		</>
 	)
 }
 
-const NumberOptions = [
-	<MenuItem key='n_eq' value='eq'>
-		Равно
-	</MenuItem>,
-	<MenuItem key='n_gte' value='gte'>
-		Больше или равно
-	</MenuItem>,
-	<MenuItem key='n_lte' value='lte'>
-		Меньше или равно
-	</MenuItem>,
-	// <MenuItem key='n_range' value='range'>
-	// 	В диапазоне
-	// </MenuItem>,
-]
+const SwitchFilter: FC<FilterProps> = ({ index }) => {
+	const methods = useFormContext<{ filters: IFilter[] }>()
+	const field = methods.watch(`filters.${index}.field`).split('@')[0]
+	const filter = columns.find(c => c.key == field)?.filter as {
+		type: 'switch'
+		options: { true: string; false: string }
+	}
 
-const DateOptions = [
-	<MenuItem key='d_eq' value='eq'>
-		Равна
-	</MenuItem>,
-	<MenuItem key='d_gte' value='gte'>
-		Больше или равна
-	</MenuItem>,
-	<MenuItem key='d_lte' value='lte'>
-		Меньше или равна
-	</MenuItem>,
-	// <MenuItem value='range'>В диапазоне</MenuItem>,
-]
+	return (
+		<Controller
+			control={methods.control}
+			name={`filters.${index}.value`}
+			render={({ field }) => (
+				<FormControlLabel
+					label={filter?.options[(field.value as 'true') || false]}
+					control={
+						<Switch
+							checked={field.value == 'true'}
+							onChange={event => field.onChange(event.target.checked.toString())}
+						/>
+					}
+				/>
+			)}
+		/>
+	)
+}
+const ListFilter: FC<FilterProps> = ({ index }) => {
+	const methods = useFormContext<{ filters: IFilter[] }>()
+	const field = methods.watch(`filters.${index}.field`).split('@')[0]
+	const value = methods.watch(`filters.${index}.value`)
+	const filter = columns.find(c => c.key == field)?.filter as IFullFilter
+	const { data, isLoading }: { data?: { data: IReagentType[] }; isLoading: boolean } =
+		filter.getOptions && filter.getOptions(null)
 
-const StringOptions = [
-	<MenuItem key='con' value='con'>
-		Содержит
-	</MenuItem>,
-	<MenuItem key='like' value='like'>
-		Равен
-	</MenuItem>,
-	<MenuItem key='start' value='start'>
-		Начинается с
-	</MenuItem>,
-	<MenuItem key='end' value='end'>
-		Заканчивается на
-	</MenuItem>,
-]
+	useEffect(() => {
+		if (data && value == '') methods.setValue(`filters.${index}.value`, data.data[0].name)
+	}, [value, methods, index, data])
+
+	if (isLoading) return <CircularProgress size={20} />
+	return (
+		<Controller
+			control={methods.control}
+			name={`filters.${index}.value`}
+			// rules={{ required: true }}
+			render={({ field, fieldState: { error } }) => (
+				<FormControl fullWidth>
+					<InputLabel id={`filters.${index}.value`}>Значение</InputLabel>
+					<Select
+						multiple
+						labelId={`filters.${index}.value`}
+						value={field.value.split('|')}
+						error={Boolean(error)}
+						onChange={event =>
+							field.onChange(
+								typeof event.target.value === 'string'
+									? event.target.value
+									: event.target.value.join('|')
+							)
+						}
+						input={<OutlinedInput label='Значение' />}
+					>
+						{data?.data.map(r => (
+							<MenuItem key={r.id} value={r.name}>
+								{r.description || r.name}
+							</MenuItem>
+						))}
+					</Select>
+				</FormControl>
+			)}
+		/>
+	)
+}

@@ -7,7 +7,13 @@ export interface IHeadColumn {
 	children?: IHeadColumn[]
 }
 
-export type FilterType = 'number' | 'string' | 'date'
+export type FilterType = 'number' | 'string' | 'date' | 'switch' | 'list'
+export interface IFullFilter {
+	type: FilterType
+	options?: unknown
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	getOptions?: (arg: null) => any
+}
 export interface IColumn {
 	key: string
 	label: string
@@ -15,7 +21,7 @@ export interface IColumn {
 	align?: 'center' | 'right' | 'left'
 	isShow?: boolean
 	allowSearch?: boolean
-	filter?: FilterType
+	filter?: FilterType | IFullFilter
 	formatter?: (value: unknown) => string
 }
 
