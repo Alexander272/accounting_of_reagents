@@ -29,9 +29,13 @@ export const DataTableHead = () => {
 
 		HeaderColumns.forEach(c => {
 			if (c.children) {
+				let width = 0
 				const subhead: JSX.Element[] = []
+
 				c.children.forEach(c => {
 					if (!hidden[c.key]) {
+						width += c.width || ColWidth
+
 						subhead.push(
 							<TableCell key={c.key} width={c.width || ColWidth} isActive onClick={setSortHandler(c.key)}>
 								<CellText value={c.label} />
@@ -57,7 +61,7 @@ export const DataTableHead = () => {
 					header.push(
 						<TableGroup key={c.key}>
 							<TableRow>
-								<TableCell key={c.key}>
+								<TableCell width={width} key={c.key}>
 									<CellText value={c.label} />
 								</TableCell>
 							</TableRow>

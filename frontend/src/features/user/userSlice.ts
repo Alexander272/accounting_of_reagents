@@ -40,6 +40,7 @@ const userSlice = createSlice({
 
 export const getToken = (state: RootState) => state.user.token
 export const getMenu = (state: RootState) => state.user.menu
+export const getRole = (state: RootState) => state.user.role
 
 export const userPath = userSlice.name
 export const userReducer = userSlice.reducer

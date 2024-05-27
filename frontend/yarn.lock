@@ -370,6 +370,11 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.1.tgz#16308cea045f0fc777b6ff20a9f25474dd8293d2"
   integrity sha512-9TANp6GPoMtYzQdt54kfAyMmz1+osLlXdg2ENroU7zzrtflTLrrC/lgrIfaSe+Wu0b89GKccT7vxXA0MoAIO+Q==
 
+"@fontsource/exo-2@^5.0.18":
+  version "5.0.18"
+  resolved "https://registry.yarnpkg.com/@fontsource/exo-2/-/exo-2-5.0.18.tgz#adcb869fb2aca72d31ca88d2a269c4511fe8aeaf"
+  integrity sha512-QBY4Jt/Oj1wczswCbDyB4Eh7BgFLqQZvvZ6p9J0PJQP+vjtsRVS0wLsKAmgoVIupeu82AcnoICm6I9XsfbiZ5A==
+
 "@fontsource/roboto@^5.0.12":
   version "5.0.12"
   resolved "https://registry.yarnpkg.com/@fontsource/roboto/-/roboto-5.0.12.tgz#418f7305a3be7fc567dd154db20090f7ece7fc6c"

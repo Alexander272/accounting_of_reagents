@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 // import customParseFormat from 'dayjs/plugin/customParseFormat'
 import 'dayjs/locale/ru'
 import 'react-toastify/dist/ReactToastify.min.css'
+import '@fontsource/roboto/400.css'
 
 import { store } from '@/app/store'
 import { AppRouter } from '@/pages/router/AppRouter'

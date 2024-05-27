@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 import { Button, Divider, Stack, Typography, useTheme } from '@mui/material'
 
-import { Container } from './notFound.style'
+import { Container } from './forbidden.style'
 import logo from '@/assets/logo192.webp'
 
-export default function NotFound() {
+export default function Forbidden() {
 	const { palette } = useTheme()
 
 	return (
@@ -26,12 +26,12 @@ export default function NotFound() {
 						WebkitTextStrokeColor: palette.primary.main,
 					}}
 				>
-					404
+					403
 				</Typography>
 			</Stack>
 
 			<Typography mt={3} mb={3} sx={{ fontSize: '2rem', color: palette.primary.main }}>
-				Страница не найдена
+				Доступ к данному разделу запрещен
 			</Typography>
 
 			<Link to='/'>
