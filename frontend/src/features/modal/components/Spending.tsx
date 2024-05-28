@@ -55,14 +55,14 @@ export const Spending = () => {
 	)
 }
 
+const defaultValues = {
+	date: 0,
+	amount: '',
+}
+
 const SpendingForm = () => {
 	const [selected, setSelected] = useState<number>()
 	const contextMenu = useAppSelector(getContextMenu)
-
-	const defaultValues = {
-		date: dayjs().unix(),
-		amount: '',
-	}
 
 	const { palette } = useTheme()
 
@@ -101,10 +101,14 @@ const SpendingForm = () => {
 
 	const selectHandler = (index: number) => () => {
 		if (!data) return
-		methods.reset({ date: data.data[index].date, amount: data.data[index].amount.toString() })
 
-		if (index == selected) setSelected(undefined)
-		else setSelected(index)
+		if (index == selected) {
+			setSelected(undefined)
+			methods.reset(defaultValues)
+		} else {
+			setSelected(index)
+			methods.reset({ date: data.data[index].date, amount: data.data[index].amount.toString() })
+		}
 	}
 
 	const deleteHandler = (index: number) => async () => {
@@ -142,7 +146,7 @@ const SpendingForm = () => {
 					render={({ field, fieldState: { error } }) => (
 						<DatePicker
 							{...field}
-							value={dayjs(+field.value * 1000)}
+							value={field.value ? dayjs(+field.value * 1000) : null}
 							onChange={value => field.onChange(value?.unix())}
 							label={'Дата расхода'}
 							showDaysOutsideCurrentMonth
@@ -156,12 +160,19 @@ const SpendingForm = () => {
 						/>
 					)}
 				/>
-				<TextField
-					label={'Количество ' + (type?.name ? `(${type?.name})` : '')}
-					type='number'
-					fullWidth
-					error={Boolean(methods.formState.errors['amount'])}
-					{...methods.register('amount', { required: true })}
+				<Controller
+					control={methods.control}
+					name='amount'
+					rules={{ required: true }}
+					render={({ field, fieldState: { error } }) => (
+						<TextField
+							label={'Количество ' + (type?.name ? `(${type?.name})` : '')}
+							type='number'
+							fullWidth
+							{...field}
+							error={Boolean(error)}
+						/>
+					)}
 				/>
 
 				<Button type='submit' variant='outlined' sx={{ minWidth: 40 }}>

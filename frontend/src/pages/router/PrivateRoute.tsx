@@ -1,9 +1,9 @@
 import type { PropsWithChildren } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 
+import { AppRoutes } from '@/constants/routes'
 import { useAppSelector } from '@/hooks/redux'
 import { getMenu, getToken } from '@/features/user/userSlice'
-import { AppRoutes } from '@/constants/routes'
 import { Forbidden } from '../forbidden/ForbiddenLazy'
 
 // проверка авторизации пользователя

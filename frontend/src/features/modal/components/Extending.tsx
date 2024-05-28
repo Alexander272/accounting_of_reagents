@@ -54,14 +54,14 @@ export const Extending = () => {
 	)
 }
 
+const defaultValues = {
+	date: 0,
+	period: '',
+}
+
 export const ExtendingForm = () => {
 	const [selected, setSelected] = useState<number>()
 	const contextMenu = useAppSelector(getContextMenu)
-
-	const defaultValues = {
-		date: dayjs().unix(),
-		period: '',
-	}
 
 	const { palette } = useTheme()
 
@@ -99,10 +99,14 @@ export const ExtendingForm = () => {
 
 	const selectHandler = (index: number) => () => {
 		if (!data) return
-		methods.reset({ date: data.data[index].date, period: data.data[index].period.toString() })
 
-		if (index == selected) setSelected(undefined)
-		else setSelected(index)
+		if (index == selected) {
+			setSelected(undefined)
+			methods.reset(defaultValues)
+		} else {
+			setSelected(index)
+			methods.reset({ date: data.data[index].date, period: data.data[index].period.toString() })
+		}
 	}
 
 	const deleteHandler = (index: number) => async () => {
@@ -138,7 +142,7 @@ export const ExtendingForm = () => {
 					render={({ field, fieldState: { error } }) => (
 						<DatePicker
 							{...field}
-							value={dayjs(+field.value * 1000)}
+							value={field.value ? dayjs(+field.value * 1000) : null}
 							onChange={value => field.onChange(value?.unix())}
 							label={'Дата расхода'}
 							showDaysOutsideCurrentMonth
@@ -152,12 +156,19 @@ export const ExtendingForm = () => {
 						/>
 					)}
 				/>
-				<TextField
-					label={'Период продления, мес'}
-					type='number'
-					fullWidth
-					error={Boolean(methods.formState.errors['period'])}
-					{...methods.register('period', { required: true })}
+				<Controller
+					control={methods.control}
+					name='period'
+					rules={{ required: true }}
+					render={({ field, fieldState: { error } }) => (
+						<TextField
+							label={'Период продления, мес'}
+							type='number'
+							fullWidth
+							{...field}
+							error={Boolean(error)}
+						/>
+					)}
 				/>
 
 				<Button type='submit' variant='outlined' sx={{ minWidth: 40 }}>
