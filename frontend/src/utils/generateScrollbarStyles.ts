@@ -1,11 +1,11 @@
 export interface IScrollbarParameters {
-	scrollbarWidth: string;
-	scrollbarHeight: string;
-	scrollbarBgColor: string;
-	thumbColor: string;
-	thumbColorHover: string;
-	thumbColorActive: string;
-	borderRadius: string;
+	scrollbarWidth: string
+	scrollbarHeight: string
+	scrollbarBgColor: string
+	thumbColor: string
+	thumbColorHover: string
+	thumbColorActive: string
+	borderRadius: string
 }
 
 export const generateScrollbarStyles = (parameters: IScrollbarParameters) => {
@@ -17,17 +17,17 @@ export const generateScrollbarStyles = (parameters: IScrollbarParameters) => {
 		thumbColor,
 		thumbColorActive,
 		thumbColorHover,
-	} = parameters;
+	} = parameters
 
 	return `
-  * {
-    scrollbar-color: ${thumbColor} ${scrollbarBgColor};
-    scrollbar-width: thin;
-  }
+  	* {
+    	scrollbar-color: ${thumbColor} ${scrollbarBgColor};
+    	scrollbar-width: thin;
+  	}
 	*::-webkit-scrollbar {
-		 background-color: ${scrollbarBgColor};
-		 width: ${scrollbarWidth};
-		 height: ${scrollbarHeight}; 
+		background-color: ${scrollbarBgColor};
+		width: ${scrollbarWidth};
+		height: ${scrollbarHeight}; 
 	}
 	*::-webkit-scrollbar-corner {
 		background-color: ${scrollbarBgColor};
@@ -42,5 +42,5 @@ export const generateScrollbarStyles = (parameters: IScrollbarParameters) => {
 	*::-webkit-scrollbar-thumb:active {
 		background-color: ${thumbColorActive};
 	}
-	`;
-};
+	`
+}

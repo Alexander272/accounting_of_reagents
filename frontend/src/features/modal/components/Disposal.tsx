@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { Button, Stack, TextField, Typography } from '@mui/material'
 import { toast } from 'react-toastify'
 
@@ -10,6 +9,7 @@ import { Dialog } from '@/components/Dialog/Dialog'
 import { Fallback } from '@/components/Fallback/Fallback'
 import { changeModalIsOpen, getModalState } from '../modalSlice'
 import { Titles } from '../titles'
+import { Controller, useForm } from 'react-hook-form'
 
 export const Disposal = () => {
 	const modal = useAppSelector(getModalState('disposal'))
@@ -33,8 +33,9 @@ export const Disposal = () => {
 	)
 }
 
+type DisposalForm = { disposal: string }
+
 const DisposalForm = () => {
-	const input = useRef<HTMLInputElement>()
 	const contextMenu = useAppSelector(getContextMenu)
 	const dispatch = useAppDispatch()
 
@@ -42,19 +43,17 @@ const DisposalForm = () => {
 
 	const [update] = useUpdateMutation()
 
-	useEffect(() => {
-		if (reagent && input.current) input.current.value = reagent.data.disposal
-	}, [reagent])
+	const methods = useForm<DisposalForm>({ values: { disposal: reagent?.data.disposal || '' } })
 
 	const closeHandler = () => {
 		dispatch(changeModalIsOpen({ variant: 'disposal', isOpen: false }))
 		dispatch(setContextMenu())
 	}
 
-	const saveHandler = async () => {
-		console.log(input.current?.value)
-		if (!reagent || !input.current) return
-		const newData = { ...reagent.data, disposal: input.current.value }
+	const saveHandler = async (form: DisposalForm) => {
+		console.log(form)
+		if (!reagent || !form) return
+		const newData = { ...reagent.data, disposal: form.disposal }
 
 		try {
 			await update(newData).unwrap()
@@ -66,7 +65,7 @@ const DisposalForm = () => {
 	}
 
 	return (
-		<Stack mt={-3}>
+		<Stack mt={-3} component={'form'} onSubmit={methods.handleSubmit(saveHandler)}>
 			{isLoading ? <Fallback marginTop={5} marginBottom={3} /> : null}
 
 			<Stack mb={2}>
@@ -75,13 +74,19 @@ const DisposalForm = () => {
 				</Typography>
 			</Stack>
 
-			<TextField inputRef={input} label={'Сведения об утилизации'} multiline minRows={4} />
+			<Controller
+				control={methods.control}
+				name='disposal'
+				rules={{ required: true }}
+				render={({ field }) => <TextField {...field} label={'Сведения об утилизации'} multiline minRows={4} />}
+			/>
+			{/* <TextField inputRef={input} label={'Сведения об утилизации'} multiline minRows={4} /> */}
 
 			<Stack direction={'row'} spacing={3} mt={2}>
 				<Button onClick={closeHandler} variant='outlined' fullWidth>
 					Отмена
 				</Button>
-				<Button onClick={saveHandler} variant='contained' fullWidth>
+				<Button type='submit' variant='contained' fullWidth>
 					Сохранить
 				</Button>
 			</Stack>

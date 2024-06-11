@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Button, Stack, TextField, Typography } from '@mui/material'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 
 import type { IFetchError } from '@/app/types/error'
@@ -98,8 +98,22 @@ const NotesForm = () => {
 				</Typography>
 			</Stack>
 
-			<TextField {...methods.register('comment')} label={'Комментарии '} multiline minRows={4} sx={{ mb: 1.5 }} />
-			<TextField {...methods.register('note')} label={'Примечание '} multiline minRows={4} />
+			<Controller
+				control={methods.control}
+				name='comment'
+				rules={{ required: true }}
+				render={({ field }) => (
+					<TextField {...field} label={'Комментарии '} multiline minRows={4} sx={{ mb: 1.5 }} />
+				)}
+			/>
+			<Controller
+				control={methods.control}
+				name='note'
+				rules={{ required: true }}
+				render={({ field }) => <TextField {...field} label={'Примечание '} multiline minRows={4} />}
+			/>
+			{/* <TextField {...methods.register('comment')} label={'Комментарии '} multiline minRows={4} sx={{ mb: 1.5 }} />
+			<TextField {...methods.register('note')} label={'Примечание '} multiline minRows={4} /> */}
 
 			<Stack direction={'row'} spacing={3} mt={2}>
 				<Button onClick={closeHandler} variant='outlined' fullWidth>

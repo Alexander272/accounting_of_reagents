@@ -3,6 +3,7 @@ import styled from '@emotion/styled'
 
 export const Container = styled.div`
 	max-width: 1580px;
+	height: 100vh;
 	/* padding: 50px 10px; */
 	flex-grow: 1;
 	display: flex;
