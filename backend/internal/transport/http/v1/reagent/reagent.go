@@ -12,6 +12,7 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/middleware"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/error_bot"
+	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -178,6 +179,7 @@ func (h *ReagentHandlers) create(c *gin.Context) {
 		error_bot.Send(c, err.Error(), dto)
 		return
 	}
+	logger.Info("Добавлен реактив", logger.StringAttr("title", dto.Name))
 
 	c.JSON(http.StatusCreated, response.IdResponse{Id: id, Message: "Реактив добавлен"})
 }
@@ -201,6 +203,7 @@ func (h *ReagentHandlers) update(c *gin.Context) {
 		error_bot.Send(c, err.Error(), dto)
 		return
 	}
+	logger.Info("Обновлен реактив", logger.StringAttr("title", dto.Name))
 
 	c.JSON(http.StatusOK, response.IdResponse{Message: "Реактив обновлен"})
 }
@@ -217,6 +220,7 @@ func (h *ReagentHandlers) delete(c *gin.Context) {
 		error_bot.Send(c, err.Error(), id)
 		return
 	}
+	logger.Info("Удален реактив", logger.StringAttr("id", id))
 
 	c.JSON(http.StatusNoContent, response.IdResponse{})
 }

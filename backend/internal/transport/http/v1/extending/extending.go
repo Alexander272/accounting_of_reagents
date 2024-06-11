@@ -9,6 +9,7 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/middleware"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/error_bot"
+	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -64,6 +65,7 @@ func (h *ExtendingHandlers) create(c *gin.Context) {
 		error_bot.Send(c, err.Error(), dto)
 		return
 	}
+	logger.Info("Добавлено продление срока", logger.StringAttr("reagentId", dto.ReagentId))
 
 	c.JSON(http.StatusCreated, response.IdResponse{Id: id, Message: "Продление срока годности создано"})
 }
@@ -87,6 +89,7 @@ func (h *ExtendingHandlers) update(c *gin.Context) {
 		error_bot.Send(c, err.Error(), dto)
 		return
 	}
+	logger.Info("Обновлено продление срока", logger.StringAttr("reagentId", dto.ReagentId))
 
 	c.JSON(http.StatusOK, response.IdResponse{Message: "Продление срока годности обновлено"})
 }
@@ -104,6 +107,7 @@ func (h *ExtendingHandlers) delete(c *gin.Context) {
 		error_bot.Send(c, err.Error(), id)
 		return
 	}
+	logger.Info("Удалено продление срока", logger.StringAttr("id", dto.Id))
 
 	c.JSON(http.StatusNoContent, response.IdResponse{})
 }

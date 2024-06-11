@@ -9,6 +9,7 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/middleware"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/error_bot"
+	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -64,6 +65,7 @@ func (h *NoteHandlers) create(c *gin.Context) {
 		error_bot.Send(c, err.Error(), dto)
 		return
 	}
+	logger.Info("Добавлены комментарии", logger.StringAttr("reagentId", dto.ReagentId))
 
 	c.JSON(http.StatusCreated, response.IdResponse{Id: id, Message: "Примечание добавлено"})
 }
@@ -87,6 +89,7 @@ func (h *NoteHandlers) update(c *gin.Context) {
 		error_bot.Send(c, err.Error(), dto)
 		return
 	}
+	logger.Info("Обновлены комментарии", logger.StringAttr("reagentId", dto.ReagentId))
 
 	c.JSON(http.StatusOK, response.IdResponse{Message: "Примечание обновлено"})
 }
@@ -104,6 +107,7 @@ func (h *NoteHandlers) delete(c *gin.Context) {
 		error_bot.Send(c, err.Error(), id)
 		return
 	}
+	logger.Info("Удалены комментарии", logger.StringAttr("id", dto.Id))
 
 	c.JSON(http.StatusNoContent, response.IdResponse{})
 }

@@ -135,12 +135,12 @@ func (h *AuthHandler) refresh(c *gin.Context) {
 		domain = c.Request.Host
 	}
 
-	// logger.Info("Пользователь успешно обновил сессию",
-	// 	logger.StringAttr("section", "auth"),
-	// 	logger.StringAttr("ip", c.ClientIP()),
-	// 	logger.StringAttr("user", user.Name),
-	// 	logger.StringAttr("user_id", user.Id),
-	// )
+	logger.Info("Пользователь успешно обновил сессию",
+		logger.StringAttr("section", "auth"),
+		logger.StringAttr("ip", c.ClientIP()),
+		logger.StringAttr("user", user.Name),
+		logger.StringAttr("user_id", user.Id),
+	)
 
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(constants.AuthCookie, user.RefreshToken, int(h.auth.RefreshTokenTTL.Seconds()), "/", domain, h.auth.Secure, true)
