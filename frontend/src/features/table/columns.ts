@@ -9,38 +9,47 @@ export const HeaderColumns: IHeadColumn[] = [
 	{
 		key: 'type',
 		label: Titles.Type,
+		allowsSorting: true,
 	},
 	{
 		key: 'name',
 		label: Titles.Name,
+		allowsSorting: true,
 	},
 	{
 		key: 'uname',
 		label: Titles.UName,
+		allowsSorting: true,
 	},
 	{
 		key: 'document',
 		label: Titles.Doc,
+		allowsSorting: true,
 	},
 	{
 		key: 'purity',
 		label: Titles.Purity,
+		allowsSorting: true,
 	},
 	{
 		key: 'dateOfManufacture',
 		label: Titles.DateOfManufacture,
+		allowsSorting: true,
 	},
 	{
 		key: 'consignment',
 		label: Titles.Consignment,
+		allowsSorting: true,
 	},
 	{
 		key: 'manufacturer',
 		label: Titles.Manufacturer,
+		allowsSorting: true,
 	},
 	{
 		key: 'shelfLife',
 		label: Titles.ShelfLife,
+		allowsSorting: true,
 	},
 	{
 		key: 'place',
@@ -49,10 +58,12 @@ export const HeaderColumns: IHeadColumn[] = [
 			{
 				key: 'place_closet',
 				label: Titles.Place.Closet,
+				allowsSorting: true,
 			},
 			{
 				key: 'place_shelf',
 				label: Titles.Place.Shelf,
+				allowsSorting: true,
 			},
 		],
 	},
@@ -63,22 +74,27 @@ export const HeaderColumns: IHeadColumn[] = [
 			{
 				key: 'incomingControl_receiptDate',
 				label: Titles.IncomingControl.ReceiptDate,
+				allowsSorting: true,
 			},
 			{
 				key: 'incomingControl_amount',
 				label: Titles.IncomingControl.Amount,
+				allowsSorting: true,
 			},
 			{
 				key: 'incomingControl_date',
 				label: Titles.IncomingControl.Date,
+				allowsSorting: true,
 			},
 			{
 				key: 'incomingControl_protocol',
 				label: Titles.IncomingControl.Protocol,
+				allowsSorting: true,
 			},
 			{
 				key: 'incomingControl_result',
 				label: Titles.IncomingControl.Result,
+				allowsSorting: true,
 			},
 		],
 	},

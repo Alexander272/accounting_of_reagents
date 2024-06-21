@@ -10,6 +10,7 @@ import { SortUpIcon } from '@/components/Icons/SortUpIcon'
 import { SortDownIcon } from '@/components/Icons/SortDownIcon'
 import { getHidden, getTableSort, setSort } from '../tableSlice'
 import { Columns, HeaderColumns } from '../columns'
+import { IHeadColumn } from '../types/table'
 
 export const DataTableHead = () => {
 	const sort = useAppSelector(getTableSort)
@@ -24,6 +25,32 @@ export const DataTableHead = () => {
 		dispatch(setSort(field))
 	}
 
+	const getCell = (c: IHeadColumn) => {
+		return (
+			<TableCell
+				key={c.key}
+				width={c.width || ColWidth}
+				isActive
+				onClick={c.allowsSorting ? setSortHandler(c.key) : undefined}
+			>
+				<CellText value={c.label} />
+				{c.allowsSorting ? (
+					<Badge
+						color='primary'
+						badgeContent={Object.keys(sort).findIndex(k => k == c.key) + 1}
+						invisible={Object.keys(sort).length < 2}
+					>
+						{!sort[c.key] || sort[c.key] == 'ASC' ? (
+							<SortUpIcon fontSize={16} fill={sort[c.key] ? 'black' : '#adadad'} />
+						) : null}
+						{sort[c.key] == 'DESC' ? (
+							<SortDownIcon fontSize={16} fill={sort[c.key] ? 'black' : '#adadad'} />
+						) : null}
+					</Badge>
+				) : null}
+			</TableCell>
+		)
+	}
 	const renderHeader = () => {
 		const header: JSX.Element[] = []
 
@@ -36,24 +63,7 @@ export const DataTableHead = () => {
 					if (!hidden[c.key]) {
 						width += c.width || ColWidth
 
-						subhead.push(
-							<TableCell key={c.key} width={c.width || ColWidth} isActive onClick={setSortHandler(c.key)}>
-								<CellText value={c.label} />
-
-								<Badge
-									color='primary'
-									badgeContent={Object.keys(sort).findIndex(k => k == c.key) + 1}
-									invisible={Object.keys(sort).length < 2}
-								>
-									{!sort[c.key] || sort[c.key] == 'ASC' ? (
-										<SortUpIcon fontSize={16} fill={sort[c.key] ? 'black' : '#adadad'} />
-									) : null}
-									{sort[c.key] == 'DESC' ? (
-										<SortDownIcon fontSize={16} fill={sort[c.key] ? 'black' : '#adadad'} />
-									) : null}
-								</Badge>
-							</TableCell>
-						)
+						subhead.push(getCell(c))
 					}
 				})
 
@@ -70,24 +80,7 @@ export const DataTableHead = () => {
 					)
 				}
 			} else if (!hidden[c.key]) {
-				header.push(
-					<TableCell key={c.key} width={c.width || ColWidth} isActive onClick={setSortHandler(c.key)}>
-						<CellText value={c.label} />
-
-						<Badge
-							color='primary'
-							badgeContent={Object.keys(sort).findIndex(k => k == c.key) + 1}
-							invisible={Object.keys(sort).length < 2}
-						>
-							{!sort[c.key] || sort[c.key] == 'ASC' ? (
-								<SortUpIcon fontSize={16} fill={sort[c.key] ? 'black' : '#adadad'} />
-							) : null}
-							{sort[c.key] == 'DESC' ? (
-								<SortDownIcon fontSize={16} fill={sort[c.key] ? 'black' : '#adadad'} />
-							) : null}
-						</Badge>
-					</TableCell>
-				)
+				header.push(getCell(c))
 			}
 		})
 
