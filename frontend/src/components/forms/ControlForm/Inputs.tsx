@@ -22,8 +22,8 @@ import { useAppDispatch } from '@/hooks/redux'
 import { changeModalIsOpen } from '@/features/modal/modalSlice'
 
 const fields: Field<keyof IControlForm>[] = [
-	{ key: 'receiptDate', type: 'Date', label: Titles.ReceiptDate + ' *', rules: { required: true } },
-	{ key: 'amount', type: 'Number', label: Titles.Amount + ' *', rules: { required: true } },
+	{ key: 'receiptDate', type: 'Date', label: Titles.ReceiptDate + ' *', rules: { required: true, min: 1000000000 } },
+	{ key: 'amount', type: 'Number', label: Titles.Amount + ' *', rules: { required: true, min: 1 } },
 	{
 		key: 'amountType',
 		type: 'List',
@@ -33,7 +33,7 @@ const fields: Field<keyof IControlForm>[] = [
 			return data?.data || []
 		},
 	},
-	{ key: 'controlDate', type: 'Date', label: Titles.Date },
+	{ key: 'controlDate', type: 'Date', label: Titles.Date, rules: { min: 1000000000 } },
 	{ key: 'protocol', type: 'String', label: Titles.Protocol },
 	{
 		key: 'result',

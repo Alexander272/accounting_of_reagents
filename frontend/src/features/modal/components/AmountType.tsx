@@ -74,6 +74,11 @@ const CreateForm: FC<FormProps> = ({ data }) => {
 		// })
 
 		if (!methods.formState.isDirty) return
+		for (let i = 0; i < data.data.length; i++) {
+			const d = data.data[i]
+			d.name = d.name.trim()
+			d.description = d.description.trim()
+		}
 
 		try {
 			await edit(data).unwrap()

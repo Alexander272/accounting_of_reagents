@@ -10,7 +10,10 @@ export const useGetAllData = () => {
 	const sort = useAppSelector(getTableSort)
 	const filters = useAppSelector(getFilters)
 
-	const query = useGetAllQuery({ page, size, search, sort, filters }, { pollingInterval: 5 * 60000 })
+	const query = useGetAllQuery(
+		{ page, size, search, sort, filters },
+		{ pollingInterval: 5 * 60000, skipPollingIfUnfocused: true, refetchOnFocus: true }
+	)
 
 	return query
 }

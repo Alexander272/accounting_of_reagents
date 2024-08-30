@@ -116,6 +116,7 @@ export const theme = createTheme({
 			defaultProps: {
 				size: 'small',
 				autoComplete: 'off',
+				onWheel: event => (event.target as HTMLInputElement).blur(),
 			},
 			styleOverrides: {
 				root: {
