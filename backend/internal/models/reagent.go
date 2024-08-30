@@ -67,20 +67,20 @@ type EditReagent struct {
 type ReagentDTO struct {
 	Id                string  `json:"id" db:"id"`
 	TypeId            string  `json:"typeId" db:"type_id"`
-	Name              string  `json:"name" db:"name"`
+	Name              string  `json:"name" db:"name" binding:"required"`
 	Uname             string  `json:"uname" db:"uname"`
 	Document          string  `json:"document" db:"document"`
 	Purity            string  `json:"purity" db:"purity"`
-	DateOfManufacture int     `json:"dateOfManufacture" db:"date_of_manufacture"`
+	DateOfManufacture int     `json:"dateOfManufacture" db:"date_of_manufacture" binding:"required,gte=1000000"`
 	Consignment       string  `json:"consignment" db:"consignment"`
 	Manufacturer      string  `json:"manufacturer" db:"manufacturer"`
-	ShelfLife         int     `json:"shelfLife" db:"shelf_life"`
-	Closet            string  `json:"place_closet" db:"closet"`
+	ShelfLife         int     `json:"shelfLife" db:"shelf_life" binding:"required,gte=1"`
+	Closet            string  `json:"place_closet" db:"closet" binding:"required"`
 	Shelf             int     `json:"place_shelf" db:"shelf"`
-	ReceiptDate       int     `json:"receiptDate" db:"receipt_date"`
-	Amount            float64 `json:"amount" db:"amount"`
+	ReceiptDate       int     `json:"receiptDate" db:"receipt_date" binding:"required,gte=1000000"`
+	Amount            float64 `json:"amount" db:"amount" binding:"required,gte=1"`
 	AmountTypeId      string  `json:"amountTypeId" db:"amount_type_id"`
-	ControlDate       int     `json:"controlDate" db:"control_date"`
+	ControlDate       int     `json:"controlDate" db:"control_date" binding:"gte=0"`
 	Protocol          string  `json:"protocol" db:"protocol"`
 	Result            bool    `json:"result" db:"result"`
 	Seizure           string  `json:"seizure" db:"seizure"`

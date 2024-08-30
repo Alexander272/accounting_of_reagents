@@ -103,7 +103,7 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 
 		list := []string{}
 		for _, f := range req.Search.Fields {
-			list = append(list, fmt.Sprintf("r.%s ILIKE '%%'||$%d||'%%'", r.getColumnName(f), count))
+			list = append(list, fmt.Sprintf("%s ILIKE '%%'||$%d||'%%'", r.getColumnName(f), count))
 		}
 		params = append(params, req.Search.Value)
 		count++
