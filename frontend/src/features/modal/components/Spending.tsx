@@ -142,7 +142,7 @@ const SpendingForm = () => {
 				<Controller
 					control={methods.control}
 					name='date'
-					rules={{ required: true }}
+					rules={{ required: true, min: 100000 }}
 					render={({ field, fieldState: { error } }) => (
 						<DatePicker
 							{...field}
@@ -163,7 +163,7 @@ const SpendingForm = () => {
 				<Controller
 					control={methods.control}
 					name='amount'
-					rules={{ required: true }}
+					rules={{ required: true, min: 0.00001 }}
 					render={({ field, fieldState: { error } }) => (
 						<TextField
 							label={'Количество ' + (type?.name ? `(${type?.name})` : '')}
