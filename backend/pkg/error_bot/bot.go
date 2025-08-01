@@ -13,8 +13,8 @@ import (
 )
 
 type Message struct {
-	Service Service     `json:"service" binding:"required"`
-	Data    MessageData `json:"data" binding:"required"`
+	Service *Service     `json:"service" binding:"required"`
+	Data    *MessageData `json:"data" binding:"required"`
 }
 
 type Service struct {
@@ -40,18 +40,22 @@ func Send(c *gin.Context, e string, request interface{}) {
 		}
 	}
 
-	message := Message{
-		Service: Service{
+	data := &MessageData{
+		Date:    time.Now().Format("02/01/2006 - 15:04:05"),
+		Error:   e,
+		Request: string(req),
+	}
+	if c != nil {
+		data.IP = c.ClientIP()
+		data.URL = fmt.Sprintf("%s %s", c.Request.Method, c.Request.URL.String())
+	}
+
+	message := &Message{
+		Service: &Service{
 			Id:   "reagents",
 			Name: "Accounting of reagents",
 		},
-		Data: MessageData{
-			Date:    time.Now().Format("02/01/2006 - 15:04:05"),
-			IP:      c.ClientIP(),
-			URL:     fmt.Sprintf("%s %s", c.Request.Method, c.Request.URL.String()),
-			Error:   e,
-			Request: string(req),
-		},
+		Data: data,
 	}
 
 	var buf bytes.Buffer

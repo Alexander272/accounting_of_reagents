@@ -26,12 +26,16 @@ func NewExtendingHandlers(service services.Extending) *ExtendingHandlers {
 func Register(api *gin.RouterGroup, service services.Extending, middleware *middleware.Middleware) {
 	handlers := NewExtendingHandlers(service)
 
-	extending := api.Group("/extending", middleware.VerifyToken)
+	extending := api.Group("/extending", middleware.CheckPermissions(constants.Reagent, constants.Read))
 	{
-		extending.GET(":reagentId", middleware.CheckPermissions(constants.Reagent, constants.Read), handlers.getByReagentId)
-		extending.POST("", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.create)
-		extending.PUT("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.update)
-		extending.DELETE("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.delete)
+		extending.GET(":reagentId", handlers.getByReagentId)
+
+		write := extending.Group("", middleware.CheckPermissions(constants.Reagent, constants.Write))
+		{
+			write.POST("", handlers.create)
+			write.PUT("/:id", handlers.update)
+			write.DELETE("/:id", handlers.delete)
+		}
 	}
 }
 

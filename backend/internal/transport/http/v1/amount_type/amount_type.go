@@ -25,15 +25,19 @@ func NewAmountTypeHandlers(services services.AmountType) *AmountTypeHandlers {
 func Register(api *gin.RouterGroup, service services.AmountType, middleware *middleware.Middleware) {
 	handlers := NewAmountTypeHandlers(service)
 
-	amountTypes := api.Group("/amount-types", middleware.VerifyToken)
+	amountTypes := api.Group("/amount-types", middleware.CheckPermissions(constants.Types, constants.Read))
 	{
-		amountTypes.GET("", middleware.CheckPermissions(constants.Types, constants.Read), handlers.getAll)
-		amountTypes.POST("", middleware.CheckPermissions(constants.Types, constants.Write), handlers.create)
-		amountTypes.POST("/edit", middleware.CheckPermissions(constants.Types, constants.Write), handlers.edit)
-		amountTypes.POST("/few", middleware.CheckPermissions(constants.Types, constants.Write), handlers.createSeveral)
-		amountTypes.PUT("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.update)
-		amountTypes.PUT("", middleware.CheckPermissions(constants.Types, constants.Write), handlers.updateSeveral)
-		amountTypes.DELETE("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.delete)
+		amountTypes.GET("", handlers.getAll)
+
+		write := amountTypes.Group("", middleware.CheckPermissions(constants.Types, constants.Write))
+		{
+			write.POST("", handlers.create)
+			write.POST("/edit", handlers.edit)
+			write.POST("/few", handlers.createSeveral)
+			write.PUT("/:id", handlers.update)
+			write.PUT("", handlers.updateSeveral)
+			write.DELETE("/:id", handlers.delete)
+		}
 	}
 }
 

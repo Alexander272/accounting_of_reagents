@@ -29,14 +29,20 @@ func NewReagentHandlers(service services.Reagent) *ReagentHandlers {
 func Register(api *gin.RouterGroup, service services.Reagent, middleware *middleware.Middleware) {
 	handlers := NewReagentHandlers(service)
 
-	reagents := api.Group("/reagents", middleware.VerifyToken)
+	reagents := api.Group("/reagents", middleware.CheckPermissions(constants.Reagent, constants.Read))
 	{
-		reagents.GET("", middleware.CheckPermissions(constants.Reagent, constants.Read), handlers.get)
-		reagents.GET("/:id", middleware.CheckPermissions(constants.Reagent, constants.Read), handlers.getById)
-		reagents.POST("/order", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.prepareOrder)
-		reagents.POST("", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.create)
-		reagents.PUT("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.update)
-		reagents.DELETE("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.delete)
+		reagents.GET("", handlers.get)
+		reagents.GET("/:id", handlers.getById)
+		reagents.GET("/unique/:field", handlers.getUnique)
+		reagents.GET("/overdue", handlers.getOverdue)
+
+		write := reagents.Group("", middleware.CheckPermissions(constants.Reagent, constants.Write))
+		{
+			write.POST("/order", handlers.prepareOrder)
+			write.POST("", handlers.create)
+			write.PUT("/:id", handlers.update)
+			write.DELETE("/:id", handlers.delete)
+		}
 	}
 }
 
@@ -149,6 +155,33 @@ func (h *ReagentHandlers) getById(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, response.DataResponse{Data: reagent})
+}
+
+func (h *ReagentHandlers) getUnique(c *gin.Context) {
+	field := c.Param("field")
+	if field == "" {
+		response.NewErrorResponse(c, http.StatusBadRequest, "field is empty", "Отправлены некорректные данные")
+		return
+	}
+	req := &models.GetUniqueDTO{Field: field}
+
+	data, err := h.service.GetUniqueData(c, req)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
+		error_bot.Send(c, err.Error(), req)
+		return
+	}
+	c.JSON(http.StatusOK, response.DataResponse{Data: data, Total: len(data)})
+}
+
+func (h *ReagentHandlers) getOverdue(c *gin.Context) {
+	data, err := h.service.GetOverdue(c)
+	if err != nil {
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
+		error_bot.Send(c, err.Error(), nil)
+		return
+	}
+	c.JSON(http.StatusOK, response.DataResponse{Data: data, Total: len(data.Data)})
 }
 
 func (h *ReagentHandlers) prepareOrder(c *gin.Context) {

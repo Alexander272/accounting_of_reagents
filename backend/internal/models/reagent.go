@@ -111,3 +111,14 @@ type ReagentNotificationDTO struct {
 type ReagentOrderDTO struct {
 	List []string `json:"list"`
 }
+
+type GetUniqueDTO struct {
+	Field string `json:"field"`
+}
+
+type Overdue struct {
+	Data []*Reagent
+	Send []*Reagent
+}
+
+type GroupedReagents map[string][]*Reagent

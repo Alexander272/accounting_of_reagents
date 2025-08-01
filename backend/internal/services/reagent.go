@@ -31,12 +31,16 @@ type Reagent interface {
 	GetById(context.Context, string) (*models.EditReagent, error)
 	GetByIdList(context.Context, []string) ([]*models.Reagent, error)
 	GetRemainder(context.Context, string) (*models.ReagentWithRemainder, error)
-	GetOverdue(context.Context) ([]*models.Reagent, error)
+	GetRemainderNew(context.Context, string) ([]*models.ReagentWithRemainder, error)
+	GetUniqueData(context.Context, *models.GetUniqueDTO) ([]string, error)
+	GetOverdueOld(context.Context) ([]*models.Reagent, error)
+	GetOverdue(context.Context) (*models.Overdue, error)
 	SendOverdue(context.Context) error
 	PrepareOrder(context.Context, []string) error
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 	SetNotification(context.Context, *models.ReagentNotificationDTO) error
+	SetNotificationNew(ctx context.Context, dto []*models.ReagentNotificationDTO) error
 	SetIsOverdue(context.Context, []string) error
 	ClearIsOverdue(context.Context, string) error
 	SetDeleteStamp(context.Context, string) error
@@ -79,7 +83,11 @@ func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.R
 	for _, i := range list.List {
 		shelfLife := time.Unix(int64(i.DateOfManufacture), 0)
 		shelfLife = shelfLife.AddDate(0, i.ShelfLife, 0)
-		shelfLife = shelfLife.AddDate(0, i.SumPeriod, 0)
+		if i.DateOfExtending != 0 {
+			shelfLife = time.Unix(int64(i.DateOfExtending), 0)
+			shelfLife = shelfLife.AddDate(0, i.Period, 0)
+		}
+		// shelfLife = shelfLife.AddDate(0, i.SumPeriod, 0)
 		now := time.Now()
 
 		i.ItemStyle = &models.Styles{}
@@ -127,48 +135,114 @@ func (s *ReagentService) GetRemainder(ctx context.Context, id string) (*models.R
 	}
 	return remainder, nil
 }
+func (s *ReagentService) GetRemainderNew(ctx context.Context, id string) ([]*models.ReagentWithRemainder, error) {
+	remainder, err := s.repo.GetRemainderNew(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get remainder. error: %w", err)
+	}
+	return remainder, nil
+}
 
-func (s *ReagentService) GetOverdue(ctx context.Context) ([]*models.Reagent, error) {
+func (s *ReagentService) GetUniqueData(ctx context.Context, req *models.GetUniqueDTO) ([]string, error) {
+	data, err := s.repo.GetUniqueData(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get unique data for field. error: %w", err)
+	}
+	return data, nil
+}
+
+func (s *ReagentService) GetOverdue(ctx context.Context) (*models.Overdue, error) {
+	data, err := s.repo.GetAllShelfLife(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get reagents list. error: %w", err)
+	}
+
+	overdue := []*models.Reagent{}
+	send := []*models.Reagent{}
+
+	for _, value := range data {
+		allOverdue := true
+		found := false
+		for _, item := range value {
+			shelfLife := time.Unix(int64(item.DateOfManufacture), 0)
+			shelfLife = shelfLife.AddDate(0, item.ShelfLife, 0)
+			if item.DateOfExtending != 0 {
+				shelfLife = time.Unix(int64(item.DateOfExtending), 0)
+				shelfLife = shelfLife.AddDate(0, item.Period, 0)
+			}
+
+			now := time.Now()
+
+			if !item.IsOverdue && item.Seizure == "" {
+				found = true
+				isOverdue := shelfLife.Compare(time.Date(now.Year(), now.Month()+1, now.Day(), now.Hour(), now.Minute(), 0, 0, now.Location())) <= 0
+
+				if isOverdue {
+					overdue = append(overdue, item)
+				}
+				allOverdue = allOverdue && isOverdue
+			}
+		}
+
+		if allOverdue && found {
+			send = append(send, value[len(value)-1])
+		}
+	}
+
+	res := &models.Overdue{
+		Data: overdue,
+		Send: send,
+	}
+
+	return res, nil
+}
+
+// ! Deprecated
+func (s *ReagentService) GetOverdueOld(ctx context.Context) ([]*models.Reagent, error) {
 	list, err := s.repo.Get(ctx, &models.Params{Page: &models.Page{Limit: 999999}})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get reagents list. error: %w", err)
 	}
 
 	newList := []*models.Reagent{}
-	for _, i := range list.List {
-		shelfLife := time.Unix(int64(i.DateOfManufacture), 0)
-		shelfLife = shelfLife.AddDate(0, i.ShelfLife, 0)
-		shelfLife = shelfLife.AddDate(0, i.SumPeriod, 0)
+	for _, item := range list.List {
+		shelfLife := time.Unix(int64(item.DateOfManufacture), 0)
+		shelfLife = shelfLife.AddDate(0, item.ShelfLife, 0)
+		if item.DateOfExtending != 0 {
+			shelfLife = time.Unix(int64(item.DateOfExtending), 0)
+			shelfLife = shelfLife.AddDate(0, item.Period, 0)
+		}
+		// shelfLife = shelfLife.AddDate(0, i.SumPeriod, 0)
 		now := time.Now()
 
 		if shelfLife.Compare(time.Date(now.Year(), now.Month()+1, now.Day(), now.Hour(), now.Minute(), 0, 0, now.Location())) <= 0 &&
-			!i.IsOverdue && i.Seizure == "" {
-			newList = append(newList, i)
+			!item.IsOverdue && item.Seizure == "" {
+			newList = append(newList, item)
 		}
 	}
 
 	return newList, nil
 }
 func (s *ReagentService) SendOverdue(ctx context.Context) error {
-	reagents, err := s.GetOverdue(ctx)
+	data, err := s.GetOverdue(ctx)
 	if err != nil {
 		return err
 	}
 
-	if len(reagents) == 0 {
+	if len(data.Data) == 0 && len(data.Send) == 0 {
 		return nil
 	}
 
 	notification := &models.Notification{
 		Message: "У следующих реактивов истекает срок годности",
-		Data:    reagents,
+		Data:    data.Send,
 	}
 	if err := s.most.Send(ctx, notification); err != nil {
 		return fmt.Errorf("failed to send notification. error: %w", err)
 	}
 
 	idList := []string{}
-	for _, r := range reagents {
+	for _, r := range data.Data {
 		idList = append(idList, r.Id)
 	}
 	if err := s.SetIsOverdue(ctx, idList); err != nil {
@@ -209,8 +283,18 @@ func (s *ReagentService) Update(ctx context.Context, dto *models.ReagentDTO) err
 	return nil
 }
 
+// ! Deprecated
 func (s *ReagentService) SetNotification(ctx context.Context, dto *models.ReagentNotificationDTO) error {
 	if err := s.repo.SetNotification(ctx, dto); err != nil {
+		return fmt.Errorf("failed to set has_notification and has_run_out. error: %w", err)
+	}
+	return nil
+}
+func (s *ReagentService) SetNotificationNew(ctx context.Context, dto []*models.ReagentNotificationDTO) error {
+	if len(dto) == 0 {
+		return nil
+	}
+	if err := s.repo.SetNotificationNew(ctx, dto); err != nil {
 		return fmt.Errorf("failed to set has_notification and has_run_out. error: %w", err)
 	}
 	return nil

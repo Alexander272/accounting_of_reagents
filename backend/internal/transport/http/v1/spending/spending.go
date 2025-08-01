@@ -27,12 +27,16 @@ func NewSpendingHandlers(service services.Spending) *SpendingHandlers {
 func Register(api *gin.RouterGroup, service services.Spending, middleware *middleware.Middleware) {
 	handlers := NewSpendingHandlers(service)
 
-	spending := api.Group("/spending", middleware.VerifyToken)
+	spending := api.Group("/spending", middleware.CheckPermissions(constants.Reagent, constants.Read))
 	{
-		spending.GET(":reagentId", middleware.CheckPermissions(constants.Reagent, constants.Read), handlers.getByReagentId)
-		spending.POST("", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.create)
-		spending.PUT("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.update)
-		spending.DELETE("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.delete)
+		spending.GET(":reagentId", handlers.getByReagentId)
+
+		write := spending.Group("", middleware.CheckPermissions(constants.Reagent, constants.Write))
+		{
+			write.POST("", handlers.create)
+			write.PUT("/:id", handlers.update)
+			write.DELETE("/:id", handlers.delete)
+		}
 	}
 }
 
@@ -60,7 +64,7 @@ func (h *SpendingHandlers) create(c *gin.Context) {
 		return
 	}
 
-	id, err := h.service.Create(c, dto)
+	id, err := h.service.CreateNew(c, dto)
 	if err != nil {
 		if errors.Is(err, models.ErrBadValue) {
 			response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Попытка списать большее количество реактива, чем осталось")

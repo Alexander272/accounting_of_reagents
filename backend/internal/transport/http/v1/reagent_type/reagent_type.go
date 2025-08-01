@@ -25,22 +25,20 @@ func NewReagentTypeHandlers(service services.ReagentType) *ReagentTypeHandlers {
 func Register(api *gin.RouterGroup, service services.ReagentType, middleware *middleware.Middleware) {
 	handlers := NewReagentTypeHandlers(service)
 
-	reagentTypes := api.Group("/reagent-types", middleware.VerifyToken)
+	reagentTypes := api.Group("/reagent-types", middleware.CheckPermissions(constants.Types, constants.Read))
 	{
-		reagentTypes.GET("", middleware.CheckPermissions(constants.Types, constants.Read), handlers.get)
-		reagentTypes.POST("", middleware.CheckPermissions(constants.Types, constants.Write), handlers.create)
-		reagentTypes.PUT("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.update)
-		reagentTypes.DELETE("/:id", middleware.CheckPermissions(constants.Types, constants.Write), handlers.delete)
+		reagentTypes.GET("", handlers.get)
+
+		write := reagentTypes.Group("", middleware.CheckPermissions(constants.Types, constants.Write))
+		{
+			write.POST("", handlers.create)
+			write.PUT("/:id", handlers.update)
+			write.DELETE("/:id", handlers.delete)
+		}
 	}
 }
 
 func (h *ReagentTypeHandlers) get(c *gin.Context) {
-	// logger.Debug("getByRole")
-	// role := c.Param("role")
-	// if role == "" {
-	// 	response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "Id типа реагента не задан")
-	// 	return
-	// }
 	u, exists := c.Get(constants.CtxUser)
 	if !exists {
 		response.NewErrorResponse(c, http.StatusUnauthorized, "empty user", "сессия не найдена")

@@ -26,12 +26,16 @@ func NewNoteHandlers(service services.Note) *NoteHandlers {
 func Register(api *gin.RouterGroup, service services.Note, middleware *middleware.Middleware) {
 	handlers := NewNoteHandlers(service)
 
-	notes := api.Group("/notes", middleware.VerifyToken)
+	notes := api.Group("/notes", middleware.CheckPermissions(constants.Reagent, constants.Read))
 	{
-		notes.GET(":reagentId", middleware.CheckPermissions(constants.Reagent, constants.Read), handlers.getByReagentId)
-		notes.POST("", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.create)
-		notes.PUT("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.update)
-		notes.DELETE("/:id", middleware.CheckPermissions(constants.Reagent, constants.Write), handlers.delete)
+		notes.GET(":reagentId", handlers.getByReagentId)
+
+		write := notes.Group("", middleware.CheckPermissions(constants.Reagent, constants.Write))
+		{
+			write.POST("", handlers.create)
+			write.PUT("/:id", handlers.update)
+			write.DELETE("/:id", handlers.delete)
+		}
 	}
 }
 

@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/google/uuid"
@@ -33,6 +34,11 @@ func (r *SpendingRepo) GetByReagentId(ctx context.Context, reagentId string) ([]
 	if err := r.db.SelectContext(ctx, &spending, query, reagentId); err != nil {
 		return nil, fmt.Errorf("failed to execute query. error: %w", err)
 	}
+
+	for i := range spending {
+		spending[i].Amount = math.Round(spending[i].Amount*100000) / 100000
+	}
+
 	return spending, nil
 }
 

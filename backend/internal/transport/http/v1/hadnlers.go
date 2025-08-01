@@ -42,12 +42,13 @@ func (h *Handler) Init(group *gin.RouterGroup) {
 
 	roles.Register(v1, h.services.Role, h.middleware)
 
-	reagent_type.Register(v1, h.services.ReagentType, h.middleware)
-	amount_type.Register(v1, h.services.AmountType, h.middleware)
-	reagent.Register(v1, h.services.Reagent, h.middleware)
-	spending.Register(v1, h.services.Spending, h.middleware)
-	extending.Register(v1, h.services.Extending, h.middleware)
-	note.Register(v1, h.services.Note, h.middleware)
+	secure := v1.Group("", h.middleware.VerifyToken)
+	reagent_type.Register(secure, h.services.ReagentType, h.middleware)
+	amount_type.Register(secure, h.services.AmountType, h.middleware)
+	reagent.Register(secure, h.services.Reagent, h.middleware)
+	spending.Register(secure, h.services.Spending, h.middleware)
+	extending.Register(secure, h.services.Extending, h.middleware)
+	note.Register(secure, h.services.Note, h.middleware)
 
 	//TODO можно попробовать ограничивать не только по разделам, но и по видам реактивов
 

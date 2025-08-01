@@ -19,13 +19,14 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/database/postgres"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	_ "github.com/lib/pq"
+	"github.com/subosito/gotenv"
 )
 
 func main() {
 	//* Init config
-	// if err := gotenv.Load("../.env"); err != nil {
-	// 	log.Fatalf("error loading env variables: %s", err.Error())
-	// }
+	if err := gotenv.Load("../.env"); err != nil {
+		log.Fatalf("error loading env variables: %s", err.Error())
+	}
 
 	conf, err := config.Init("configs/config.yaml")
 	if err != nil {

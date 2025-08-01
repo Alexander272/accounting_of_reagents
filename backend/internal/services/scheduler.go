@@ -4,14 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/config"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/error_bot"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
-	"github.com/gin-gonic/gin"
 	"github.com/go-co-op/gocron/v2"
 )
 
@@ -74,26 +71,11 @@ func (s *SchedulerService) job() {
 
 	// Удаление всех реактивов с пометкой старше месяца
 	if err := s.reagent.DeleteOld(context.Background()); err != nil {
-		error_bot.Send(
-			&gin.Context{
-				Request: &http.Request{
-					Method: "Get",
-					URL:    &url.URL{Host: "cron", Path: "delete-old-reagent"},
-				},
-			}, err.Error(), nil,
-		)
+		error_bot.Send(nil, err.Error(), nil)
 	}
 
 	// Отправка списка реактивов у которых заканчивается срок годности
 	if err := s.reagent.SendOverdue(context.Background()); err != nil {
-		error_bot.Send(
-			&gin.Context{
-				Request: &http.Request{
-					Method: "Get",
-					URL:    &url.URL{Host: "cron", Path: "send-overdue"},
-				},
-			},
-			err.Error(), nil,
-		)
+		error_bot.Send(nil, err.Error(), nil)
 	}
 }
