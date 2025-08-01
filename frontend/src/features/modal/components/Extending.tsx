@@ -144,7 +144,7 @@ export const ExtendingForm = () => {
 							{...field}
 							value={field.value ? dayjs(+field.value * 1000) : null}
 							onChange={value => field.onChange(value?.unix())}
-							label={'Дата расхода'}
+							label={'Дата продления'}
 							showDaysOutsideCurrentMonth
 							fixedWeekNumber={6}
 							slotProps={{

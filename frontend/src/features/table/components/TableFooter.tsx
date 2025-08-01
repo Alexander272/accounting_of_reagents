@@ -35,7 +35,7 @@ export const TableFooter = () => {
 
 			{data?.data.length ? (
 				<Stack direction={'row'} alignItems={'center'} justifyContent={'flex-end'}>
-					<TableSize total={12 || 1} />
+					<TableSize total={data?.total || 1} />
 					<Typography sx={{ ml: 2 }}>
 						{(page - 1) * size || 1}-{(page - 1) * size + (data?.data.length || 0)} из {data?.total}
 					</Typography>

@@ -23,7 +23,7 @@ import { changeModalIsOpen } from '@/features/modal/modalSlice'
 
 const fields: Field<keyof IControlForm>[] = [
 	{ key: 'receiptDate', type: 'Date', label: Titles.ReceiptDate + ' *', rules: { required: true, min: 1000000000 } },
-	{ key: 'amount', type: 'Number', label: Titles.Amount + ' *', rules: { required: true, min: 1 } },
+	{ key: 'amount', type: 'Number', label: Titles.Amount + ' *', rules: { required: true, min: 0.00001 } },
 	{
 		key: 'amountType',
 		type: 'List',
@@ -98,20 +98,30 @@ export const Inputs: FC<Props> = ({ disabled }) => {
 			/>
 
 			<Stack direction={'row'}>
-				<TextField
-					key={fields[1].key}
-					label={fields[1].label}
-					type='number'
-					disabled={disabled}
-					error={Boolean(errors[fields[1].key])}
-					{...register(fields[1].key, { ...fields[1].rules })}
-					sx={{
-						flexBasis: '72%',
-						'& fieldset': {
-							borderTopRightRadius: 0,
-							borderBottomRightRadius: 0,
-						},
-					}}
+				<Controller
+					control={control}
+					name={fields[1].key}
+					rules={fields[1].rules}
+					render={({ field, fieldState: { error } }) => (
+						<TextField
+							label={fields[1].label}
+							type='number'
+							disabled={disabled}
+							{...field}
+							error={Boolean(error)}
+							sx={{
+								flexBasis: '72%',
+								'& fieldset': {
+									borderTopRightRadius: 0,
+									borderBottomRightRadius: 0,
+								},
+							}}
+							inputProps={{
+								step: 0.00001,
+								min: 0,
+							}}
+						/>
+					)}
 				/>
 				<Controller
 					key={fields[2].key}

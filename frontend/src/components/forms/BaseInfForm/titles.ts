@@ -3,7 +3,7 @@ export const Titles = Object.freeze({
 	Name: 'Наименование по сопроводительной документации',
 	UName: 'Наименование по ИЮПАК',
 	Doc: 'Нормативный документ',
-	Purity: 'Степень чистоты',
+	Purity: 'Классификация по степени чистоты',
 	DateOfManufacture: 'Дата изготовления',
 	Consignment: 'Партия',
 	Manufacturer: 'Производитель',

@@ -1,6 +1,6 @@
 import { FixedSizeList } from 'react-window'
 
-import { ColWidth, RowHeight, Size } from '@/constants/defaultValues'
+import { ColWidth, MaxSize, RowHeight, Size } from '@/constants/defaultValues'
 import { useAppSelector } from '@/hooks/redux'
 import { Fallback } from '@/components/Fallback/Fallback'
 import { TableBody } from '@/components/Table/TableBody'
@@ -38,7 +38,7 @@ export const DataTableBody = () => {
 			{data && (
 				<FixedSizeList
 					overscanCount={10}
-					height={RowHeight * Size}
+					height={RowHeight * (size > Size ? MaxSize : Size)}
 					itemCount={data.data.length > (size || Size) ? size || Size : data.data.length}
 					itemSize={RowHeight}
 					width={Columns.reduce((ac, cur) => ac + (hidden[cur.key] ? 0 : cur.width || ColWidth), 12)}

@@ -4,7 +4,7 @@ import { InputAdornment, TextField } from '@mui/material'
 import { useAppDispatch } from '@/hooks/redux'
 import { useDebounce } from '@/hooks/useDebounce'
 import { SearchIcon } from '@/components/Icons/SearchIcon'
-import { setSearch } from '@/features/table/tableSlice'
+import { setPage, setSearch } from '@/features/table/tableSlice'
 // import { Setting } from './Setting'
 
 export const Search: FC = () => {
@@ -12,6 +12,7 @@ export const Search: FC = () => {
 
 	const searchHandler = useDebounce(v => {
 		dispatch(setSearch(v as string))
+		dispatch(setPage(1))
 	}, 700)
 
 	const changeValueHandler = (event: ChangeEvent<HTMLInputElement>) => {

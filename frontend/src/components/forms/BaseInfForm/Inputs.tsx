@@ -1,13 +1,14 @@
-import { FC } from 'react'
-import { FormControl, InputLabel, MenuItem, Select, Stack, TextField } from '@mui/material'
+import { FC, useState } from 'react'
+import { Autocomplete, FormControl, InputLabel, MenuItem, Select, Stack, TextField } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers'
 import { Controller, useFormContext } from 'react-hook-form'
 import dayjs from 'dayjs'
 
-import type { Field } from '../type'
+import type { AutoCompleteField, Field } from '../type'
 import type { IBaseInfForm } from './type'
 import { typesApiSlice } from '@/features/table/modules/Types/typesApiSlice'
 import { Titles } from './titles'
+import { useLazyGetUniqueFieldQuery } from '@/features/table/tableApiSlice'
 
 const fields: Field<keyof IBaseInfForm>[] = [
 	{
@@ -21,15 +22,15 @@ const fields: Field<keyof IBaseInfForm>[] = [
 	},
 	{
 		key: 'name',
-		type: 'String',
+		type: 'AutoComplete',
 		label: Titles.Name + ' *',
 		multiline: true,
 		minRows: 1,
 		rules: { required: true, validate: value => Boolean(value.trim()) },
 	},
-	{ key: 'uname', type: 'String', label: Titles.UName, multiline: true, minRows: 1 },
-	{ key: 'document', type: 'String', label: Titles.Doc, multiline: true, minRows: 1 },
-	{ key: 'purity', type: 'String', label: Titles.Purity },
+	{ key: 'uname', type: 'AutoComplete', label: Titles.UName, multiline: true, minRows: 1 },
+	{ key: 'document', type: 'AutoComplete', label: Titles.Doc, multiline: true, minRows: 1 },
+	{ key: 'purity', type: 'AutoComplete', label: Titles.Purity },
 	{
 		key: 'dateOfManufacture',
 		type: 'Date',
@@ -37,9 +38,9 @@ const fields: Field<keyof IBaseInfForm>[] = [
 		rules: { required: true, min: 1000000000 },
 	},
 	{ key: 'consignment', type: 'String', label: Titles.Consignment },
-	{ key: 'manufacturer', type: 'String', label: Titles.Manufacturer },
+	{ key: 'manufacturer', type: 'AutoComplete', label: Titles.Manufacturer },
 	{ key: 'shelfLife', type: 'Number', label: Titles.ShelfLife + ' *', rules: { required: true, min: 1 } },
-	{ key: 'place_closet', type: 'String', label: Titles.Place.Closet + ' *', rules: { required: true } },
+	{ key: 'place_closet', type: 'AutoComplete', label: Titles.Place.Closet + ' *', rules: { required: true } },
 	{ key: 'place_shelf', type: 'Number', label: Titles.Place.Shelf },
 ]
 
@@ -54,11 +55,7 @@ export const Inputs: FC<Props> = ({ disabled }) => {
 		}
 	})
 
-	const {
-		register,
-		control,
-		formState: { errors },
-	} = useFormContext<IBaseInfForm>()
+	const { control } = useFormContext<IBaseInfForm>()
 
 	return (
 		<Stack spacing={2}>
@@ -114,30 +111,95 @@ export const Inputs: FC<Props> = ({ disabled }) => {
 
 					case 'Number':
 						return (
-							<TextField
+							<Controller
 								key={f.key}
-								label={f.label}
-								type='number'
-								disabled={disabled}
-								error={Boolean(errors[f.key])}
-								{...register(f.key, { ...f.rules })}
+								control={control}
+								name={f.key}
+								rules={f.rules}
+								render={({ field, fieldState: { error } }) => (
+									<TextField
+										{...field}
+										label={f.label}
+										type='number'
+										disabled={disabled}
+										error={Boolean(error)}
+									/>
+								)}
 							/>
 						)
 
 					case 'String':
 						return (
-							<TextField
+							<Controller
 								key={f.key}
-								label={f.label}
-								disabled={disabled}
-								multiline={f.multiline}
-								minRows={f.minRows}
-								error={Boolean(errors[f.key])}
-								{...register(f.key, { ...f.rules })}
+								control={control}
+								name={f.key}
+								rules={f.rules}
+								render={({ field, fieldState: { error } }) => (
+									<TextField
+										{...field}
+										label={f.label}
+										disabled={disabled}
+										error={Boolean(error)}
+										multiline={f.multiline}
+										minRows={f.minRows}
+									/>
+								)}
 							/>
 						)
+
+					case 'AutoComplete':
+						return <AutocompleteField f={f} disabled={disabled} />
 				}
 			})}
 		</Stack>
+	)
+}
+
+const AutocompleteField: FC<{ f: AutoCompleteField<keyof IBaseInfForm>; disabled?: boolean }> = ({ f, disabled }) => {
+	const { control } = useFormContext<IBaseInfForm>()
+	const [options, setOptions] = useState<string[]>([])
+
+	const [getUnique, { isLoading }] = useLazyGetUniqueFieldQuery()
+
+	const focusHandler = async () => {
+		const data = await getUnique(f.key).unwrap()
+		setOptions(data.data || [])
+	}
+
+	return (
+		<Controller
+			key={f.key}
+			control={control}
+			name={f.key}
+			rules={f.rules}
+			render={({ field, fieldState: { error } }) => (
+				<Autocomplete
+					value={field.value.toString() || ''}
+					freeSolo
+					disableClearable
+					autoComplete
+					options={options}
+					loading={isLoading}
+					loadingText='Поиск похожих значений...'
+					noOptionsText='Ничего не найдено'
+					// getOptionLabel={o => o.name}
+					onChange={(_event, value) => {
+						field.onChange(value)
+					}}
+					onFocus={focusHandler}
+					renderInput={params => (
+						<TextField
+							{...params}
+							label={f.label}
+							error={Boolean(error)}
+							disabled={disabled}
+							onChange={field.onChange}
+							inputRef={field.ref}
+						/>
+					)}
+				/>
+			)}
+		/>
 	)
 }

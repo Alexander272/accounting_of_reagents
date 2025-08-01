@@ -8,6 +8,7 @@ export type FieldBase<Keys, Type, ExtraProps> = {
 } & ExtraProps
 
 export type StringType = 'String'
+export type AutoCompleteType = 'AutoComplete'
 export type NumberType = 'Number'
 export type DateType = 'Date'
 export type FileType = 'File'
@@ -23,6 +24,7 @@ export type Options = {
 }
 
 export type StringField<Keys> = FieldBase<Keys, StringType, { multiline?: boolean; minRows?: number }>
+export type AutoCompleteField<Keys> = FieldBase<Keys, AutoCompleteType, { multiline?: boolean; minRows?: number }>
 export type NumberField<Keys> = FieldBase<Keys, NumberType, unknown>
 export type DateField<Keys> = FieldBase<Keys, DateType, unknown>
 export type FileField<Keys> = FieldBase<Keys, FileType, unknown>
@@ -33,6 +35,7 @@ export type RadioField<Keys> = FieldBase<Keys, RadioType, { options: Options[] }
 
 export type Field<Keys> =
 	| StringField<Keys>
+	| AutoCompleteField<Keys>
 	| NumberField<Keys>
 	| DateField<Keys>
 	| FileField<Keys>

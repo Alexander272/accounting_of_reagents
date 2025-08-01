@@ -30,6 +30,20 @@ const tableApiSlice = apiSlice.injectEndpoints({
 			query: id => `${API.reagents}/${id}`,
 			providesTags: (_res, _err, id) => [{ type: 'DataItems', id: id }],
 		}),
+		getUniqueField: builder.query<{ data: string[] }, string>({
+			query: field => ({
+				url: `${API.reagents}/unique/${field}`,
+			}),
+			providesTags: [{ type: 'DataItems', id: 'Unique' }],
+			onQueryStarted: async (_arg, api) => {
+				try {
+					await api.queryFulfilled
+				} catch (error) {
+					const fetchError = (error as IBaseFetchError).error
+					toast.error(fetchError.data.message, { autoClose: false })
+				}
+			},
+		}),
 
 		create: builder.mutation<null, ICreateDataItem>({
 			query: data => ({
@@ -75,6 +89,8 @@ export const {
 	useGetAllQuery,
 	useGetByIdQuery,
 	useLazyGetByIdQuery,
+	useGetUniqueFieldQuery,
+	useLazyGetUniqueFieldQuery,
 	useCreateMutation,
 	useUpdateMutation,
 	useDeleteMutation,

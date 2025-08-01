@@ -171,6 +171,10 @@ const SpendingForm = () => {
 							fullWidth
 							{...field}
 							error={Boolean(error)}
+							inputProps={{
+								step: 0.00001,
+								min: 0,
+							}}
 						/>
 					)}
 				/>
