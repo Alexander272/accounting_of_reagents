@@ -300,7 +300,9 @@ func (r *ReagentRepo) GetAllShelfLife(ctx context.Context) (models.GroupedReagen
 func (r *ReagentRepo) GetUniqueData(ctx context.Context, req *models.GetUniqueDTO) ([]string, error) {
 	req.Field = r.getColumnName(req.Field)
 
-	query := fmt.Sprintf(`SELECT DISTINCT(%s) AS item FROM %s AS r`, req.Field, ReagentsTable)
+	query := fmt.Sprintf(`SELECT DISTINCT(%s) AS item FROM %s AS r WHERE %s!='' AND %s IS NOT NULL`,
+		req.Field, ReagentsTable, req.Field, req.Field,
+	)
 	tmp := []pq_models.UniqueData{}
 
 	if err := r.db.SelectContext(ctx, &tmp, query); err != nil {

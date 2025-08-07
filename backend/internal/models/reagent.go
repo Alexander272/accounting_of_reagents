@@ -78,7 +78,7 @@ type ReagentDTO struct {
 	Closet            string  `json:"place_closet" db:"closet" binding:"required"`
 	Shelf             int     `json:"place_shelf" db:"shelf"`
 	ReceiptDate       int     `json:"receiptDate" db:"receipt_date" binding:"required,gte=1000000"`
-	Amount            float64 `json:"amount" db:"amount" binding:"required,gte=1"`
+	Amount            float64 `json:"amount" db:"amount" binding:"required,gt=0"`
 	AmountTypeId      string  `json:"amountTypeId" db:"amount_type_id"`
 	ControlDate       int     `json:"controlDate" db:"control_date" binding:"gte=0"`
 	Protocol          string  `json:"protocol" db:"protocol"`
