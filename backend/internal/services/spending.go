@@ -84,7 +84,7 @@ func (s *SpendingService) CreateNew(ctx context.Context, dto *models.SpendingDTO
 		return "", err
 	}
 
-	if isAll {
+	if isAll && len(data) > idx {
 		notification := &models.Notification{
 			Message: "Заканчивается реактив.",
 			Data: []*models.Reagent{{

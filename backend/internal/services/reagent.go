@@ -128,6 +128,7 @@ func (s *ReagentService) GetByIdList(ctx context.Context, list []string) ([]*mod
 	return reagents, nil
 }
 
+// ! Deprecated
 func (s *ReagentService) GetRemainder(ctx context.Context, id string) (*models.ReagentWithRemainder, error) {
 	remainder, err := s.repo.GetRemainder(ctx, id)
 	if err != nil {
