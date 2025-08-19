@@ -34,7 +34,7 @@ func Send(c *gin.Context, e string, request interface{}) {
 	var req []byte
 	if request != nil {
 		var err error
-		req, err = json.Marshal(request)
+		req, err = json.MarshalIndent(request, "", "    ")
 		if err != nil {
 			slog.Error("failed to marshal request body.", slog.String("error", err.Error()))
 		}
