@@ -24,20 +24,3 @@ export function useRefresh() {
 
 	return { ready }
 }
-
-// export function useRefresh() {
-// 	const [ready, setReady] = useState(false)
-
-// 	const { data, isError, isSuccess } = useRefreshQuery(null)
-
-// 	const dispatch = useAppDispatch()
-
-// 	useEffect(() => {
-// 		if (!isError && data) dispatch(setUser(data.data))
-// 		setReady(true)
-// 		console.log('refresh', isError, data)
-// 		console.log('ready', ready)
-// 	}, [isError, data, dispatch])
-
-// 	return { ready }
-// }

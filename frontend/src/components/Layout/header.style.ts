@@ -30,7 +30,7 @@ export const NavLink = styled(Link)`
 	}
 `
 
-export const NavButton = muiStyled('p')(({ theme }) => ({
+export const NavButton = muiStyled('div')(({ theme }) => ({
 	cursor: 'pointer',
 	fontSize: '1.2rem',
 	color: theme.palette.primary.main,

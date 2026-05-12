@@ -40,6 +40,7 @@ export interface IParams {
 	sort: ISort
 	search?: ISearch
 	filters?: IFilter[]
+	realm: string
 }
 
 export interface ISort {

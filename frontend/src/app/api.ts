@@ -10,4 +10,20 @@ export const API = {
 	spending: 'spending',
 	extending: 'extending',
 	notes: 'notes',
+	users: {
+		base: 'users',
+		sync: 'users/sync',
+	},
+	roles: {
+		base: 'roles',
+		permissions: (id: string) => `roles/${id}/permissions`,
+		stats: 'roles/all/stats',
+	},
+	permissions: {
+		base: 'permissions',
+	},
+	realms: {
+		base: 'realms',
+		byId: (id: string) => `realms/${id}`,
+	},
 }

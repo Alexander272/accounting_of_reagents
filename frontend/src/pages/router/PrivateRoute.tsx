@@ -1,19 +1,18 @@
-import type { PropsWithChildren } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
 import { AppRoutes } from '@/constants/routes'
 import { useAppSelector } from '@/hooks/redux'
-import { getMenu, getToken } from '@/features/user/userSlice'
+import { getPermissions, getToken } from '@/features/user/userSlice'
 import { Forbidden } from '../forbidden/ForbiddenLazy'
 
 // проверка авторизации пользователя
-export default function PrivateRoute({ children }: PropsWithChildren) {
+export default function PrivateRoute() {
 	const token = useAppSelector(getToken)
-	const menu = useAppSelector(getMenu)
+	const perms = useAppSelector(getPermissions)
 	const location = useLocation()
 
 	if (!token) return <Navigate to={AppRoutes.AUTH} state={{ from: location }} />
-	if (!menu || !menu.length) return <Forbidden />
+	if (!perms) return <Forbidden />
 
-	return children
+	return <Outlet />
 }

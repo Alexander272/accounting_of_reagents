@@ -21,6 +21,9 @@ const baseQuery = fetchBaseQuery({
 		const token = (api.getState() as RootState).user.token
 		if (token) headers.set('authorization', `Bearer ${token}`)
 
+		const realm = (api.getState() as RootState).realm.realm
+		if (realm) headers.set('realm', realm.id)
+
 		return headers
 	},
 })
@@ -59,6 +62,17 @@ const baseQueryWithReAuth: BaseQuery = async (args, api, extraOptions) => {
 export const apiSlice = createApi({
 	reducerPath: 'api',
 	baseQuery: baseQueryWithReAuth,
-	tagTypes: ['DataItems', 'AmountTypes', 'ReagentTypes', 'Spending', 'Extending', 'Notes'],
+	tagTypes: [
+		'DataItems',
+		'AmountTypes',
+		'ReagentTypes',
+		'Spending',
+		'Extending',
+		'Notes',
+		'Users',
+		'Roles',
+		'Perms',
+		'Realms',
+	],
 	endpoints: () => ({}),
 })

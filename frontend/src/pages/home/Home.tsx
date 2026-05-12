@@ -1,7 +1,7 @@
 import { Box } from '@mui/material'
 
 import { DataTable } from '@/features/table/components/Table'
-import { PageBox } from '@/styled/PageBox'
+import { PageBox } from '@/components/PageBox/PageBox'
 
 export default function Home() {
 	return (

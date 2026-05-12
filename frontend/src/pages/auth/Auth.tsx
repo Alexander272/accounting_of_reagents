@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAppSelector } from '@/hooks/redux'
 import { SignInForm } from '@/features/auth/components/SignInForm'
 import { getToken } from '@/features/user/userSlice'
-import { PageBox } from '@/styled/PageBox'
+import { PageBox } from '@/components/PageBox/PageBox'
 
 type LocationState = {
 	from?: Location
