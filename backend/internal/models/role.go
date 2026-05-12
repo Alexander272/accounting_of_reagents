@@ -1,43 +1,64 @@
 package models
 
-import "github.com/lib/pq"
+import "time"
 
 type Role struct {
-	Id   string   `json:"id" db:"id"`
-	Name string   `json:"name" db:"name"`
-	Menu []string `json:"menu"`
-}
-type RoleWithMenuDTO struct {
-	Id      string         `json:"id" db:"id"`
-	Name    string         `json:"name" db:"name"`
-	Extends pq.StringArray `db:"extends"`
-	Menu    pq.StringArray `db:"menu"`
-	// Menu    string         `db:"menu"`
-}
-
-type RoleFull struct {
-	Id          string   `json:"id" db:"id"`
-	Name        string   `json:"name" db:"name"`
-	Level       int      `json:"level" db:"level"`
-	Extends     []string `json:"extends" db:"extends"`
-	Description string   `json:"description" db:"description"`
-}
-type RoleFullDTO struct {
-	Id          string         `json:"id" db:"id"`
-	Name        string         `json:"name" db:"name"`
-	Level       int            `json:"level" db:"level"`
-	Extends     pq.StringArray `json:"extends" db:"extends"`
-	Description string         `json:"description" db:"description"`
+	Id          string    `json:"id" db:"id"`
+	Slug        string    `json:"slug" db:"slug"`
+	Name        string    `json:"name" db:"name"`
+	Description string    `json:"description" db:"description"`
+	Level       int       `json:"level" db:"level"`
+	IsActive    bool      `json:"isActive" db:"is_active"`
+	IsSystem    bool      `json:"isSystem" db:"is_system"`
+	IsEditable  bool      `json:"isEditable" db:"is_editable"`
+	CreatedAt   time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at"`
 }
 
-type RoleWithApi struct{}
+type RoleWithStats struct {
+	Role
+	Children   []string       `json:"children"`
+	PermsCount PermsWithCount `json:"perms"`
+	UserCount  int            `json:"userCount"`
+}
 
-type GetRolesDTO struct{}
+type RoleShort struct {
+	Id   string `json:"id" db:"id"`
+	Slug string `json:"slug" db:"slug"`
+	Name string `json:"name" db:"name"`
+}
+
+type GetRoleDTO struct {
+	Id   string `json:"id" db:"id"`
+	Slug string `json:"slug" db:"slug"`
+}
 
 type RoleDTO struct {
-	Id          string   `json:"id" db:"id"`
-	Name        string   `json:"name" db:"name" binding:"required"`
-	Level       int      `json:"level" db:"level" binding:"required"`
-	Extends     []string `json:"extends" db:"extends"`
-	Description string   `json:"description" db:"description"`
+	Id string `json:"id" db:"id"`
+	// Actor       Actor
+	Slug        string    `json:"slug" db:"slug"`
+	Name        string    `json:"name" db:"name"`
+	Description string    `json:"description" db:"description"`
+	Level       int       `json:"level" db:"level"`
+	IsSystem    bool      `json:"isSystem" db:"is_system"`
+	Permissions []string  `json:"permissions" db:"permissions"`
+	Inherits    []string  `json:"inherits" db:"inherits"`
+	CreatedAt   time.Time `json:"createdAt" db:"created_at"`
+}
+
+type DeleteRoleDTO struct {
+	Id string `json:"id" db:"id"`
+	// Actor Actor
+}
+
+type RoleInheritance struct {
+	ParentRole string
+	ChildRole  string
+	Realm      string
+}
+
+type RoleWithPerms struct {
+	Role
+	Inherits []string                  `json:"inherits"`
+	Perms    []*RolePermissionsGrouped `json:"perms"`
 }

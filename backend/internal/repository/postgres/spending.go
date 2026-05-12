@@ -28,7 +28,7 @@ type Spending interface {
 }
 
 func (r *SpendingRepo) GetByReagentId(ctx context.Context, reagentId string) ([]*models.Spending, error) {
-	query := fmt.Sprintf(`SELECT id, reagent_id, date_of_spending, amount FROM %s WHERE reagent_id=$1 ORDER BY date_of_spending DESC`, SpendingTable)
+	query := fmt.Sprintf(`SELECT id, reagent_id, date_of_spending, amount FROM %s WHERE reagent_id=$1 ORDER BY date_of_spending DESC`, Tables.Spending)
 	spending := []*models.Spending{}
 
 	if err := r.db.SelectContext(ctx, &spending, query, reagentId); err != nil {
@@ -43,7 +43,7 @@ func (r *SpendingRepo) GetByReagentId(ctx context.Context, reagentId string) ([]
 }
 
 func (r *SpendingRepo) Create(ctx context.Context, dto *models.SpendingDTO) (string, error) {
-	query := fmt.Sprintf(`INSERT INTO %s (id, reagent_id, date_of_spending, amount) VALUES (:id, :reagent_id, :date_of_spending, :amount)`, SpendingTable)
+	query := fmt.Sprintf(`INSERT INTO %s (id, reagent_id, date_of_spending, amount) VALUES (:id, :reagent_id, :date_of_spending, :amount)`, Tables.Spending)
 	id := uuid.New()
 	dto.Id = id.String()
 
@@ -54,7 +54,7 @@ func (r *SpendingRepo) Create(ctx context.Context, dto *models.SpendingDTO) (str
 }
 
 func (r *SpendingRepo) Update(ctx context.Context, dto *models.SpendingDTO) error {
-	query := fmt.Sprintf(`UPDATE %s SET date_of_spending=:date_of_spending, amount=:amount WHERE id=:id`, SpendingTable)
+	query := fmt.Sprintf(`UPDATE %s SET date_of_spending=:date_of_spending, amount=:amount WHERE id=:id`, Tables.Spending)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -63,7 +63,7 @@ func (r *SpendingRepo) Update(ctx context.Context, dto *models.SpendingDTO) erro
 }
 
 func (r *SpendingRepo) Delete(ctx context.Context, dto *models.DeleteSpendingDTO) (float64, error) {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id=$1 RETURNING amount`, SpendingTable)
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=$1 RETURNING amount`, Tables.Spending)
 
 	row := r.db.QueryRowxContext(ctx, query, dto.Id)
 	if row.Err() != nil {

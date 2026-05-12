@@ -7,6 +7,7 @@ type ReagentList struct {
 
 type Reagent struct {
 	Id                string  `json:"id" db:"id"`
+	RealmId           string  `json:"realmId,omitempty" db:"realm_id"`
 	Type              string  `json:"type" db:"type"`
 	Name              string  `json:"name" db:"name"`
 	Uname             string  `json:"uname" db:"uname"`
@@ -43,6 +44,7 @@ type Styles struct {
 
 type EditReagent struct {
 	Id                string  `json:"id" db:"id"`
+	RealmId           string  `json:"realmId" db:"realm_id"`
 	TypeId            string  `json:"typeId" db:"type_id"`
 	Name              string  `json:"name" db:"name"`
 	Uname             string  `json:"uname" db:"uname"`
@@ -66,6 +68,7 @@ type EditReagent struct {
 
 type ReagentDTO struct {
 	Id                string  `json:"id" db:"id"`
+	RealmId           string  `json:"realmId" db:"realm_id"`
 	TypeId            string  `json:"typeId" db:"type_id"`
 	Name              string  `json:"name" db:"name" binding:"required"`
 	Uname             string  `json:"uname" db:"uname"`

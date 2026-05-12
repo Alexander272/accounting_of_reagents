@@ -12,6 +12,8 @@ type KeycloakClient struct {
 	ClientId     string           // clientId specified in Keycloak
 	ClientSecret string           // client secret specified in Keycloak
 	Realm        string           // realm specified in Keycloak
+	adminName    string           // admin username for login
+	adminPass    string           // admin password for login
 }
 
 type Deps struct {
@@ -48,5 +50,42 @@ func NewKeycloakClient(deps Deps) *KeycloakClient {
 		ClientId:     deps.ClientId,
 		ClientSecret: secret,
 		Realm:        deps.Realm,
+		adminName:    deps.AdminName,
+		adminPass:    deps.AdminPass,
 	}
+}
+
+func (k *KeycloakClient) Login(ctx context.Context) (*gocloak.JWT, error) {
+	token, err := k.Client.LoginAdmin(ctx, k.adminName, k.adminPass, "master")
+	if err != nil {
+		// log.Fatalf("failed to login admin to keycloak. error: %s", err.Error())
+		return nil, err
+	}
+	return token, nil
+}
+
+func (k *KeycloakClient) GetGroupId(ctx context.Context, groupName string) (*gocloak.Group, error) {
+	token, err := k.Login(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	group, err := k.Client.GetGroupByPath(ctx, token.AccessToken, k.Realm, groupName)
+	if err != nil {
+		return nil, err
+	}
+	return group, nil
+}
+
+func (k *KeycloakClient) GetGroupMembers(ctx context.Context, groupId string) ([]*gocloak.User, error) {
+	token, err := k.Login(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	members, err := k.Client.GetGroupMembers(ctx, token.AccessToken, k.Realm, groupId, gocloak.GetGroupsParams{})
+	if err != nil {
+		return nil, err
+	}
+	return members, nil
 }

@@ -3,7 +3,7 @@ package amount_type
 import (
 	"net/http"
 
-	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/access"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
@@ -25,11 +25,11 @@ func NewAmountTypeHandlers(services services.AmountType) *AmountTypeHandlers {
 func Register(api *gin.RouterGroup, service services.AmountType, middleware *middleware.Middleware) {
 	handlers := NewAmountTypeHandlers(service)
 
-	amountTypes := api.Group("/amount-types", middleware.CheckPermissions(constants.Types, constants.Read))
+	amountTypes := api.Group("/amount-types", middleware.CheckPermissions(access.Reg.R(access.ResourceAmountTypes).Read()))
 	{
 		amountTypes.GET("", handlers.getAll)
 
-		write := amountTypes.Group("", middleware.CheckPermissions(constants.Types, constants.Write))
+		write := amountTypes.Group("", middleware.CheckPermissions(access.Reg.R(access.ResourceAmountTypes).Write()))
 		{
 			write.POST("", handlers.create)
 			write.POST("/edit", handlers.edit)

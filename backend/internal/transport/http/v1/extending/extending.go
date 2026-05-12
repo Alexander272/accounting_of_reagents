@@ -3,7 +3,7 @@ package extending
 import (
 	"net/http"
 
-	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/access"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
@@ -26,11 +26,11 @@ func NewExtendingHandlers(service services.Extending) *ExtendingHandlers {
 func Register(api *gin.RouterGroup, service services.Extending, middleware *middleware.Middleware) {
 	handlers := NewExtendingHandlers(service)
 
-	extending := api.Group("/extending", middleware.CheckPermissions(constants.Reagent, constants.Read))
+	extending := api.Group("/extending", middleware.CheckPermissions(access.Reg.R(access.ResourceExtending).Read()))
 	{
 		extending.GET(":reagentId", handlers.getByReagentId)
 
-		write := extending.Group("", middleware.CheckPermissions(constants.Reagent, constants.Write))
+		write := extending.Group("", middleware.CheckPermissions(access.Reg.R(access.ResourceExtending).Write()))
 		{
 			write.POST("", handlers.create)
 			write.PUT("/:id", handlers.update)

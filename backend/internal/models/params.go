@@ -1,11 +1,12 @@
 package models
 
 type Params struct {
-	Page    *Page
-	Sort    []*Sort
-	Filters []*Filter
-	Search  *Search
-	User    *User
+	Sort     []*Sort
+	Search   *Search
+	Filters  []*NestedFilter
+	Page     *Page
+	IsPublic bool
+	RealmId  string
 }
 
 type Page struct {
@@ -18,17 +19,17 @@ type Sort struct {
 	Type  string `json:"type"`
 }
 
-type Filter struct {
-	Field     string         `json:"field"`
-	FieldType string         `json:"fieldType"`
-	Values    []*FilterValue `json:"values"`
-}
-type FilterValue struct {
-	CompareType string `json:"compareType"`
-	Value       string `json:"value"`
+type Search struct {
+	Value  string   `json:"value"`
+	Fields []string `json:"fields"`
 }
 
-type Search struct {
-	Value  string
-	Fields []string
+type NestedFilter struct {
+	Field  string
+	Values []*SingleValue
+}
+
+type SingleValue struct {
+	Value       string
+	CompareType string
 }

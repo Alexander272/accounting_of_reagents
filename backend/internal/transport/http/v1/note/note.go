@@ -3,7 +3,7 @@ package note
 import (
 	"net/http"
 
-	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/access"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
@@ -26,11 +26,17 @@ func NewNoteHandlers(service services.Note) *NoteHandlers {
 func Register(api *gin.RouterGroup, service services.Note, middleware *middleware.Middleware) {
 	handlers := NewNoteHandlers(service)
 
-	notes := api.Group("/notes", middleware.CheckPermissions(constants.Reagent, constants.Read))
+	notes := api.Group("/notes", middleware.CheckPermissions(
+		access.Reg.R(access.ResourcePublicReagent).Read(),
+		access.Reg.R(access.ResourcePrivateReagent).Read(),
+	))
 	{
 		notes.GET(":reagentId", handlers.getByReagentId)
 
-		write := notes.Group("", middleware.CheckPermissions(constants.Reagent, constants.Write))
+		write := notes.Group("", middleware.CheckPermissions(
+			access.Reg.R(access.ResourcePublicReagent).Write(),
+			access.Reg.R(access.ResourcePrivateReagent).Write(),
+		))
 		{
 			write.POST("", handlers.create)
 			write.PUT("/:id", handlers.update)

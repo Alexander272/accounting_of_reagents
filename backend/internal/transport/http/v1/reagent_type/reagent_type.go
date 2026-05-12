@@ -3,11 +3,13 @@ package reagent_type
 import (
 	"net/http"
 
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/access"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/middleware"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/utils"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/error_bot"
 	"github.com/gin-gonic/gin"
 )
@@ -25,11 +27,11 @@ func NewReagentTypeHandlers(service services.ReagentType) *ReagentTypeHandlers {
 func Register(api *gin.RouterGroup, service services.ReagentType, middleware *middleware.Middleware) {
 	handlers := NewReagentTypeHandlers(service)
 
-	reagentTypes := api.Group("/reagent-types", middleware.CheckPermissions(constants.Types, constants.Read))
+	reagentTypes := api.Group("/reagent-types", middleware.CheckPermissions(access.Reg.R(access.ResourceReagentTypes).Read()))
 	{
 		reagentTypes.GET("", handlers.get)
 
-		write := reagentTypes.Group("", middleware.CheckPermissions(constants.Types, constants.Write))
+		write := reagentTypes.Group("", middleware.CheckPermissions(access.Reg.R(access.ResourceReagentTypes).Write()))
 		{
 			write.POST("", handlers.create)
 			write.PUT("/:id", handlers.update)
@@ -39,18 +41,26 @@ func Register(api *gin.RouterGroup, service services.ReagentType, middleware *mi
 }
 
 func (h *ReagentTypeHandlers) get(c *gin.Context) {
-	u, exists := c.Get(constants.CtxUser)
-	if !exists {
-		response.NewErrorResponse(c, http.StatusUnauthorized, "empty user", "сессия не найдена")
-		return
+	realmId := c.GetHeader("realm")
+	if realmId == "" {
+		realmId = c.DefaultQuery("realm", constants.DefaultRealm)
 	}
 
-	user := u.(models.User)
+	user := utils.GetUser(c)
+	isPublic := true
+	privateKey := access.Reg.R(access.ResourcePrivateReagent).Do(access.Read).Key()
+	for _, p := range user.Permissions[realmId] {
+		if privateKey == p {
+			isPublic = false
+			break
+		}
+	}
 
-	reagentTypes, err := h.service.GetByRole(c, user.Role)
+	dto := &models.GetReagentTypeDTO{IsPublic: isPublic}
+	reagentTypes, err := h.service.Get(c, dto)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
-		error_bot.Send(c, err.Error(), user)
+		error_bot.Send(c, err.Error(), dto)
 		return
 	}
 

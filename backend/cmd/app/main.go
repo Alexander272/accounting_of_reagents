@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/config"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/migrate"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/server"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
@@ -46,6 +47,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to initialize db: %s", err.Error())
 	}
+	if err := migrate.Migrate(db.DB); err != nil {
+		log.Fatalf("failed to migrate: %s", err.Error())
+	}
 
 	keycloak := auth.NewKeycloakClient(auth.Deps{
 		Url:       conf.Keycloak.Url,
@@ -58,13 +62,9 @@ func main() {
 	//* Services, Repos & API Handlers
 	repos := repository.NewRepository(db)
 	services := services.NewServices(services.Deps{
-		Repos:           repos,
-		Keycloak:        keycloak,
-		AccessTokenTTL:  conf.Auth.AccessTokenTTL,
-		RefreshTokenTTL: conf.Auth.RefreshTokenTTL,
-		ErrorBotUrl:     conf.ErrorBot.Url,
-		BotUrl:          conf.Bot.Url,
-		ChannelId:       conf.Bot.ChannelId,
+		Repos:    repos,
+		Keycloak: keycloak,
+		Conf:     conf,
 	})
 
 	handlers := transport.NewHandler(services, keycloak)

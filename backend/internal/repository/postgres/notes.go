@@ -27,7 +27,7 @@ type Notes interface {
 }
 
 func (r *NotesRepo) GetByReagentId(ctx context.Context, reagentId string) ([]*models.Note, error) {
-	query := fmt.Sprintf(`SELECT id, comment, note FROM %s WHERE reagent_id=$1`, NotesTable)
+	query := fmt.Sprintf(`SELECT id, comment, note FROM %s WHERE reagent_id=$1`, Tables.Notes)
 	notes := []*models.Note{}
 
 	if err := r.db.SelectContext(ctx, &notes, query, reagentId); err != nil {
@@ -37,7 +37,7 @@ func (r *NotesRepo) GetByReagentId(ctx context.Context, reagentId string) ([]*mo
 }
 
 func (r *NotesRepo) Create(ctx context.Context, dto *models.NoteDTO) (string, error) {
-	query := fmt.Sprintf(`INSERT INTO %s (id, reagent_id, comment, note) VALUES (:id, :reagent_id, :comment, :note)`, NotesTable)
+	query := fmt.Sprintf(`INSERT INTO %s (id, reagent_id, comment, note) VALUES (:id, :reagent_id, :comment, :note)`, Tables.Notes)
 	id := uuid.New()
 	dto.Id = id.String()
 
@@ -48,7 +48,7 @@ func (r *NotesRepo) Create(ctx context.Context, dto *models.NoteDTO) (string, er
 }
 
 func (r *NotesRepo) Update(ctx context.Context, dto *models.NoteDTO) error {
-	query := fmt.Sprintf(`UPDATE %s SET comment=:comment, note=:note WHERE id=:id`, NotesTable)
+	query := fmt.Sprintf(`UPDATE %s SET comment=:comment, note=:note WHERE id=:id`, Tables.Notes)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -57,7 +57,7 @@ func (r *NotesRepo) Update(ctx context.Context, dto *models.NoteDTO) error {
 }
 
 func (r *NotesRepo) Delete(ctx context.Context, dto *models.DeleteNoteDTO) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, NotesTable)
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, Tables.Notes)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)

@@ -27,7 +27,7 @@ type Extending interface {
 }
 
 func (r *ExtendingRepo) GetByReagentId(ctx context.Context, reagentId string) ([]*models.Extending, error) {
-	query := fmt.Sprintf(`SELECT id, date_of_extending, period_of_extending FROM %s WHERE reagent_id=$1 ORDER BY date_of_extending DESC`, ExtendingTable)
+	query := fmt.Sprintf(`SELECT id, date_of_extending, period_of_extending FROM %s WHERE reagent_id=$1 ORDER BY date_of_extending DESC`, Tables.Extending)
 	extending := []*models.Extending{}
 
 	if err := r.db.SelectContext(ctx, &extending, query, reagentId); err != nil {
@@ -37,8 +37,8 @@ func (r *ExtendingRepo) GetByReagentId(ctx context.Context, reagentId string) ([
 }
 
 func (r *ExtendingRepo) Create(ctx context.Context, dto *models.ExtendingDTO) (string, error) {
-	query := fmt.Sprintf(`INSERT INTO %s (id, reagent_id, date_of_extending, period_of_extending) VALUES 
-		(:id, :reagent_id, :date_of_extending, :period_of_extending)`, ExtendingTable,
+	query := fmt.Sprintf(`INSERT INTO %s (id, reagent_id, date_of_extending, period_of_extending) VALUES
+		(:id, :reagent_id, :date_of_extending, :period_of_extending)`, Tables.Extending,
 	)
 	id := uuid.New()
 	dto.Id = id.String()
@@ -50,7 +50,7 @@ func (r *ExtendingRepo) Create(ctx context.Context, dto *models.ExtendingDTO) (s
 }
 
 func (r *ExtendingRepo) Update(ctx context.Context, dto *models.ExtendingDTO) error {
-	query := fmt.Sprintf(`UPDATE %s SET date_of_extending=:date_of_extending, period_of_extending=:period_of_extending WHERE id=:id`, ExtendingTable)
+	query := fmt.Sprintf(`UPDATE %s SET date_of_extending=:date_of_extending, period_of_extending=:period_of_extending WHERE id=:id`, Tables.Extending)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -59,7 +59,7 @@ func (r *ExtendingRepo) Update(ctx context.Context, dto *models.ExtendingDTO) er
 }
 
 func (r *ExtendingRepo) Delete(ctx context.Context, dto *models.DeleteExtendingDTO) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, ExtendingTable)
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, Tables.Extending)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)

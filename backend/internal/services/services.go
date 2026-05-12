@@ -1,18 +1,20 @@
 package services
 
 import (
-	"time"
-
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/config"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/events"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/auth"
 )
 
 type Services struct {
-	Menu
-	MenuItem
-	Role
+	Permissions
+	Roles
+	Realm
+	UserRealm
+	Users
 	Session
-	Permission
+	AccessPolices
 
 	AmountType
 	ReagentType
@@ -25,33 +27,49 @@ type Services struct {
 }
 
 type Deps struct {
-	Repos           *repository.Repository
-	Keycloak        *auth.KeycloakClient
-	AccessTokenTTL  time.Duration
-	RefreshTokenTTL time.Duration
-	BotUrl          string
-	ChannelId       string
-	ErrorBotUrl     string
+	Repos    *repository.Repository
+	Keycloak *auth.KeycloakClient
+	Conf     *config.Config
 }
 
 func NewServices(deps Deps) *Services {
-	// TODO можно включить для keycloak настройку что он за прокси и запустить сервер на 80 (или на другом) порту для вывода интерфейса
-	// TODO при авторизации пользователя его можно искать сразу по нескольким realm
+	transaction := NewTransactionManager(deps.Repos.Transaction)
 
-	// TODO для чего я делаю экземпляр ботов для каждого сервиса, когда нужно запустить один и отправлять все запросы на него. тоже самое относится и сервису email, файловому (file - minio) и возможно к некоторым другим. можно в принципе сделать один сервис бота для ошибок и рассылок (стоит рассмотреть и попробовать. можно попробовать связать шаблон и формат данных, а еще бота от имени которого будет отправляться сообщение)
+	updatePolicyEvent := &events.PolicyEventManager{}
 
-	// notification := NewNotificationService(si, most, errorBot)
+	permissions := NewPermissionService(deps.Repos.Permissions, transaction, updatePolicyEvent)
+	roleHierarchy := NewRoleHierarchyService(deps.Repos.RoleHierarchy)
+	role := NewRoleService(&RoleDeps{
+		Repo:        deps.Repos.Roles,
+		Hierarchy:   roleHierarchy,
+		Permissions: permissions,
+		EventBus:    updatePolicyEvent,
+		TM:          transaction,
+	})
 
-	menuItem := NewMenuItemService(deps.Repos.MenuItem)
-	menu := NewMenuService(deps.Repos.Menu, menuItem)
-	role := NewRoleService(deps.Repos.Role)
-	session := NewSessionService(deps.Keycloak, role)
-	permission := NewPermissionService("configs/privacy.conf", menu, role)
+	realm := NewRealmService(deps.Repos.Realm)
+	userRealm := NewUserRealmService(deps.Repos.UserRealm, realm, role, updatePolicyEvent)
+	user := NewUserService(&UserDeps{
+		Repo:      deps.Repos.User,
+		TM:        transaction,
+		Keycloak:  deps.Keycloak,
+		UserRealm: userRealm,
+		EventBus:  updatePolicyEvent,
+	})
 
-	most := NewMostService(deps.BotUrl, deps.ChannelId)
+	adapter := NewAdapter(&AdapterDeps{Permissions: permissions, Users: user, RoleHierarchy: roleHierarchy})
+	policies := NewAccessPoliciesService(&PoliciesDeps{
+		Conf:     deps.Conf.Casbin,
+		Adapter:  adapter,
+		EventBus: updatePolicyEvent,
+	})
+
+	session := NewSessionService(deps.Keycloak, policies, userRealm, user)
+
+	most := NewMostService(deps.Conf.Bot.Url, deps.Conf.Bot.ChannelId)
 
 	amountType := NewAmountTypeService(deps.Repos.AmountType)
-	reagentType := NewReagentTypeService(deps.Repos.ReagentType, role)
+	reagentType := NewReagentTypeService(deps.Repos.ReagentType)
 	reagent := NewReagentService(deps.Repos.Reagent, reagentType, most)
 	spending := NewSpendingService(deps.Repos.Spending, reagent, most)
 	extending := NewExtendingService(deps.Repos.Extending, reagent)
@@ -60,11 +78,14 @@ func NewServices(deps Deps) *Services {
 	scheduler := NewSchedulerService(reagent)
 
 	return &Services{
-		MenuItem:   menuItem,
-		Menu:       menu,
-		Role:       role,
-		Session:    session,
-		Permission: permission,
+		Permissions: permissions,
+		Roles:       role,
+		Session:     session,
+		Realm:       realm,
+		UserRealm:   userRealm,
+		Users:       user,
+
+		AccessPolices: policies,
 
 		AmountType:  amountType,
 		ReagentType: reagentType,

@@ -6,11 +6,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/access"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/middleware"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/utils"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/error_bot"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -29,14 +31,20 @@ func NewReagentHandlers(service services.Reagent) *ReagentHandlers {
 func Register(api *gin.RouterGroup, service services.Reagent, middleware *middleware.Middleware) {
 	handlers := NewReagentHandlers(service)
 
-	reagents := api.Group("/reagents", middleware.CheckPermissions(constants.Reagent, constants.Read))
+	reagents := api.Group("/reagents", middleware.CheckPermissions(
+		access.Reg.R(access.ResourcePublicReagent).Read(),
+		access.Reg.R(access.ResourcePrivateReagent).Read(),
+	))
 	{
 		reagents.GET("", handlers.get)
 		reagents.GET("/:id", handlers.getById)
 		reagents.GET("/unique/:field", handlers.getUnique)
 		reagents.GET("/overdue", handlers.getOverdue)
 
-		write := reagents.Group("", middleware.CheckPermissions(constants.Reagent, constants.Write))
+		write := reagents.Group("", middleware.CheckPermissions(
+			access.Reg.R(access.ResourcePublicReagent).Write(),
+			access.Reg.R(access.ResourcePrivateReagent).Write(),
+		))
 		{
 			write.POST("/order", handlers.prepareOrder)
 			write.POST("", handlers.create)
@@ -50,8 +58,7 @@ func (h *ReagentHandlers) get(c *gin.Context) {
 	params := &models.Params{
 		Page:    &models.Page{},
 		Sort:    []*models.Sort{},
-		Filters: []*models.Filter{},
-		User:    &models.User{},
+		Filters: []*models.NestedFilter{},
 	}
 
 	page := c.Query("page")
@@ -90,21 +97,20 @@ func (h *ReagentHandlers) get(c *gin.Context) {
 		}
 	}
 
-	for k, v := range filters {
+	for k := range filters {
 		valueMap := c.QueryMap(k)
 
-		values := []*models.FilterValue{}
+		values := []*models.SingleValue{}
 		for key, value := range valueMap {
-			values = append(values, &models.FilterValue{
+			values = append(values, &models.SingleValue{
 				CompareType: key,
 				Value:       value,
 			})
 		}
 
-		f := &models.Filter{
-			Field:     k,
-			FieldType: v,
-			Values:    values,
+		f := &models.NestedFilter{
+			Field:  k,
+			Values: values,
 		}
 
 		params.Filters = append(params.Filters, f)
@@ -118,14 +124,28 @@ func (h *ReagentHandlers) get(c *gin.Context) {
 		}
 	}
 
-	u, exists := c.Get(constants.CtxUser)
-	if !exists {
-		response.NewErrorResponse(c, http.StatusUnauthorized, "empty user", "сессия не найдена")
+	realmId := c.GetHeader("realm")
+	if realmId == "" {
+		realmId = c.Query("realm")
+	}
+	if realmId == "" {
+		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "realm не задан")
 		return
 	}
+	params.RealmId = realmId
 
-	user := u.(models.User)
-	params.User = &user
+	user := utils.GetUser(c)
+	isPublic := true
+	privateKey := access.Reg.R(access.ResourcePrivateReagent).Do(access.Read).Key()
+	logger.Debug("privateKey", logger.StringAttr("privateKey", privateKey))
+	for _, p := range user.Permissions[realmId] {
+		logger.Debug("permission", logger.StringAttr("permission", p))
+		if privateKey == p {
+			isPublic = false
+			break
+		}
+	}
+	params.IsPublic = isPublic
 
 	list, err := h.service.Get(c, params)
 	if err != nil {
@@ -206,6 +226,12 @@ func (h *ReagentHandlers) create(c *gin.Context) {
 		return
 	}
 
+	realmId := c.GetHeader("realm")
+	if realmId == "" {
+		realmId = c.DefaultQuery("realm", constants.DefaultRealm)
+	}
+	dto.RealmId = realmId
+
 	id, err := h.service.Create(c, dto)
 	if err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
@@ -230,6 +256,12 @@ func (h *ReagentHandlers) update(c *gin.Context) {
 		return
 	}
 	dto.Id = id
+
+	realmId := c.GetHeader("realm")
+	if realmId == "" {
+		realmId = c.DefaultQuery("realm", constants.DefaultRealm)
+	}
+	dto.RealmId = realmId
 
 	if err := h.service.Update(c, dto); err != nil {
 		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())

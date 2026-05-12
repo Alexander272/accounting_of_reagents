@@ -57,7 +57,7 @@ func (h *Handler) ErrorHandler(c *gin.Context, origErr any) {
 }
 
 func (h *Handler) initAPI(router *gin.Engine, conf *config.Config) {
-	middleware := middleware.NewMiddleware(h.services, conf.Auth, h.keycloak)
+	middleware := middleware.NewMiddleware(h.services, &conf.Auth, h.keycloak)
 	handlerV1 := httpV1.NewHandler(httpV1.Deps{Services: h.services, Conf: conf, Middleware: middleware})
 
 	api := router.Group("/api")

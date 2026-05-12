@@ -8,10 +8,13 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/auth"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/extending"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/note"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/permissions"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/reagent"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/reagent_type"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/realm"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/roles"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/spending"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/v1/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,8 +43,6 @@ func (h *Handler) Init(group *gin.RouterGroup) {
 
 	auth.Register(v1, auth.Deps{Service: h.services.Session, Auth: h.conf.Auth})
 
-	roles.Register(v1, h.services.Role, h.middleware)
-
 	secure := v1.Group("", h.middleware.VerifyToken)
 	reagent_type.Register(secure, h.services.ReagentType, h.middleware)
 	amount_type.Register(secure, h.services.AmountType, h.middleware)
@@ -49,10 +50,10 @@ func (h *Handler) Init(group *gin.RouterGroup) {
 	spending.Register(secure, h.services.Spending, h.middleware)
 	extending.Register(secure, h.services.Extending, h.middleware)
 	note.Register(secure, h.services.Note, h.middleware)
+	realm.Register(secure, realm.Deps{Service: h.services.Realm, UserRealm: h.services.UserRealm, Middleware: h.middleware})
 
+	permissions.Register(secure, h.services.Permissions, h.middleware)
+	roles.Register(secure, h.services.Roles, h.middleware)
+	user.Register(secure, h.services.Users, h.middleware)
 	//TODO можно попробовать ограничивать не только по разделам, но и по видам реактивов
-
-	/* что осталось
-	+ возможно я что-то забыл
-	*/
 }

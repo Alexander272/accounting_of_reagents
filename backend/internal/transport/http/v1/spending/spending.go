@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/Alexander272/accounting_of_reagents/backend/internal/constants"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/access"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
@@ -27,11 +27,11 @@ func NewSpendingHandlers(service services.Spending) *SpendingHandlers {
 func Register(api *gin.RouterGroup, service services.Spending, middleware *middleware.Middleware) {
 	handlers := NewSpendingHandlers(service)
 
-	spending := api.Group("/spending", middleware.CheckPermissions(constants.Reagent, constants.Read))
+	spending := api.Group("/spending", middleware.CheckPermissions(access.Reg.R(access.ResourceSpending).Read()))
 	{
 		spending.GET(":reagentId", handlers.getByReagentId)
 
-		write := spending.Group("", middleware.CheckPermissions(constants.Reagent, constants.Write))
+		write := spending.Group("", middleware.CheckPermissions(access.Reg.R(access.ResourceSpending).Write()))
 		{
 			write.POST("", handlers.create)
 			write.PUT("/:id", handlers.update)

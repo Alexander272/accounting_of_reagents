@@ -5,14 +5,27 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type Role interface {
-	postgres.Role
+type Transaction interface {
+	postgres.Transaction
 }
-type MenuItem interface {
-	postgres.MenuItem
+
+type Permissions interface {
+	postgres.Permissions
 }
-type Menu interface {
-	postgres.Menu
+type Roles interface {
+	postgres.Roles
+}
+type RoleHierarchy interface {
+	postgres.RoleHierarchy
+}
+type Realm interface {
+	postgres.Realm
+}
+type UserRealm interface {
+	postgres.UserRealm
+}
+type User interface {
+	postgres.User
 }
 
 type ReagentType interface {
@@ -35,9 +48,14 @@ type Notes interface {
 }
 
 type Repository struct {
-	Role
-	MenuItem
-	Menu
+	Transaction
+
+	Permissions
+	Roles
+	RoleHierarchy
+	Realm
+	UserRealm
+	User
 
 	ReagentType
 	AmountType
@@ -48,10 +66,17 @@ type Repository struct {
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
+	transaction := postgres.NewTransactionRepo(db)
+
 	return &Repository{
-		Role:     postgres.NewRoleRepo(db),
-		MenuItem: postgres.NewMenuItemRepo(db),
-		Menu:     postgres.NewMenuRepo(db),
+		Transaction: transaction,
+
+		Permissions:   postgres.NewPermissionRepo(db, transaction),
+		Roles:         postgres.NewRoleRepo(db, transaction),
+		RoleHierarchy: postgres.NewRoleHierarchyRepo(db, transaction),
+		Realm:         postgres.NewRealmRepo(db),
+		UserRealm:     postgres.NewUserRealmRepo(db, transaction),
+		User:          postgres.NewUserRepo(db),
 
 		ReagentType: postgres.NewReagentTypeRepo(db),
 		AmountType:  postgres.NewAmountTypeRepo(db),

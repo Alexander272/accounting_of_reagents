@@ -18,6 +18,7 @@ type (
 		Http        HttpConfig
 		Limiter     LimiterConfig
 		Scheduler   SchedulerConfig
+		Casbin      CasbinConfig
 		Bot         BotConfig
 		ErrorBot    ErrorBotConfig
 	}
@@ -73,6 +74,11 @@ type (
 	SchedulerConfig struct {
 		StartTime int           `yaml:"start_time" env-default:"12"` // 12 hours (noon)
 		Interval  time.Duration `yaml:"interval" env-default:"24h"`
+	}
+
+	CasbinConfig struct {
+		ModelPath     string `yaml:"model_path" env:"CASBIN_MODEL_PATH" env-default:"configs/privacy.conf"`
+		EnableWatcher bool   `yaml:"enable_watcher" env:"CASBIN_ENABLE_WATCHER" env-default:"false"`
 	}
 
 	ErrorBotConfig struct {

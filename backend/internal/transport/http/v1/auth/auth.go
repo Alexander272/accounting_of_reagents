@@ -119,7 +119,12 @@ func (h *AuthHandler) refresh(c *gin.Context) {
 		return
 	}
 
-	user, err := h.service.Refresh(c, refreshToken)
+	realmId := c.GetHeader("realm")
+	if realmId == "" {
+		realmId = c.Query("realm")
+	}
+
+	user, err := h.service.Refresh(c, refreshToken, realmId)
 	if err != nil {
 		if strings.Contains(err.Error(), "invalid_grant") {
 			response.NewErrorResponse(c, http.StatusUnauthorized, err.Error(), "Сессия не найдена")

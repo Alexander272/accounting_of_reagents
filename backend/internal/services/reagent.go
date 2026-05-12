@@ -40,7 +40,7 @@ type Reagent interface {
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 	SetNotification(context.Context, *models.ReagentNotificationDTO) error
-	SetNotificationNew(ctx context.Context, dto []*models.ReagentNotificationDTO) error
+	SetNotificationNew(context.Context, []*models.ReagentNotificationDTO) error
 	SetIsOverdue(context.Context, []string) error
 	ClearIsOverdue(context.Context, string) error
 	SetDeleteStamp(context.Context, string) error
@@ -49,7 +49,7 @@ type Reagent interface {
 }
 
 func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.ReagentList, error) {
-	reagentTypes, err := s.reagentType.GetByRole(ctx, req.User.Role)
+	reagentTypes, err := s.reagentType.Get(ctx, &models.GetReagentTypeDTO{IsPublic: req.IsPublic})
 	if err != nil {
 		return nil, err
 	}
@@ -66,9 +66,9 @@ func (s *ReagentService) Get(ctx context.Context, req *models.Params) (*models.R
 		for _, v := range reagentTypes {
 			values = append(values, v.Id)
 		}
-		req.Filters = append(req.Filters, &models.Filter{
+		req.Filters = append(req.Filters, &models.NestedFilter{
 			Field: "typeId",
-			Values: []*models.FilterValue{{
+			Values: []*models.SingleValue{{
 				CompareType: "in",
 				Value:       strings.Join(values, ","),
 			}},

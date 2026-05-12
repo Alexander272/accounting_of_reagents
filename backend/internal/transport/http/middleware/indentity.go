@@ -9,14 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// const excludedPaths = "POST /api/v1/si/locations/receiving"
-
 func (m *Middleware) VerifyToken(c *gin.Context) {
-	// if strings.Contains(excludedPaths, fmt.Sprintf("%s %s", c.Request.Method, c.Request.URL.String())) {
-	// 	c.Next()
-	// 	return
-	// }
-
 	token := strings.Replace(c.GetHeader("Authorization"), "Bearer ", "", 1)
 
 	// TODO надо попробовать забирать из keycloak ключи и проверять токен здесь

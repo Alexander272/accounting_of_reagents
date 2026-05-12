@@ -32,7 +32,7 @@ type AmountType interface {
 }
 
 func (r *AmountTypeRepo) GetAll(ctx context.Context) ([]*models.AmountType, error) {
-	query := fmt.Sprintf(`SELECT id, name, description, number FROM %s ORDER BY number`, AmountTypeTable)
+	query := fmt.Sprintf(`SELECT id, name, description, number FROM %s ORDER BY number`, Tables.AmountType)
 	amountTypes := []*models.AmountType{}
 
 	if err := r.db.SelectContext(ctx, &amountTypes, query); err != nil {
@@ -42,7 +42,7 @@ func (r *AmountTypeRepo) GetAll(ctx context.Context) ([]*models.AmountType, erro
 }
 
 func (r *AmountTypeRepo) Create(ctx context.Context, dto *models.AmountTypeDTO) (string, error) {
-	query := fmt.Sprintf(`INSERT INTO %s (id, name, description, number) VALUES (:id, :name, :description, :number)`, AmountTypeTable)
+	query := fmt.Sprintf(`INSERT INTO %s (id, name, description, number) VALUES (:id, :name, :description, :number)`, Tables.AmountType)
 	id := uuid.New()
 	dto.Id = id.String()
 
@@ -61,7 +61,7 @@ func (r *AmountTypeRepo) CreateSeveral(ctx context.Context, dto []*models.Amount
 		args = append(args, id, v.Name, v.Description, v.Number)
 		values = append(values, fmt.Sprintf("($%d, $%d, $%d, $%d)", c*i+1, c*i+2, c*i+3, c*i+4))
 	}
-	query := fmt.Sprintf(`INSERT INTO %s (id, name, description, number) VALUES %s`, AmountTypeTable, strings.Join(values, ","))
+	query := fmt.Sprintf(`INSERT INTO %s (id, name, description, number) VALUES %s`, Tables.AmountType, strings.Join(values, ","))
 
 	if _, err := r.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -70,7 +70,7 @@ func (r *AmountTypeRepo) CreateSeveral(ctx context.Context, dto []*models.Amount
 }
 
 func (r *AmountTypeRepo) Update(ctx context.Context, dto *models.AmountTypeDTO) error {
-	query := fmt.Sprintf(`UPDATE %s SET name=:name, description=:description WHERE id=:id`, AmountTypeTable)
+	query := fmt.Sprintf(`UPDATE %s SET name=:name, description=:description WHERE id=:id`, Tables.AmountType)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -87,7 +87,7 @@ func (r *AmountTypeRepo) UpdateSeveral(ctx context.Context, dto []*models.Amount
 	}
 
 	query := fmt.Sprintf(`UPDATE %s AS t SET number=s.number FROM (VALUES %s) AS s(id, number) WHERE t.id=s.id::uuid`,
-		AmountTypeTable, strings.Join(values, ","),
+		Tables.AmountType, strings.Join(values, ","),
 	)
 
 	// не работает (NamedExecContext похоже не проставляет значения)
@@ -98,7 +98,7 @@ func (r *AmountTypeRepo) UpdateSeveral(ctx context.Context, dto []*models.Amount
 }
 
 func (r *AmountTypeRepo) Delete(ctx context.Context, dto *models.DeleteAmountTypeDTO) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, AmountTypeTable)
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, Tables.AmountType)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -107,7 +107,7 @@ func (r *AmountTypeRepo) Delete(ctx context.Context, dto *models.DeleteAmountTyp
 }
 
 func (r *AmountTypeRepo) DeleteSeveral(ctx context.Context, dto *models.DeleteSeveralAmountTypeDTO) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id=ANY($1)`, AmountTypeTable)
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=ANY($1)`, Tables.AmountType)
 
 	if _, err := r.db.ExecContext(ctx, query, pq.Array(dto.Ids)); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)

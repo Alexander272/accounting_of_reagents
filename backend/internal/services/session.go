@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
@@ -10,21 +11,25 @@ import (
 )
 
 type SessionService struct {
-	keycloak *auth.KeycloakClient
-	role     Role
+	keycloak  *auth.KeycloakClient
+	userRealm UserRealm
+	user      Users
+	policies  AccessPolices
 }
 
-func NewSessionService(keycloak *auth.KeycloakClient, role Role) *SessionService {
+func NewSessionService(keycloak *auth.KeycloakClient, policies AccessPolices, userRealm UserRealm, user Users) *SessionService {
 	return &SessionService{
-		keycloak: keycloak,
-		role:     role,
+		keycloak:  keycloak,
+		policies:  policies,
+		userRealm: userRealm,
+		user:      user,
 	}
 }
 
 type Session interface {
 	SignIn(ctx context.Context, u models.SignIn) (*models.User, error)
 	SignOut(ctx context.Context, refreshToken string) error
-	Refresh(ctx context.Context, refreshToken string) (*models.User, error)
+	Refresh(ctx context.Context, refreshToken, realm string) (*models.User, error)
 	DecodeAccessToken(ctx context.Context, token string) (*models.User, error)
 }
 
@@ -39,15 +44,33 @@ func (s *SessionService) SignIn(ctx context.Context, u models.SignIn) (*models.U
 		return nil, err
 	}
 
-	// get menu
-	role, err := s.role.Get(ctx, user.Role)
+	// access, err := s.policies.GetPolicies(user.Id, "")
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	userRealms, err := s.userRealm.GetByUserId(ctx, user.Id)
 	if err != nil {
 		return nil, err
 	}
+	user.Realms = userRealms
+
+	user.Permissions = map[string][]string{}
+	for _, r := range userRealms {
+		access, err := s.policies.GetPolicies(user.Id, r.RealmId)
+		if err != nil {
+			return nil, err
+		}
+
+		user.Permissions[r.RealmId] = access.Perms
+	}
+	// user.Role = access.Role
+	// user.Permissions = map[string][]string{
+	// 	access.Domain: access.Perms,
+	// }
 
 	user.AccessToken = res.AccessToken
 	user.RefreshToken = res.RefreshToken
-	user.Menu = role.Menu
 
 	return user, nil
 }
@@ -60,7 +83,7 @@ func (s *SessionService) SignOut(ctx context.Context, refreshToken string) error
 	return nil
 }
 
-func (s *SessionService) Refresh(ctx context.Context, refreshToken string) (*models.User, error) {
+func (s *SessionService) Refresh(ctx context.Context, refreshToken, realm string) (*models.User, error) {
 	res, err := s.keycloak.Client.RefreshToken(ctx, refreshToken, s.keycloak.ClientId, s.keycloak.ClientSecret, s.keycloak.Realm)
 	if err != nil {
 		return nil, fmt.Errorf("failed to refresh token in keycloak. error: %w", err)
@@ -71,15 +94,32 @@ func (s *SessionService) Refresh(ctx context.Context, refreshToken string) (*mod
 		return nil, err
 	}
 
-	// get menu
-	role, err := s.role.Get(ctx, user.Role)
+	userRealms, err := s.userRealm.GetByUserId(ctx, user.Id)
 	if err != nil {
 		return nil, err
 	}
+	user.Realms = userRealms
+
+	user.Permissions = map[string][]string{}
+	for _, r := range userRealms {
+		access, err := s.policies.GetPolicies(user.Id, r.RealmId)
+		if err != nil {
+			return nil, err
+		}
+
+		user.Permissions[r.RealmId] = access.Perms
+	}
+	// access, err := s.policies.GetPolicies(user.Id, realm)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// user.Role = access.Role
+	// user.Permissions = map[string][]string{
+	// 	access.Domain: access.Perms,
+	// }
 
 	user.AccessToken = res.AccessToken
 	user.RefreshToken = res.RefreshToken
-	user.Menu = role.Menu
 
 	return user, nil
 }
@@ -91,16 +131,17 @@ func (s *SessionService) DecodeAccessToken(ctx context.Context, token string) (*
 		return nil, fmt.Errorf("failed to decode access token. error: %w", err)
 	}
 
+	serviceName := os.Getenv("SERVICE_ID")
+
 	user := &models.User{}
-	var role, username, userId string
+	var username, userId string
 	c := *claims
 	access, ok := c["realm_access"]
 	if ok {
 		a := access.(map[string]interface{})["roles"]
 		roles := a.([]interface{})
 		for _, r := range roles {
-			if strings.Contains(r.(string), "reagents") {
-				role = strings.Replace(r.(string), "reagents_", "", 1)
+			if strings.Contains(r.(string), serviceName) {
 				break
 			}
 		}
@@ -117,7 +158,6 @@ func (s *SessionService) DecodeAccessToken(ctx context.Context, token string) (*
 	}
 
 	user.Id = userId
-	user.Role = role
 	user.Name = username
 
 	return user, nil

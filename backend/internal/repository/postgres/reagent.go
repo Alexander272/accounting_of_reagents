@@ -87,6 +87,14 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 	order += "r.created_at DESC, r.id"
 
 	filter := "WHERE deleted IS NULL"
+	
+	// Add realm filter
+	if req.RealmId != "" {
+		filter += fmt.Sprintf(" AND realm_id = $%d", count)
+		params = append(params, req.RealmId)
+		count++
+	}
+	
 	if len(req.Filters) > 0 {
 		filter += " AND "
 		filters := []string{}
@@ -120,20 +128,19 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 	params = append(params, req.Page.Limit, req.Page.Offset)
 
 	query := fmt.Sprintf(`SELECT r.id, t.name AS type, r.name, uname, document, purity, date_of_manufacture, consignment, manufacturer, shelf_life, closet, shelf,
-		receipt_date, (amount || ' ' || a.name) AS amount, control_date, protocol, result, COALESCE(e.date_of_extending, 0) AS date_of_extending, 
+		receipt_date, (amount || ' ' || a.name) AS amount, control_date, protocol, result, COALESCE(e.date_of_extending, 0) AS date_of_extending,
 		has_run_out, is_overdue,
-		COALESCE(e.period_of_extending, 0) AS period_of_extending, seizure, disposal, COALESCE(comment,'') AS comment, COALESCE(note,'') AS note,
 		COALESCE((SELECT SUM(amount) FROM %s WHERE reagent_id=r.id GROUP BY reagent_id), 0) AS spending, a.name AS spending_type,
 		-- COALESCE((SELECT SUM(period_of_extending) FROM %s WHERE reagent_id=r.id GROUP BY reagent_id), 0) AS sum_period,
 		COUNT(*) OVER() as total_count
 		FROM %s AS r
 		LEFT JOIN %s AS t ON r.type_id=t.id
-		LEFT JOIN LATERAL (SELECT date_of_extending, period_of_extending FROM %s WHERE reagent_id=r.id ORDER BY date_of_extending 
+		LEFT JOIN LATERAL (SELECT date_of_extending, period_of_extending FROM %s WHERE reagent_id=r.id ORDER BY date_of_extending
 			DESC LIMIT 1) AS e ON true
 		LEFT JOIN %s AS a ON r.amount_type_id=a.id
 		LEFT JOIN %s AS n ON r.id=n.reagent_id
 		%s%s%s LIMIT $%d OFFSET $%d`,
-		SpendingTable, ExtendingTable, ReagentsTable, ReagentTypesTable, ExtendingTable, AmountTypeTable, NotesTable,
+		Tables.Spending, Tables.Extending, Tables.Reagents, Tables.ReagentTypes, Tables.Extending, Tables.AmountType, Tables.Notes,
 		filter, search, order, count, count+1,
 	)
 	reagents := []*pq_models.ReagentDTO{}
@@ -190,9 +197,9 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 }
 
 func (r *ReagentRepo) GetById(ctx context.Context, id string) (*models.EditReagent, error) {
-	query := fmt.Sprintf(`SELECT id, type_id, name, uname, document, purity, date_of_manufacture, consignment, manufacturer, shelf_life, closet, 
+	query := fmt.Sprintf(`SELECT id, type_id, name, uname, document, purity, date_of_manufacture, consignment, manufacturer, shelf_life, closet,
 		shelf, receipt_date, amount, amount_type_id, control_date, protocol, result, seizure, disposal FROM %s WHERE id=$1`,
-		ReagentsTable,
+		Tables.Reagents,
 	)
 
 	reagent := &models.EditReagent{}
@@ -207,7 +214,7 @@ func (r *ReagentRepo) GetById(ctx context.Context, id string) (*models.EditReage
 }
 
 func (r *ReagentRepo) GetByIdList(ctx context.Context, list []string) ([]*models.Reagent, error) {
-	query := fmt.Sprintf(`SELECT id, name, uname, document, purity, manufacturer FROM %s WHERE id=ANY($1::uuid[])`, ReagentsTable)
+	query := fmt.Sprintf(`SELECT id, name, uname, document, purity, manufacturer FROM %s WHERE id=ANY($1::uuid[])`, Tables.Reagents)
 
 	reagents := []*models.Reagent{}
 	if err := r.db.SelectContext(ctx, &reagents, query, pq.Array(list)); err != nil {
@@ -234,7 +241,7 @@ func (r *ReagentRepo) GetRemainder(ctx context.Context, id string) (*models.Reag
 	query := fmt.Sprintf(`SELECT id, amount, name, document, purity, manufacturer, has_notification,
 		amount - COALESCE((SELECT SUM(amount) FROM %s WHERE reagent_id=$1 GROUP BY reagent_id), 0) AS remainder
 		FROM %s WHERE id=$1`,
-		SpendingTable, ReagentsTable,
+		Tables.Spending, Tables.Reagents,
 	)
 
 	remainder := &models.ReagentWithRemainder{}
@@ -253,7 +260,7 @@ func (r *ReagentRepo) GetRemainderNew(ctx context.Context, id string) ([]*models
 		INNER JOIN Reagent AS r ON true
 		LEFT JOIN LATERAL(SELECT SUM(amount) AS spent FROM %s WHERE reagent_id=o.id GROUP BY reagent_id) AS s ON true
 		WHERE o.name=r.name AND o.purity=r.purity AND is_overdue=false AND deleted IS NULL AND has_notification=false`,
-		ReagentsTable, ReagentsTable, SpendingTable,
+		Tables.Reagents, Tables.Reagents, Tables.Spending,
 	)
 	data := []*models.ReagentWithRemainder{}
 
@@ -267,11 +274,11 @@ func (r *ReagentRepo) GetAllShelfLife(ctx context.Context) (models.GroupedReagen
 	query := fmt.Sprintf(`SELECT id, name, document, purity, date_of_manufacture, shelf_life, is_overdue, seizure,
 		COALESCE(date_of_extending,0) AS date_of_extending, COALESCE(period_of_extending,0) AS period_of_extending
 		FROM %s AS r
-		LEFT JOIN LATERAL (SELECT date_of_extending, period_of_extending FROM %s WHERE reagent_id=r.id ORDER BY date_of_extending 
+		LEFT JOIN LATERAL (SELECT date_of_extending, period_of_extending FROM %s WHERE reagent_id=r.id ORDER BY date_of_extending
 			DESC LIMIT 1) AS e ON true
 		WHERE deleted IS NULL
 		ORDER BY name, purity, date_of_manufacture DESC`,
-		ReagentsTable, ExtendingTable,
+		Tables.Reagents, Tables.Extending,
 	)
 	reagents := []*pq_models.ReagentDTO{}
 
@@ -301,7 +308,7 @@ func (r *ReagentRepo) GetUniqueData(ctx context.Context, req *models.GetUniqueDT
 	req.Field = r.getColumnName(req.Field)
 
 	query := fmt.Sprintf(`SELECT DISTINCT(%s) AS item FROM %s AS r WHERE %s!='' AND %s IS NOT NULL`,
-		req.Field, ReagentsTable, req.Field, req.Field,
+		req.Field, Tables.Reagents, req.Field, req.Field,
 	)
 	tmp := []pq_models.UniqueData{}
 
@@ -317,11 +324,11 @@ func (r *ReagentRepo) GetUniqueData(ctx context.Context, req *models.GetUniqueDT
 }
 
 func (r *ReagentRepo) Create(ctx context.Context, dto *models.ReagentDTO) (string, error) {
-	query := fmt.Sprintf(`INSERT INTO %s (id, type_id, name, uname, document, purity, date_of_manufacture, consignment, manufacturer, shelf_life, closet, 
-		shelf, receipt_date, amount, amount_type_id, control_date, protocol, result, seizure, disposal) VALUES (:id, :type_id, :name, :uname, :document, :purity,
+	query := fmt.Sprintf(`INSERT INTO %s (id, realm_id, type_id, name, uname, document, purity, date_of_manufacture, consignment, manufacturer, shelf_life, closet,
+		shelf, receipt_date, amount, amount_type_id, control_date, protocol, result, seizure, disposal) VALUES (:id, :realm_id, :type_id, :name, :uname, :document, :purity,
 		:date_of_manufacture, :consignment, :manufacturer, :shelf_life, :closet, :shelf, :receipt_date, :amount, :amount_type_id, :control_date, :protocol,
 		:result, :seizure, :disposal)`,
-		ReagentsTable,
+		Tables.Reagents,
 	)
 	id := uuid.New()
 	dto.Id = id.String()
@@ -333,10 +340,10 @@ func (r *ReagentRepo) Create(ctx context.Context, dto *models.ReagentDTO) (strin
 }
 
 func (r *ReagentRepo) Update(ctx context.Context, dto *models.ReagentDTO) error {
-	query := fmt.Sprintf(`UPDATE %s SET type_id=:type_id, name=:name, uname=:uname, document=:document, purity=:purity, date_of_manufacture=:date_of_manufacture,
+	query := fmt.Sprintf(`UPDATE %s SET realm_id=:realm_id, type_id=:type_id, name=:name, uname=:uname, document=:document, purity=:purity, date_of_manufacture=:date_of_manufacture,
 		consignment=:consignment, manufacturer=:manufacturer, shelf_life=:shelf_life, closet=:closet, shelf=:shelf, receipt_date=:receipt_date, amount=:amount,
 		amount_type_id=:amount_type_id, control_date=:control_date, protocol=:protocol, result=:result, seizure=:seizure, disposal=:disposal
-		WHERE id=:id`, ReagentsTable,
+		WHERE id=:id`, Tables.Reagents,
 	)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
@@ -347,7 +354,7 @@ func (r *ReagentRepo) Update(ctx context.Context, dto *models.ReagentDTO) error 
 
 // ! Deprecated
 func (r *ReagentRepo) SetNotification(ctx context.Context, dto *models.ReagentNotificationDTO) error {
-	query := fmt.Sprintf(`UPDATE %s SET has_notification=:has_notification, has_run_out=:has_run_out WHERE id=:id`, ReagentsTable)
+	query := fmt.Sprintf(`UPDATE %s SET has_notification=:has_notification, has_run_out=:has_run_out WHERE id=:id`, Tables.Reagents)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -369,7 +376,7 @@ func (r *ReagentRepo) SetNotificationNew(ctx context.Context, dto []*models.Reag
 
 	query := fmt.Sprintf(`UPDATE %s AS t SET has_notification=s.has_notification::boolean, has_run_out=s.has_run_out::boolean
 		FROM (VALUES %s) AS s(id, has_notification, has_run_out) WHERE t.id=s.id::uuid`,
-		ReagentsTable, strings.Join(values, ","),
+		Tables.Reagents, strings.Join(values, ","),
 	)
 
 	logger.Debug("query", logger.StringAttr("query", query))
@@ -381,7 +388,7 @@ func (r *ReagentRepo) SetNotificationNew(ctx context.Context, dto []*models.Reag
 }
 
 func (r *ReagentRepo) SetIsOverdue(ctx context.Context, idList []string) error {
-	query := fmt.Sprintf(`UPDATE %s SET is_overdue=true WHERE id=ANY($1::uuid[])`, ReagentsTable)
+	query := fmt.Sprintf(`UPDATE %s SET is_overdue=true WHERE id=ANY($1::uuid[])`, Tables.Reagents)
 
 	if _, err := r.db.ExecContext(ctx, query, pq.Array(idList)); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -389,7 +396,7 @@ func (r *ReagentRepo) SetIsOverdue(ctx context.Context, idList []string) error {
 	return nil
 }
 func (r *ReagentRepo) ClearIsOverdue(ctx context.Context, id string) error {
-	query := fmt.Sprintf(`UPDATE %s SET is_overdue=false WHERE id=$1`, ReagentsTable)
+	query := fmt.Sprintf(`UPDATE %s SET is_overdue=false WHERE id=$1`, Tables.Reagents)
 
 	if _, err := r.db.ExecContext(ctx, query, id); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -398,7 +405,7 @@ func (r *ReagentRepo) ClearIsOverdue(ctx context.Context, id string) error {
 }
 
 func (r *ReagentRepo) SetDeleteStamp(ctx context.Context, id string) error {
-	query := fmt.Sprintf(`UPDATE %s SET deleted=$1 WHERE id=$2`, ReagentsTable)
+	query := fmt.Sprintf(`UPDATE %s SET deleted=$1 WHERE id=$2`, Tables.Reagents)
 
 	if _, err := r.db.ExecContext(ctx, query, time.Now(), id); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
@@ -406,7 +413,7 @@ func (r *ReagentRepo) SetDeleteStamp(ctx context.Context, id string) error {
 	return nil
 }
 func (r *ReagentRepo) DeleteOld(ctx context.Context) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE deleted<$1`, ReagentsTable)
+	query := fmt.Sprintf(`DELETE FROM %s WHERE deleted<$1`, Tables.Reagents)
 
 	now := time.Now()
 	date := time.Date(now.Year(), now.Month()-1, now.Day(), now.Hour(), 0, 0, 0, now.Location())
@@ -418,7 +425,7 @@ func (r *ReagentRepo) DeleteOld(ctx context.Context) error {
 }
 
 func (r *ReagentRepo) Delete(ctx context.Context, dto *models.DeleteReagentDTO) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, ReagentsTable)
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id=:id`, Tables.Reagents)
 
 	if _, err := r.db.NamedExecContext(ctx, query, dto); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
