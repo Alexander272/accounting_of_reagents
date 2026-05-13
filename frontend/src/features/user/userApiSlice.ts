@@ -29,7 +29,7 @@ const userApiSlice = apiSlice.injectEndpoints({
 				url: API.users.sync,
 				method: 'POST',
 			}),
-			invalidatesTags: [{ type: 'Users' }],
+			invalidatesTags: ['Users'],
 		}),
 
 		updateUser: builder.mutation<null, IUserDataDTO>({
@@ -38,7 +38,7 @@ const userApiSlice = apiSlice.injectEndpoints({
 				method: 'PUT',
 				body: data,
 			}),
-			invalidatesTags: [{ type: 'Users' }],
+			invalidatesTags: ['Users'],
 		}),
 	}),
 })
