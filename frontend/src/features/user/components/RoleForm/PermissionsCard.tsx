@@ -123,6 +123,8 @@ export const PermissionsCard: FC<Props> = ({ role }) => {
 			const existingItem = actionMap.get(a.action)
 			const orig = groupResMap?.get(a.action)
 
+			if (existingItem?.isInherited) continue
+
 			// Если состояние уже совпадает с целевым, пропускаем итерацию
 			if (existingItem?.isAssigned !== item.isAssigned) continue
 

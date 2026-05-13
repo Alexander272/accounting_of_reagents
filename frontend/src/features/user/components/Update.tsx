@@ -69,9 +69,13 @@ export const UpdateModal: FC<Props> = ({ user, onClose }) => {
 
 	const saveHandler = handleSubmit(async form => {
 		console.log('save user', form)
+		const payload = {
+			...form,
+			realms: form.realms.filter(r => r.roleId || r.createdAt),
+		}
 
 		try {
-			await update(form).unwrap()
+			await update(payload).unwrap()
 			toast.success('Пользователь обновлен')
 			onClose()
 		} catch (error) {
