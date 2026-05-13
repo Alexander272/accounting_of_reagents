@@ -21,6 +21,7 @@ type (
 		Casbin      CasbinConfig
 		Bot         BotConfig
 		ErrorBot    ErrorBotConfig
+		Redis       RedisConfig
 	}
 
 	HttpConfig struct {
@@ -31,12 +32,12 @@ type (
 		MaxHeaderMegabytes int           `yaml:"max_header_bytes" env-default:"1"`
 	}
 
-	// RedisConfig struct {
-	// 	Host     string `yaml:"host" env:"REDIS_HOST"`
-	// 	Port     string `yaml:"port" env:"REDIS_PORT"`
-	// 	DB       int    `yaml:"db" env:"REDIS_DB"`
-	// 	Password string `env:"REDIS_PASSWORD"`
-	// }
+	RedisConfig struct {
+		Host     string `yaml:"host" env:"REDIS_HOST"`
+		Port     string `yaml:"port" env:"REDIS_PORT"`
+		DB       int    `yaml:"db" env:"REDIS_DB"`
+		Password string `env:"REDIS_PASSWORD"`
+	}
 
 	PostgresConfig struct {
 		Host     string `yaml:"host" env:"POSTGRES_HOST"`

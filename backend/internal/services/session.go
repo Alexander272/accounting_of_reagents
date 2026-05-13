@@ -15,14 +15,16 @@ type SessionService struct {
 	userRealm UserRealm
 	user      Users
 	policies  AccessPolices
+	cache     SessionCacher
 }
 
-func NewSessionService(keycloak *auth.KeycloakClient, policies AccessPolices, userRealm UserRealm, user Users) *SessionService {
+func NewSessionService(keycloak *auth.KeycloakClient, policies AccessPolices, userRealm UserRealm, user Users, cache SessionCacher) *SessionService {
 	return &SessionService{
 		keycloak:  keycloak,
 		policies:  policies,
 		userRealm: userRealm,
 		user:      user,
+		cache:     cache,
 	}
 }
 
@@ -64,10 +66,8 @@ func (s *SessionService) SignIn(ctx context.Context, u models.SignIn) (*models.U
 
 		user.Permissions[r.RealmId] = access.Perms
 	}
-	// user.Role = access.Role
-	// user.Permissions = map[string][]string{
-	// 	access.Domain: access.Perms,
-	// }
+
+	s.cache.Set(ctx, user.Id, user.Permissions)
 
 	user.AccessToken = res.AccessToken
 	user.RefreshToken = res.RefreshToken
@@ -109,14 +109,8 @@ func (s *SessionService) Refresh(ctx context.Context, refreshToken, realm string
 
 		user.Permissions[r.RealmId] = access.Perms
 	}
-	// access, err := s.policies.GetPolicies(user.Id, realm)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// user.Role = access.Role
-	// user.Permissions = map[string][]string{
-	// 	access.Domain: access.Perms,
-	// }
+
+	s.cache.Set(ctx, user.Id, user.Permissions)
 
 	user.AccessToken = res.AccessToken
 	user.RefreshToken = res.RefreshToken
@@ -159,6 +153,25 @@ func (s *SessionService) DecodeAccessToken(ctx context.Context, token string) (*
 
 	user.Id = userId
 	user.Name = username
+
+	if perms := s.cache.Get(ctx, userId); perms != nil {
+		user.Permissions = perms
+		return user, nil
+	}
+
+	userRealms, err := s.userRealm.GetByUserId(ctx, userId)
+	if err != nil {
+		return user, nil
+	}
+	user.Permissions = map[string][]string{}
+	for _, r := range userRealms {
+		access, err := s.policies.GetPolicies(userId, r.RealmId)
+		if err != nil {
+			continue
+		}
+		user.Permissions[r.RealmId] = access.Perms
+	}
+	s.cache.Set(ctx, userId, user.Permissions)
 
 	return user, nil
 }

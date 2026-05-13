@@ -57,14 +57,17 @@ func NewServices(deps Deps) *Services {
 		EventBus:  updatePolicyEvent,
 	})
 
+	cacheSvc := NewSessionCacheService(deps.Repos.SessionCache)
+
 	adapter := NewAdapter(&AdapterDeps{Permissions: permissions, Users: user, RoleHierarchy: roleHierarchy})
 	policies := NewAccessPoliciesService(&PoliciesDeps{
 		Conf:     deps.Conf.Casbin,
 		Adapter:  adapter,
 		EventBus: updatePolicyEvent,
+		Cache:    cacheSvc,
 	})
 
-	session := NewSessionService(deps.Keycloak, policies, userRealm, user)
+	session := NewSessionService(deps.Keycloak, policies, userRealm, user, cacheSvc)
 
 	most := NewMostService(deps.Conf.Bot.Url, deps.Conf.Bot.ChannelId)
 

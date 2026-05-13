@@ -137,9 +137,7 @@ func (h *ReagentHandlers) get(c *gin.Context) {
 	user := utils.GetUser(c)
 	isPublic := true
 	privateKey := access.Reg.R(access.ResourcePrivateReagent).Do(access.Read).Key()
-	logger.Debug("privateKey", logger.StringAttr("privateKey", privateKey))
 	for _, p := range user.Permissions[realmId] {
-		logger.Debug("permission", logger.StringAttr("permission", p))
 		if privateKey == p {
 			isPublic = false
 			break

@@ -9,6 +9,7 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository/postgres/pq_models"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type UserRealmRepo struct {
@@ -213,7 +214,7 @@ func (r *UserRealmRepo) DeleteSeveral(ctx context.Context, tx Tx, dto []*models.
 		ids = append(ids, d.Id)
 	}
 
-	if _, err := r.getExec(tx).ExecContext(ctx, query, ids); err != nil {
+	if _, err := r.getExec(tx).ExecContext(ctx, query, pq.Array(ids)); err != nil {
 		return fmt.Errorf("failed to execute query. error: %w", err)
 	}
 	return nil

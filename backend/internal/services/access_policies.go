@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"slices"
@@ -16,12 +17,14 @@ type accessPolicesService struct {
 	enforcer casbin.IEnforcer
 	adapter  Adapter
 	eventBus *events.PolicyEventManager
+	cache    SessionCacher
 }
 
 type PoliciesDeps struct {
 	Conf     config.CasbinConfig
 	Adapter  Adapter
 	EventBus *events.PolicyEventManager
+	Cache    SessionCacher
 }
 
 func NewAccessPoliciesService(deps *PoliciesDeps) *accessPolicesService {
@@ -37,6 +40,7 @@ func NewAccessPoliciesService(deps *PoliciesDeps) *accessPolicesService {
 	s := &accessPolicesService{
 		enforcer: enforcer,
 		adapter:  deps.Adapter,
+		cache:    deps.Cache,
 	}
 
 	go func() {
@@ -44,6 +48,7 @@ func NewAccessPoliciesService(deps *PoliciesDeps) *accessPolicesService {
 		for range updateChan {
 			logger.Info("Received policy update event, reloading...")
 			s.enforcer.LoadPolicy()
+			s.cache.Flush(context.Background())
 		}
 	}()
 

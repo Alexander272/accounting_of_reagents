@@ -78,12 +78,13 @@ func (r *UserRepo) GetAll(ctx context.Context) ([]*models.UserData, error) {
 	query := fmt.Sprintf(`SELECT u.id, u.username, u.email, u.first_name, u.last_name, u.created_at, ur.id AS ur_id, ur.is_active,
 			r.id AS role_id, r.name AS role_name, r.description AS role_description, r.level AS role_level,
 			r.is_active AS role_is_active, r.is_editable AS role_is_editable, r.slug AS role_slug,
-			rl.id AS realm_id, rl.name AS realm_name, rl.description AS realm_description, rl.created_at AS realm_created_at
+			rl.id AS realm_id, rl.name AS realm_name, rl.description AS realm_description, 
+			ur.created_at AS realm_created_at
 		FROM %s u
 		LEFT JOIN %s ur ON u.id = ur.user_id
 		LEFT JOIN %s r ON ur.role_id = r.id
 		LEFT JOIN %s rl ON ur.realm_id = rl.id
-		ORDER BY u.first_name, u.last_name, realm_name`,
+		ORDER BY u.first_name, u.last_name, u.username, realm_name`,
 		Tables.Users, Tables.UserRealms, Tables.Roles, Tables.Realms,
 	)
 

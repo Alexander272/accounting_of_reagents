@@ -12,10 +12,10 @@ postgres:
     # port: 5432
     ssl_mode: disable
     username: postgres
-# redis:
-#     db: 0
-#     host: pro.sealur.ru
-#     port: 6379
+redis:
+    host: 192.168.5.159
+    port: 6379
+    db: 0
 
 # notification:
 #     # start_time: 10

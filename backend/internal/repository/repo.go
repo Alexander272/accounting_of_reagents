@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/config"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/repository/postgres"
+	redisrepo "github.com/Alexander272/accounting_of_reagents/backend/internal/repository/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -47,6 +50,10 @@ type Notes interface {
 	postgres.Notes
 }
 
+type SessionCache interface {
+	redisrepo.SessionCache
+}
+
 type Repository struct {
 	Transaction
 
@@ -63,9 +70,11 @@ type Repository struct {
 	Spending
 	Extending
 	Notes
+
+	SessionCache
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
+func NewRepository(db *sqlx.DB, memDB *redis.Client, conf *config.Config) *Repository {
 	transaction := postgres.NewTransactionRepo(db)
 
 	return &Repository{
@@ -84,5 +93,7 @@ func NewRepository(db *sqlx.DB) *Repository {
 		Spending:    postgres.NewSpendingRepo(db),
 		Extending:   postgres.NewExtendingRepo(db),
 		Notes:       postgres.NewNotesRepo(db),
+
+		SessionCache: redisrepo.NewSessionCacheRepo(memDB, conf.Auth.AccessTokenTTL),
 	}
 }

@@ -18,6 +18,7 @@ import (
 	transport "github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/auth"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/database/postgres"
+	"github.com/Alexander272/accounting_of_reagents/backend/pkg/database/redis"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	_ "github.com/lib/pq"
 	"github.com/subosito/gotenv"
@@ -51,6 +52,16 @@ func main() {
 		log.Fatalf("failed to migrate: %s", err.Error())
 	}
 
+	redisClient, err := redis.NewRedisClient(redis.Config{
+		Host:     conf.Redis.Host,
+		Port:     conf.Redis.Port,
+		Password: conf.Redis.Password,
+		DB:       conf.Redis.DB,
+	})
+	if err != nil {
+		log.Fatalf("failed to initialize redis: %s", err.Error())
+	}
+
 	keycloak := auth.NewKeycloakClient(auth.Deps{
 		Url:       conf.Keycloak.Url,
 		ClientId:  conf.Keycloak.ClientId,
@@ -60,7 +71,7 @@ func main() {
 	})
 
 	//* Services, Repos & API Handlers
-	repos := repository.NewRepository(db)
+	repos := repository.NewRepository(db, redisClient, conf)
 	services := services.NewServices(services.Deps{
 		Repos:    repos,
 		Keycloak: keycloak,
