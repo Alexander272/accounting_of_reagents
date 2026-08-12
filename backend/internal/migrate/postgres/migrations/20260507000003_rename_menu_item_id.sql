@@ -12,7 +12,7 @@ ALTER TABLE public.permissions ADD COLUMN name TEXT DEFAULT '';
 -- Update foreign key if exists
 ALTER TABLE IF EXISTS public.role_permissions RENAME CONSTRAINT menu_menu_item_id_fkey TO role_permissions_permission_id_fkey;
 
-ALTER TABLE public.permissions ADD CONSTRAINT permissions_object_action_key UNIQUE (object, action)
+ALTER TABLE public.permissions ADD CONSTRAINT permissions_object_action_key UNIQUE (object, action);
 
 -- +goose StatementEnd
 

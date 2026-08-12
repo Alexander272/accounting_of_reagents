@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public.users
     email text COLLATE pg_catalog."default",
     first_name text COLLATE pg_catalog."default",
     last_name text COLLATE pg_catalog."default",
-    is_active BOOLEAN NOT NULL DEFAULT TRUE
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
     CONSTRAINT users_pkey PRIMARY KEY (id)

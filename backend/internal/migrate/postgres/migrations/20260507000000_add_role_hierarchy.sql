@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.role_hierarchy
 TABLESPACE pg_default;
 
 INSERT INTO role_hierarchy (parent_role_id, role_id)
-SELECT id AS parent_role_id, unnest(extends) AS role_id, 
+SELECT id AS parent_role_id, unnest(extends) AS role_id 
 FROM roles
 WHERE extends IS NOT NULL AND array_length(extends, 1) > 0;
 
