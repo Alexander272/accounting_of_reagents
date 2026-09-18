@@ -64,7 +64,7 @@ func (h *SpendingHandlers) create(c *gin.Context) {
 		return
 	}
 
-	id, err := h.service.CreateNew(c, dto)
+	id, err := h.service.Create(c, dto)
 	if err != nil {
 		if errors.Is(err, models.ErrBadValue) {
 			response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Попытка списать большее количество реактива, чем осталось")

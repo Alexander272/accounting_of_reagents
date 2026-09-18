@@ -25,7 +25,6 @@ func NewSpendingService(repo repository.Spending, reagent Reagent, most Most) *S
 type Spending interface {
 	GetByReagentId(context.Context, string) ([]*models.Spending, error)
 	Create(context.Context, *models.SpendingDTO) (string, error)
-	CreateNew(context.Context, *models.SpendingDTO) (string, error)
 	Update(context.Context, *models.SpendingDTO) error
 	Delete(context.Context, *models.DeleteSpendingDTO) error
 }
@@ -38,8 +37,8 @@ func (s *SpendingService) GetByReagentId(ctx context.Context, reagentId string) 
 	return spending, nil
 }
 
-func (s *SpendingService) CreateNew(ctx context.Context, dto *models.SpendingDTO) (string, error) {
-	data, err := s.reagent.GetRemainderNew(ctx, dto.ReagentId)
+func (s *SpendingService) Create(ctx context.Context, dto *models.SpendingDTO) (string, error) {
+	data, err := s.reagent.GetGroupRemainders(ctx, dto.ReagentId)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +68,7 @@ func (s *SpendingService) CreateNew(ctx context.Context, dto *models.SpendingDTO
 		if isSmall {
 			nots = append(nots, &models.ReagentNotificationDTO{
 				Id:              item.Id,
-				HasNotification: true,
+				HasNotification: !item.HasNotification,
 				HasRunOut:       remainder == 0,
 			})
 		}
@@ -80,7 +79,7 @@ func (s *SpendingService) CreateNew(ctx context.Context, dto *models.SpendingDTO
 		return id, fmt.Errorf("failed to create spending. error: %w", err)
 	}
 
-	if err := s.reagent.SetNotificationNew(ctx, nots); err != nil {
+	if err := s.reagent.SetGroupNotifications(ctx, nots); err != nil {
 		return "", err
 	}
 
@@ -96,55 +95,6 @@ func (s *SpendingService) CreateNew(ctx context.Context, dto *models.SpendingDTO
 			}},
 		}
 
-		if err := s.most.Send(ctx, notification); err != nil {
-			return "", fmt.Errorf("failed to send notification. error: %w", err)
-		}
-	}
-
-	return id, nil
-}
-
-// ! Deprecated
-func (s *SpendingService) Create(ctx context.Context, dto *models.SpendingDTO) (string, error) {
-	remainder, err := s.reagent.GetRemainder(ctx, dto.ReagentId)
-	if err != nil {
-		return "", err
-	}
-
-	if remainder.Remainder < dto.Amount {
-		return "", models.ErrBadValue
-	}
-
-	id, err := s.repo.Create(ctx, dto)
-	if err != nil {
-		return id, fmt.Errorf("failed to create spending. error: %w", err)
-	}
-
-	// проверять осталось ли больше 30 % от изначальной массы. если меньше отправлять уведомление. думаю хватит одного уведомления, а это значит нужно какой-то флаг добавить
-	if (remainder.Remainder-dto.Amount)/remainder.Amount <= .3 {
-		reagentNotification := &models.ReagentNotificationDTO{
-			Id:              remainder.Id,
-			HasNotification: true,
-			HasRunOut:       (remainder.Remainder - dto.Amount) == 0,
-		}
-		if err := s.reagent.SetNotification(ctx, reagentNotification); err != nil {
-			return "", err
-		}
-
-		if remainder.HasNotification {
-			return id, nil
-		}
-
-		notification := &models.Notification{
-			Message: "Заканчивается реактив.",
-			Data: []*models.Reagent{{
-				Id:           remainder.Id,
-				Name:         remainder.Name,
-				Document:     remainder.Document,
-				Purity:       remainder.Purity,
-				Manufacturer: remainder.Manufacturer,
-			}},
-		}
 		if err := s.most.Send(ctx, notification); err != nil {
 			return "", fmt.Errorf("failed to send notification. error: %w", err)
 		}

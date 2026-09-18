@@ -33,13 +33,13 @@ type Reagent interface {
 	GetById(context.Context, string) (*models.EditReagent, error)
 	GetByIdList(context.Context, []string) ([]*models.Reagent, error)
 	GetRemainder(context.Context, string) (*models.ReagentWithRemainder, error)
-	GetRemainderNew(context.Context, string) ([]*models.ReagentWithRemainder, error)
+	GetGroupRemainders(context.Context, string) ([]*models.ReagentWithRemainder, error)
 	GetAllShelfLife(context.Context) (models.GroupedReagents, error)
 	GetUniqueData(context.Context, *models.GetUniqueDTO) ([]string, error)
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 	SetNotification(context.Context, *models.ReagentNotificationDTO) error
-	SetNotificationNew(context.Context, []*models.ReagentNotificationDTO) error
+	SetGroupNotifications(context.Context, []*models.ReagentNotificationDTO) error
 	SetIsOverdue(context.Context, []string) error
 	ClearIsOverdue(context.Context, string) error
 	SetDeleteStamp(context.Context, string) error
@@ -87,14 +87,14 @@ func (r *ReagentRepo) Get(ctx context.Context, req *models.Params) (*models.Reag
 	order += "r.created_at DESC, r.id"
 
 	filter := "WHERE deleted IS NULL"
-	
+
 	// Add realm filter
 	if req.RealmId != "" {
 		filter += fmt.Sprintf(" AND realm_id = $%d", count)
 		params = append(params, req.RealmId)
 		count++
 	}
-	
+
 	if len(req.Filters) > 0 {
 		filter += " AND "
 		filters := []string{}
@@ -223,21 +223,7 @@ func (r *ReagentRepo) GetByIdList(ctx context.Context, list []string) ([]*models
 	return reagents, nil
 }
 
-// ! Deprecated
 func (r *ReagentRepo) GetRemainder(ctx context.Context, id string) (*models.ReagentWithRemainder, error) {
-	/*
-	   WITH Reagent AS (
-	   	SELECT name, purity
-	   	FROM reagents WHERE id='4f4f55a8-e2ab-4c0a-ba9d-04c1331940f0'
-	   )
-
-	   SELECT o.name, o.purity, SUM(amount - COALESCE(s.spent,0)) AS remainder FROM reagents AS o
-	   INNER JOIN Reagent AS r ON true
-	   LEFT JOIN LATERAL(SELECT SUM(amount) AS spent FROM spending WHERE reagent_id=o.id GROUP BY reagent_id) AS s ON true
-	   WHERE o.name=r.name AND o.purity=r.purity AND is_overdue=false AND deleted IS NULL
-	   GROUP BY o.name, o.purity
-	*/
-
 	query := fmt.Sprintf(`SELECT id, amount, name, document, purity, manufacturer, has_notification,
 		amount - COALESCE((SELECT SUM(amount) FROM %s WHERE reagent_id=$1 GROUP BY reagent_id), 0) AS remainder
 		FROM %s WHERE id=$1`,
@@ -250,7 +236,8 @@ func (r *ReagentRepo) GetRemainder(ctx context.Context, id string) (*models.Reag
 	}
 	return remainder, nil
 }
-func (r *ReagentRepo) GetRemainderNew(ctx context.Context, id string) ([]*models.ReagentWithRemainder, error) {
+
+func (r *ReagentRepo) GetGroupRemainders(ctx context.Context, id string) ([]*models.ReagentWithRemainder, error) {
 	query := fmt.Sprintf(`WITH Reagent AS (
 			SELECT name, purity
 			FROM %s WHERE id=$1
@@ -259,7 +246,7 @@ func (r *ReagentRepo) GetRemainderNew(ctx context.Context, id string) ([]*models
 		SELECT id, o.name, o.purity, document, manufacturer, has_notification, amount, amount - COALESCE(s.spent,0) AS remainder FROM %s AS o
 		INNER JOIN Reagent AS r ON true
 		LEFT JOIN LATERAL(SELECT SUM(amount) AS spent FROM %s WHERE reagent_id=o.id GROUP BY reagent_id) AS s ON true
-		WHERE o.name=r.name AND o.purity=r.purity AND is_overdue=false AND deleted IS NULL AND has_notification=false`,
+		WHERE o.name=r.name AND o.purity=r.purity AND is_overdue=false AND deleted IS NULL`,
 		Tables.Reagents, Tables.Reagents, Tables.Spending,
 	)
 	data := []*models.ReagentWithRemainder{}
@@ -352,7 +339,6 @@ func (r *ReagentRepo) Update(ctx context.Context, dto *models.ReagentDTO) error 
 	return nil
 }
 
-// ! Deprecated
 func (r *ReagentRepo) SetNotification(ctx context.Context, dto *models.ReagentNotificationDTO) error {
 	query := fmt.Sprintf(`UPDATE %s SET has_notification=:has_notification, has_run_out=:has_run_out WHERE id=:id`, Tables.Reagents)
 
@@ -361,28 +347,37 @@ func (r *ReagentRepo) SetNotification(ctx context.Context, dto *models.ReagentNo
 	}
 	return nil
 }
-func (r *ReagentRepo) SetNotificationNew(ctx context.Context, dto []*models.ReagentNotificationDTO) error {
-	values := []string{}
-	args := []interface{}{}
-	for i, v := range dto {
-		tmp := []interface{}{v.Id, v.HasNotification, v.HasRunOut}
-		args = append(args, tmp...)
-		numbers := []string{}
-		for j := range tmp {
-			numbers = append(numbers, fmt.Sprintf("$%d", i*len(tmp)+j+1))
+
+func (r *ReagentRepo) SetGroupNotifications(ctx context.Context, dto []*models.ReagentNotificationDTO) error {
+	notificationIds := []string{}
+	runOutIds := []string{}
+	for _, v := range dto {
+		if v.HasNotification {
+			notificationIds = append(notificationIds, v.Id)
 		}
-		values = append(values, fmt.Sprintf("(%s)", strings.Join(numbers, ",")))
+		if v.HasRunOut {
+			runOutIds = append(runOutIds, v.Id)
+		}
 	}
 
-	query := fmt.Sprintf(`UPDATE %s AS t SET has_notification=s.has_notification::boolean, has_run_out=s.has_run_out::boolean
-		FROM (VALUES %s) AS s(id, has_notification, has_run_out) WHERE t.id=s.id::uuid`,
-		Tables.Reagents, strings.Join(values, ","),
-	)
+	if len(notificationIds) > 0 {
+		query := fmt.Sprintf(`UPDATE %s SET has_notification=true WHERE id=ANY($1::uuid[]) AND has_notification=false`, Tables.Reagents)
 
-	logger.Debug("query", logger.StringAttr("query", query))
+		logger.Debug("query", logger.StringAttr("query", query))
 
-	if _, err := r.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("failed to execute query. error: %w", err)
+		if _, err := r.db.ExecContext(ctx, query, pq.Array(notificationIds)); err != nil {
+			return fmt.Errorf("failed to execute query. error: %w", err)
+		}
+	}
+
+	if len(runOutIds) > 0 {
+		query := fmt.Sprintf(`UPDATE %s SET has_run_out=true WHERE id=ANY($1::uuid[])`, Tables.Reagents)
+
+		logger.Debug("query", logger.StringAttr("query", query))
+
+		if _, err := r.db.ExecContext(ctx, query, pq.Array(runOutIds)); err != nil {
+			return fmt.Errorf("failed to execute query. error: %w", err)
+		}
 	}
 	return nil
 }

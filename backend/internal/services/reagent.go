@@ -31,16 +31,15 @@ type Reagent interface {
 	GetById(context.Context, string) (*models.EditReagent, error)
 	GetByIdList(context.Context, []string) ([]*models.Reagent, error)
 	GetRemainder(context.Context, string) (*models.ReagentWithRemainder, error)
-	GetRemainderNew(context.Context, string) ([]*models.ReagentWithRemainder, error)
+	GetGroupRemainders(context.Context, string) ([]*models.ReagentWithRemainder, error)
 	GetUniqueData(context.Context, *models.GetUniqueDTO) ([]string, error)
-	GetOverdueOld(context.Context) ([]*models.Reagent, error)
 	GetOverdue(context.Context) (*models.Overdue, error)
 	SendOverdue(context.Context) error
 	PrepareOrder(context.Context, []string) error
 	Create(context.Context, *models.ReagentDTO) (string, error)
 	Update(context.Context, *models.ReagentDTO) error
 	SetNotification(context.Context, *models.ReagentNotificationDTO) error
-	SetNotificationNew(context.Context, []*models.ReagentNotificationDTO) error
+	SetGroupNotifications(context.Context, []*models.ReagentNotificationDTO) error
 	SetIsOverdue(context.Context, []string) error
 	ClearIsOverdue(context.Context, string) error
 	SetDeleteStamp(context.Context, string) error
@@ -128,7 +127,6 @@ func (s *ReagentService) GetByIdList(ctx context.Context, list []string) ([]*mod
 	return reagents, nil
 }
 
-// ! Deprecated
 func (s *ReagentService) GetRemainder(ctx context.Context, id string) (*models.ReagentWithRemainder, error) {
 	remainder, err := s.repo.GetRemainder(ctx, id)
 	if err != nil {
@@ -136,8 +134,9 @@ func (s *ReagentService) GetRemainder(ctx context.Context, id string) (*models.R
 	}
 	return remainder, nil
 }
-func (s *ReagentService) GetRemainderNew(ctx context.Context, id string) ([]*models.ReagentWithRemainder, error) {
-	remainder, err := s.repo.GetRemainderNew(ctx, id)
+
+func (s *ReagentService) GetGroupRemainders(ctx context.Context, id string) ([]*models.ReagentWithRemainder, error) {
+	remainder, err := s.repo.GetGroupRemainders(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get remainder. error: %w", err)
 	}
@@ -198,32 +197,6 @@ func (s *ReagentService) GetOverdue(ctx context.Context) (*models.Overdue, error
 	return res, nil
 }
 
-// ! Deprecated
-func (s *ReagentService) GetOverdueOld(ctx context.Context) ([]*models.Reagent, error) {
-	list, err := s.repo.Get(ctx, &models.Params{Page: &models.Page{Limit: 999999}})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get reagents list. error: %w", err)
-	}
-
-	newList := []*models.Reagent{}
-	for _, item := range list.List {
-		shelfLife := time.Unix(int64(item.DateOfManufacture), 0)
-		shelfLife = shelfLife.AddDate(0, item.ShelfLife, 0)
-		if item.DateOfExtending != 0 {
-			shelfLife = time.Unix(int64(item.DateOfExtending), 0)
-			shelfLife = shelfLife.AddDate(0, item.Period, 0)
-		}
-		// shelfLife = shelfLife.AddDate(0, i.SumPeriod, 0)
-		now := time.Now()
-
-		if shelfLife.Compare(time.Date(now.Year(), now.Month()+1, now.Day(), now.Hour(), now.Minute(), 0, 0, now.Location())) <= 0 &&
-			!item.IsOverdue && item.Seizure == "" {
-			newList = append(newList, item)
-		}
-	}
-
-	return newList, nil
-}
 func (s *ReagentService) SendOverdue(ctx context.Context) error {
 	data, err := s.GetOverdue(ctx)
 	if err != nil {
@@ -284,18 +257,18 @@ func (s *ReagentService) Update(ctx context.Context, dto *models.ReagentDTO) err
 	return nil
 }
 
-// ! Deprecated
 func (s *ReagentService) SetNotification(ctx context.Context, dto *models.ReagentNotificationDTO) error {
 	if err := s.repo.SetNotification(ctx, dto); err != nil {
 		return fmt.Errorf("failed to set has_notification and has_run_out. error: %w", err)
 	}
 	return nil
 }
-func (s *ReagentService) SetNotificationNew(ctx context.Context, dto []*models.ReagentNotificationDTO) error {
+
+func (s *ReagentService) SetGroupNotifications(ctx context.Context, dto []*models.ReagentNotificationDTO) error {
 	if len(dto) == 0 {
 		return nil
 	}
-	if err := s.repo.SetNotificationNew(ctx, dto); err != nil {
+	if err := s.repo.SetGroupNotifications(ctx, dto); err != nil {
 		return fmt.Errorf("failed to set has_notification and has_run_out. error: %w", err)
 	}
 	return nil
