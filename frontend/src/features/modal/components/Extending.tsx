@@ -65,10 +65,10 @@ export const ExtendingForm = () => {
 
 	const { palette } = useTheme()
 
-	const { data: reagent, isLoading: isLoadingReagent } = useGetByIdQuery(contextMenu?.active || '', {
-		skip: !contextMenu?.active,
+	const { data: reagent, isLoading: isLoadingReagent } = useGetByIdQuery(contextMenu?.active?.id || '', {
+		skip: !contextMenu?.active?.id,
 	})
-	const { data, isLoading } = useGetExtendingQuery(contextMenu?.active || '', { skip: !contextMenu?.active })
+	const { data, isLoading } = useGetExtendingQuery(contextMenu?.active?.id || '', { skip: !contextMenu?.active?.id })
 
 	const [create] = useCreateExtendingMutation()
 	const [update] = useUpdateExtendingMutation()

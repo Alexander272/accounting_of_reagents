@@ -1,4 +1,5 @@
 import { Button, Stack, TextField, Typography } from '@mui/material'
+import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 
 import type { IFetchError } from '@/app/types/error'
@@ -9,7 +10,6 @@ import { Dialog } from '@/components/Dialog/Dialog'
 import { Fallback } from '@/components/Fallback/Fallback'
 import { changeModalIsOpen, getModalState } from '../modalSlice'
 import { Titles } from '../titles'
-import { Controller, useForm } from 'react-hook-form'
 
 export const Disposal = () => {
 	const modal = useAppSelector(getModalState('disposal'))
@@ -39,7 +39,9 @@ const DisposalForm = () => {
 	const contextMenu = useAppSelector(getContextMenu)
 	const dispatch = useAppDispatch()
 
-	const { data: reagent, isLoading } = useGetByIdQuery(contextMenu?.active || '', { skip: !contextMenu?.active })
+	const { data: reagent, isLoading } = useGetByIdQuery(contextMenu?.active?.id || '', {
+		skip: !contextMenu?.active?.id,
+	})
 
 	const [update] = useUpdateMutation()
 

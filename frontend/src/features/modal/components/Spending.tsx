@@ -64,13 +64,15 @@ const SpendingForm = () => {
 	const [selected, setSelected] = useState<number>()
 	const contextMenu = useAppSelector(getContextMenu)
 
+	const hasRunOut = contextMenu?.active?.hasRunOut === true
+
 	const { palette } = useTheme()
 
 	const { data: aTypes } = useGetAmountTypesQuery(null)
-	const { data: reagent, isLoading: isLoadingReagent } = useGetByIdQuery(contextMenu?.active || '', {
-		skip: !contextMenu?.active,
+	const { data: reagent, isLoading: isLoadingReagent } = useGetByIdQuery(contextMenu?.active?.id || '', {
+		skip: !contextMenu?.active?.id,
 	})
-	const { data, isLoading } = useGetSpendingQuery(contextMenu?.active || '', { skip: !contextMenu?.active })
+	const { data, isLoading } = useGetSpendingQuery(contextMenu?.active?.id || '', { skip: !contextMenu?.active?.id })
 
 	const [create] = useCreateSpendingMutation()
 	const [update] = useUpdateSpendingMutation()
@@ -138,55 +140,69 @@ const SpendingForm = () => {
 				</Typography> */}
 			</Stack>
 
-			<Stack spacing={1} direction={'row'} component={'form'} onSubmit={methods.handleSubmit(submitHandler)}>
-				<Controller
-					control={methods.control}
-					name='date'
-					rules={{ required: true, min: 100000 }}
-					render={({ field, fieldState: { error } }) => (
-						<DatePicker
-							{...field}
-							value={field.value ? dayjs(+field.value * 1000) : null}
-							onChange={value => field.onChange(value?.unix())}
-							label={'Дата расхода'}
-							showDaysOutsideCurrentMonth
-							fixedWeekNumber={6}
-							slotProps={{
-								textField: {
-									fullWidth: true,
-									error: Boolean(error),
-								},
-							}}
-						/>
-					)}
-				/>
-				<Controller
-					control={methods.control}
-					name='amount'
-					rules={{ required: true, min: 0.00001 }}
-					render={({ field, fieldState: { error } }) => (
-						<TextField
-							label={'Количество ' + (type?.name ? `(${type?.name})` : '')}
-							type='number'
-							fullWidth
-							{...field}
-							error={Boolean(error)}
-							inputProps={{
-								step: 0.00001,
-								min: 0,
-							}}
-						/>
-					)}
-				/>
+			{hasRunOut && selected == undefined ? (
+				<Typography
+					textAlign={'center'}
+					color={'#363636'}
+					mb={1.5}
+					mt={-2}
+					bgcolor={'#f5f5f5'}
+					borderRadius={3}
+					p={0.8}
+				>
+					Реактив израсходован
+				</Typography>
+			) : (
+				<Stack spacing={1} direction={'row'} component={'form'} onSubmit={methods.handleSubmit(submitHandler)}>
+					<Controller
+						control={methods.control}
+						name='date'
+						rules={{ required: true, min: 100000 }}
+						render={({ field, fieldState: { error } }) => (
+							<DatePicker
+								{...field}
+								value={field.value ? dayjs(+field.value * 1000) : null}
+								onChange={value => field.onChange(value?.unix())}
+								label={'Дата расхода'}
+								showDaysOutsideCurrentMonth
+								fixedWeekNumber={6}
+								slotProps={{
+									textField: {
+										fullWidth: true,
+										error: Boolean(error),
+									},
+								}}
+							/>
+						)}
+					/>
+					<Controller
+						control={methods.control}
+						name='amount'
+						rules={{ required: true, min: 0.00001 }}
+						render={({ field, fieldState: { error } }) => (
+							<TextField
+								label={'Количество ' + (type?.name ? `(${type?.name})` : '')}
+								type='number'
+								fullWidth
+								{...field}
+								error={Boolean(error)}
+								inputProps={{
+									step: 0.00001,
+									min: 0,
+								}}
+							/>
+						)}
+					/>
 
-				<Button type='submit' variant='outlined' sx={{ minWidth: 40 }}>
-					{selected == undefined ? (
-						<PlusIcon fontSize={16} fill={palette.primary.main} />
-					) : (
-						<SaveIcon fontSize={16} fill={palette.primary.main} />
-					)}
-				</Button>
-			</Stack>
+					<Button type='submit' variant='outlined' sx={{ minWidth: 40 }}>
+						{selected == undefined ? (
+							<PlusIcon fontSize={16} fill={palette.primary.main} />
+						) : (
+							<SaveIcon fontSize={16} fill={palette.primary.main} />
+						)}
+					</Button>
+				</Stack>
+			)}
 
 			<Table>
 				<TableHead>

@@ -25,8 +25,10 @@ export interface IColumn {
 	formatter?: (value: unknown) => string
 }
 
+import type { IDataItem } from './data'
+
 export interface IContextMenu {
-	active: string
+	active: IDataItem
 	coords: ICoordinates
 }
 

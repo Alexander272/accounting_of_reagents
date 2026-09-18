@@ -49,8 +49,8 @@ const NotesForm = () => {
 	const contextMenu = useAppSelector(getContextMenu)
 	const dispatch = useAppDispatch()
 
-	const { data: reagent, isLoading: isLoadingReagent } = useGetByIdQuery(contextMenu?.active || '', {
-		skip: !contextMenu?.active,
+	const { data: reagent, isLoading: isLoadingReagent } = useGetByIdQuery(contextMenu?.active?.id || '', {
+		skip: !contextMenu?.active?.id,
 	})
 	const { data, isLoading } = useGetNotesQuery(reagent?.data.id || '', { skip: !reagent?.data.id })
 

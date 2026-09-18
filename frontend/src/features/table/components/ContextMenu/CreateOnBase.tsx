@@ -17,10 +17,10 @@ export const CreateOnBase: FC = () => {
 	const [get, { isLoading }] = useLazyGetByIdQuery()
 
 	const createHandler = async () => {
-		if (!contextMenu?.active) return
+		if (!contextMenu?.active?.id) return
 
 		try {
-			const data = await get(contextMenu?.active).unwrap()
+			const data = await get(contextMenu?.active?.id).unwrap()
 			const base = {
 				type: data.data.typeId,
 				name: data.data.name,

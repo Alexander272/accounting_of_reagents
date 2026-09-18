@@ -30,7 +30,7 @@ export const DataTableRow: FC<Props> = ({ data, sx }) => {
 	const contextHandler = (event: MouseEvent<HTMLDivElement>) => {
 		event.preventDefault()
 		const menu = {
-			active: data.id,
+			active: data,
 			coords: { mouseX: event.clientX + 2, mouseY: event.clientY - 6 },
 		}
 		dispatch(setContextMenu(menu))
@@ -38,7 +38,7 @@ export const DataTableRow: FC<Props> = ({ data, sx }) => {
 
 	let background = data.itemStyle?.background
 	if (selected[data.id]) background = palette.rowActive.light
-	if (contextMenu?.active == data.id) background = palette.rowActive.main
+	if (contextMenu?.active?.id == data.id) background = palette.rowActive.main
 
 	return (
 		<TableRow

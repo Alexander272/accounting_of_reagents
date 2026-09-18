@@ -61,7 +61,7 @@ const UpdateForm = () => {
 	const { isLoading: isLoadingRTypes } = useGetReagentTypesQuery(null)
 	const { isLoading: isLoadingATypes } = useGetAmountTypesQuery(null)
 
-	const { data, isLoading } = useGetByIdQuery(contextMenu?.active || '', { skip: !contextMenu?.active })
+	const { data, isLoading } = useGetByIdQuery(contextMenu?.active?.id || '', { skip: !contextMenu?.active?.id })
 
 	const [update] = useUpdateMutation()
 	const [remove] = useDeleteMutation()

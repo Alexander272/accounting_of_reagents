@@ -39,7 +39,7 @@ const SeizureForm: FC = () => {
 	const contextMenu = useAppSelector(getContextMenu)
 	const dispatch = useAppDispatch()
 
-	const { data: reagent, isLoading } = useGetByIdQuery(contextMenu?.active || '', { skip: !contextMenu?.active })
+	const { data: reagent, isLoading } = useGetByIdQuery(contextMenu?.active?.id || '', { skip: !contextMenu?.active?.id })
 	const { data: rTypes, isLoading: isLoadingRTypes } = useGetReagentTypesQuery(null)
 
 	const [update] = useUpdateMutation()
