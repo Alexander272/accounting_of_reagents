@@ -1,5 +1,7 @@
+.env
 *.env
 *config.yaml
+*config.yml
 *privacy.conf
 *.build
 *.data

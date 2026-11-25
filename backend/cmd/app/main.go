@@ -19,6 +19,7 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/auth"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/database/postgres"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/database/redis"
+	"github.com/Alexander272/accounting_of_reagents/backend/pkg/limiter"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	_ "github.com/lib/pq"
 	"github.com/subosito/gotenv"
@@ -110,4 +111,7 @@ func main() {
 	if err := srv.Stop(ctx); err != nil {
 		logger.Error("failed to stop server:", logger.ErrAttr(err))
 	}
+
+	// Останавливаем фоновые горутины очистки лимитеров.
+	limiter.StopAll()
 }

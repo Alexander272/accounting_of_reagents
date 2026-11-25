@@ -1,0 +1,17 @@
+.git
+**/.git
+
+# Зависимости и артефакты frontend собираются внутри образа.
+**/node_modules
+**/dist
+
+# Секреты и локальные конфиги не должны попадать в контекст сборки.
+.env
+*.env
+**/.env
+**/*.env
+
+# Статика для embed приходит из frontend-стейджа, а не из рабочей директории.
+backend/web/frontend/*
+!backend/web/frontend/.gitkeep
+!backend/web/frontend/.gitignore

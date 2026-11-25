@@ -9,19 +9,20 @@ import (
 
 type (
 	Config struct {
-		Environment string `yaml:"environment" env:"APP_ENV" env-default:"dev"`
-		LogLevel    string `yaml:"log_level" env-default:"info"`
-		LogSource   bool   `yaml:"log_source" env-default:"false"`
-		Postgres    PostgresConfig
-		Auth        AuthConfig
-		Keycloak    KeycloakConfig
-		Http        HttpConfig
-		Limiter     LimiterConfig
-		Scheduler   SchedulerConfig
-		Casbin      CasbinConfig
-		Bot         BotConfig
-		ErrorBot    ErrorBotConfig
-		Redis       RedisConfig
+		Environment   string `yaml:"environment" env:"APP_ENV" env-default:"dev"`
+		LogLevel      string `yaml:"log_level" env-default:"info"`
+		LogSource     bool   `yaml:"log_source" env-default:"false"`
+		Postgres      PostgresConfig
+		Auth          AuthConfig
+		Keycloak      KeycloakConfig
+		Http          HttpConfig
+		ApiLimiter    LimiterConfig `yaml:"api_limiter" env-prefix:"API_"`
+		StaticLimiter LimiterConfig `yaml:"static_limiter" env-prefix:"STATIC_"`
+		Scheduler     SchedulerConfig
+		Casbin        CasbinConfig
+		Bot           BotConfig
+		ErrorBot      ErrorBotConfig
+		Redis         RedisConfig
 	}
 
 	HttpConfig struct {

@@ -4,6 +4,11 @@ log_source: false
 http:
     port: 9000
 
+static_limiter:
+    rps: 20
+    burst: 80
+    ttl: 5m
+
 postgres:
     db_name: reagents
     host: 127.0.0.1
