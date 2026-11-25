@@ -74,7 +74,7 @@ func NewServices(deps Deps) *Services {
 	amountType := NewAmountTypeService(deps.Repos.AmountType)
 	reagentType := NewReagentTypeService(deps.Repos.ReagentType)
 	reagent := NewReagentService(deps.Repos.Reagent, reagentType, most)
-	spending := NewSpendingService(deps.Repos.Spending, reagent, most)
+	spending := NewSpendingService(deps.Repos.Spending, reagent, reagentType, most)
 	extending := NewExtendingService(deps.Repos.Extending, reagent)
 	note := NewNoteService(deps.Repos.Notes)
 

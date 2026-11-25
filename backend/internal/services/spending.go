@@ -9,21 +9,24 @@ import (
 )
 
 type SpendingService struct {
-	repo    repository.Spending
-	reagent Reagent
-	most    Most
+	repo        repository.Spending
+	reagent     Reagent
+	reagentType ReagentType
+	most        Most
 }
 
-func NewSpendingService(repo repository.Spending, reagent Reagent, most Most) *SpendingService {
+func NewSpendingService(repo repository.Spending, reagent Reagent, reagentType ReagentType, most Most) *SpendingService {
 	return &SpendingService{
-		repo:    repo,
-		reagent: reagent,
-		most:    most,
+		repo:        repo,
+		reagent:     reagent,
+		reagentType: reagentType,
+		most:        most,
 	}
 }
 
 type Spending interface {
 	GetByReagentId(context.Context, string) ([]*models.Spending, error)
+	GetReport(context.Context, *models.SpendingReportParams) ([]*models.SpendingReportItem, error)
 	Create(context.Context, *models.SpendingDTO) (string, error)
 	Update(context.Context, *models.SpendingDTO) error
 	Delete(context.Context, *models.DeleteSpendingDTO) error
@@ -35,6 +38,28 @@ func (s *SpendingService) GetByReagentId(ctx context.Context, reagentId string) 
 		return nil, fmt.Errorf("failed to get spending by reagent id. error: %w", err)
 	}
 	return spending, nil
+}
+
+func (s *SpendingService) GetReport(ctx context.Context, params *models.SpendingReportParams) ([]*models.SpendingReportItem, error) {
+	if params.From <= 0 || params.To <= 0 || params.From > params.To {
+		return nil, models.ErrInvalidInput
+	}
+
+	types, err := s.reagentType.Get(ctx, &models.GetReagentTypeDTO{IsPublic: params.IsPublic})
+	if err != nil {
+		return nil, err
+	}
+
+	params.TypeIds = make([]string, 0, len(types))
+	for _, t := range types {
+		params.TypeIds = append(params.TypeIds, t.Id)
+	}
+
+	report, err := s.repo.GetReport(ctx, params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get spending report. error: %w", err)
+	}
+	return report, nil
 }
 
 func (s *SpendingService) Create(ctx context.Context, dto *models.SpendingDTO) (string, error) {

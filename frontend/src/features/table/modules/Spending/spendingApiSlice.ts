@@ -18,6 +18,7 @@ const spendingApiSlice = apiSlice.injectEndpoints({
 			}),
 			invalidatesTags: (_res, _err, data) => [
 				{ type: 'Spending', id: data.reagentId },
+				{ type: 'Spending', id: 'ALL' },
 				{ type: 'DataItems', id: 'ALL' },
 			],
 		}),
@@ -30,6 +31,7 @@ const spendingApiSlice = apiSlice.injectEndpoints({
 			}),
 			invalidatesTags: (_res, _err, data) => [
 				{ type: 'Spending', id: data.reagentId },
+				{ type: 'Spending', id: 'ALL' },
 				{ type: 'DataItems', id: 'ALL' },
 			],
 		}),
@@ -42,6 +44,7 @@ const spendingApiSlice = apiSlice.injectEndpoints({
 			}),
 			invalidatesTags: (_res, _err, data) => [
 				{ type: 'Spending', id: data.reagentId },
+				{ type: 'Spending', id: 'ALL' },
 				{ type: 'DataItems', id: 'ALL' },
 			],
 		}),

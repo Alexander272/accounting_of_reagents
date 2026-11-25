@@ -2,6 +2,8 @@ import type { CSSProperties } from 'react'
 import styled from '@emotion/styled'
 import { lighten } from '@mui/material'
 
+import type { TableCellAlign } from './types'
+
 type RowProps = {
 	width?: number
 	height?: number
@@ -29,7 +31,7 @@ export const TableRowContainer = styled.div<RowProps>(
 
 			':hover': props.hover ? hover : undefined,
 		}
-	}
+	},
 )
 
 export const TableGroupContainer = styled.div`
@@ -49,6 +51,12 @@ export const TableGroupContainer = styled.div`
 type CellProps = {
 	width?: number
 	isActive?: boolean
+	align?: TableCellAlign
+}
+const justifyContent: Record<TableCellAlign, string> = {
+	left: 'flex-start',
+	center: 'center',
+	right: 'flex-end',
 }
 export const TableCellContainer = styled.div<CellProps>`
 	width: ${props => (props.width ? props.width + 'px' : '100%')};
@@ -59,7 +67,8 @@ export const TableCellContainer = styled.div<CellProps>`
 	padding: 0 8px;
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: ${props => justifyContent[props.align ?? 'center']};
+	text-align: ${props => props.align ?? 'center'};
 
 	&:hover {
 		background-color: ${props => props.isActive && '#e0e0e04d'};
@@ -77,14 +86,21 @@ export const TableCellContainer = styled.div<CellProps>`
 	}
 `
 
-export const TableHeadContainer = styled.div`
-	background: #f5f5f5;
-	border-radius: 12px;
-	width: fit-content;
-	/* background-color: #f3f4f8;
-	border-radius: 18px;
-	width: fit-content; */
-`
+type HeadProps = {
+	styles?: CSSProperties
+}
+export const TableHeadContainer = styled.div<HeadProps>(
+	{
+		background: '#f5f5f5',
+		borderRadius: '12px',
+		width: 'fit-content',
+	},
+	props => {
+		return {
+			...props.styles,
+		}
+	},
+)
 
 export const TableBodyContainer = styled.div``
 

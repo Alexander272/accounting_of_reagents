@@ -8,6 +8,7 @@ import (
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type SpendingRepo struct {
@@ -22,6 +23,7 @@ func NewSpendingRepo(db *sqlx.DB) *SpendingRepo {
 
 type Spending interface {
 	GetByReagentId(context.Context, string) ([]*models.Spending, error)
+	GetReport(context.Context, *models.SpendingReportParams) ([]*models.SpendingReportItem, error)
 	Create(context.Context, *models.SpendingDTO) (string, error)
 	Update(context.Context, *models.SpendingDTO) error
 	Delete(context.Context, *models.DeleteSpendingDTO) (float64, error)
@@ -40,6 +42,44 @@ func (r *SpendingRepo) GetByReagentId(ctx context.Context, reagentId string) ([]
 	}
 
 	return spending, nil
+}
+
+func (r *SpendingRepo) GetReport(ctx context.Context, params *models.SpendingReportParams) ([]*models.SpendingReportItem, error) {
+	report := []*models.SpendingReportItem{}
+	if len(params.TypeIds) == 0 {
+		return report, nil
+	}
+
+	query := fmt.Sprintf(`WITH spent AS (
+			SELECT reagent_id,
+				COALESCE(SUM(amount) FILTER (WHERE date_of_spending < $1), 0) AS before,
+				COALESCE(SUM(amount) FILTER (WHERE date_of_spending BETWEEN $1 AND $2), 0) AS in_period,
+				COALESCE(SUM(amount) FILTER (WHERE date_of_spending <= $2), 0) AS total
+			FROM %s
+			GROUP BY reagent_id
+		)
+		SELECT r.name, COALESCE(r.uname, '') AS uname, COALESCE(r.consignment, '') AS consignment,
+			COALESCE(a.name, '') AS unit,
+			r.amount - s.before AS amount_at_start, s.in_period AS spent, r.amount - s.total AS remainder
+		FROM %s AS r
+		INNER JOIN spent AS s ON s.reagent_id = r.id
+		LEFT JOIN %s AS a ON r.amount_type_id = a.id
+		WHERE s.in_period > 0 AND r.deleted IS NULL AND r.realm_id = $3 AND r.type_id = ANY($4::uuid[])
+		ORDER BY r.name, r.consignment`,
+		Tables.Spending, Tables.Reagents, Tables.AmountType,
+	)
+
+	if err := r.db.SelectContext(ctx, &report, query, params.From, params.To, params.RealmId, pq.Array(params.TypeIds)); err != nil {
+		return nil, fmt.Errorf("failed to execute query. error: %w", err)
+	}
+
+	for i := range report {
+		report[i].Amount = math.Round(report[i].Amount*100000) / 100000
+		report[i].Spent = math.Round(report[i].Spent*100000) / 100000
+		report[i].Remainder = math.Round(report[i].Remainder*100000) / 100000
+	}
+
+	return report, nil
 }
 
 func (r *SpendingRepo) Create(ctx context.Context, dto *models.SpendingDTO) (string, error) {

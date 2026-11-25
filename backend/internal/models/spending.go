@@ -18,3 +18,21 @@ type DeleteSpendingDTO struct {
 	Id        string `json:"id" db:"id"`
 	ReagentId string `json:"reagentId" db:"reagent_id"`
 }
+
+type SpendingReportParams struct {
+	From     int
+	To       int
+	RealmId  string
+	IsPublic bool
+	TypeIds  []string
+}
+
+type SpendingReportItem struct {
+	Name        string  `json:"name" db:"name"`
+	Uname       string  `json:"uname" db:"uname"`
+	Consignment string  `json:"consignment" db:"consignment"`
+	Amount      float64 `json:"amountAtStart" db:"amount_at_start"`
+	Spent       float64 `json:"spent" db:"spent"`
+	Remainder   float64 `json:"remainder" db:"remainder"`
+	Unit        string  `json:"unit" db:"unit"`
+}

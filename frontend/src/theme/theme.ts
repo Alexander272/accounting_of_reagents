@@ -38,6 +38,11 @@ export const theme = createTheme({
 		primary: {
 			main: '#05287f',
 			light: '#eaeefc',
+			dark: '#042245',
+		},
+		secondary: {
+			main: '#0288d1',
+			light: '#e1f5fe',
 		},
 		background: {
 			default: '#fafafa',

@@ -1,5 +1,5 @@
 import styled from '@emotion/styled'
-import { styled as muiStyled } from '@mui/material'
+import { alpha, Button, styled as muiStyled } from '@mui/material'
 import { Link } from 'react-router-dom'
 
 export const NavLink = styled(Link)`
@@ -30,7 +30,33 @@ export const NavLink = styled(Link)`
 	}
 `
 
-export const NavButton = muiStyled('div')(({ theme }) => ({
+export const NavButton = muiStyled(Button)(({ theme }) => ({
+	cursor: 'pointer',
+	height: '48px',
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent: 'center',
+	position: 'relative',
+	borderRadius: 8,
+	transition: 'all 0.15s ease-in-out',
+
+	color: theme.palette.text.primary,
+	textTransform: 'none',
+	fontSize: 15,
+	fontWeight: 500,
+	padding: theme.spacing(0, 1.5),
+	'& .MuiButton-startIcon': { marginRight: theme.spacing(0.75) },
+	'&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.06) },
+	'&.active': {
+		height: '100%',
+		borderRadius: 0,
+		color: theme.palette.primary.main,
+		backgroundColor: 'transparent', // убираем заливку
+		boxShadow: `inset 0 -2px 0 ${theme.palette.primary.main}`,
+	},
+})) as typeof Button
+
+export const NavButtonMy = muiStyled('div')(({ theme }) => ({
 	cursor: 'pointer',
 	fontSize: '1.2rem',
 	color: theme.palette.primary.main,

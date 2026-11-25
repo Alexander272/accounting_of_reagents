@@ -3,12 +3,14 @@ package spending
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/access"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/models/response"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/services"
 	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/middleware"
+	"github.com/Alexander272/accounting_of_reagents/backend/internal/transport/http/utils"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/error_bot"
 	"github.com/Alexander272/accounting_of_reagents/backend/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -29,6 +31,7 @@ func Register(api *gin.RouterGroup, service services.Spending, middleware *middl
 
 	spending := api.Group("/spending", middleware.CheckPermissions(access.Reg.R(access.ResourceSpending).Read()))
 	{
+		spending.GET("/report", handlers.getReport)
 		spending.GET(":reagentId", handlers.getByReagentId)
 
 		write := spending.Group("", middleware.CheckPermissions(access.Reg.R(access.ResourceSpending).Write()))
@@ -38,6 +41,62 @@ func Register(api *gin.RouterGroup, service services.Spending, middleware *middl
 			write.DELETE("/:id", handlers.delete)
 		}
 	}
+}
+
+func (h *SpendingHandlers) getReport(c *gin.Context) {
+	from, err := strconv.Atoi(c.Query("from"))
+	if err != nil || from <= 0 {
+		response.NewErrorResponse(c, http.StatusBadRequest, "invalid param", "Не задана дата начала периода")
+		return
+	}
+
+	to, err := strconv.Atoi(c.Query("to"))
+	if err != nil || to <= 0 {
+		response.NewErrorResponse(c, http.StatusBadRequest, "invalid param", "Не задана дата окончания периода")
+		return
+	}
+
+	realmId := c.GetHeader("realm")
+	if realmId == "" {
+		realmId = c.Query("realm")
+	}
+	if realmId == "" {
+		response.NewErrorResponse(c, http.StatusBadRequest, "empty param", "realm не задан")
+		return
+	}
+
+	user := utils.GetUser(c)
+	if user == nil {
+		return
+	}
+
+	isPublic := true
+	privateKey := access.Reg.R(access.ResourcePrivateReagent).Do(access.Read).Key()
+	for _, p := range user.Permissions[realmId] {
+		if privateKey == p {
+			isPublic = false
+			break
+		}
+	}
+
+	report, err := h.service.GetReport(c, &models.SpendingReportParams{
+		From:     from,
+		To:       to,
+		RealmId:  realmId,
+		IsPublic: isPublic,
+	})
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidInput) {
+			response.NewErrorResponse(c, http.StatusBadRequest, err.Error(), "Некорректный период")
+			return
+		}
+
+		response.NewErrorResponse(c, http.StatusInternalServerError, err.Error(), "Произошла ошибка: "+err.Error())
+		error_bot.Send(c, err.Error(), nil)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.DataResponse{Data: report})
 }
 
 func (h *SpendingHandlers) getByReagentId(c *gin.Context) {

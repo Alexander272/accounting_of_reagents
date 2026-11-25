@@ -3,6 +3,7 @@ import { AppRoutes } from '@/constants/routes'
 import { Layout } from '@/components/Layout/Layout'
 import { NotFound } from '@/pages/notFound/NotFoundLazy'
 import { Home } from '@/pages/home/HomeLazy'
+import { Report } from '@/pages/report/ReportLazy'
 import { Auth } from '@/pages/auth/AuthLazy'
 import { Accesses } from '@/pages/accesses/AccessesLazy'
 import { Role } from '@/pages/accesses/role/RoleLazy'
@@ -17,16 +18,20 @@ const config: RouteObject[] = [
 		errorElement: <NotFound />,
 		children: [
 			{
-				path: AppRoutes.AUTH,
+				path: AppRoutes.Auth,
 				element: <Auth />,
 			},
 			{
-				path: AppRoutes.HOME,
+				path: AppRoutes.Home,
 				element: <PrivateRoute />,
 				children: [
 					{
 						index: true,
 						element: <Home />,
+					},
+					{
+						path: AppRoutes.Report,
+						element: <Report />,
 					},
 
 					{

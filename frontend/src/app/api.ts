@@ -8,6 +8,7 @@ export const API = {
 	reagentTypes: 'reagent-types',
 	reagents: 'reagents',
 	spending: 'spending',
+	spendingReport: 'spending/report',
 	extending: 'extending',
 	notes: 'notes',
 	users: {

@@ -1,7 +1,8 @@
 export const AppRoutes = {
-	HOME: '/',
-	AUTH: '/auth',
-	USERS: '/users',
+	Home: '/',
+	Auth: '/auth',
+	Users: '/users',
+	Report: '/report' as const,
 
 	Accesses: '/accesses' as const,
 	Realms: '/accesses/realms' as const,

@@ -22,7 +22,7 @@ type fakeReagentSvc struct {
 	group    []*models.ReagentWithRemainder
 	groupErr error
 
-	notified   []*models.ReagentNotificationDTO
+	notified []*models.ReagentNotificationDTO
 	notifErr error
 }
 
@@ -39,6 +39,11 @@ type fakeSpendingRepo struct {
 	repository.Spending
 
 	createErr error
+
+	report       []*models.SpendingReportItem
+	reportErr    error
+	reportCalls  int
+	reportParams *models.SpendingReportParams
 }
 
 func (f *fakeSpendingRepo) Create(ctx context.Context, dto *models.SpendingDTO) (string, error) {
@@ -46,6 +51,25 @@ func (f *fakeSpendingRepo) Create(ctx context.Context, dto *models.SpendingDTO) 
 		return "", f.createErr
 	}
 	return "spending-id", nil
+}
+
+func (f *fakeSpendingRepo) GetReport(ctx context.Context, params *models.SpendingReportParams) ([]*models.SpendingReportItem, error) {
+	f.reportCalls++
+	f.reportParams = params
+	return f.report, f.reportErr
+}
+
+type fakeReagentTypeSvc struct {
+	ReagentType
+
+	types  []*models.ReagentType
+	err    error
+	gotReq *models.GetReagentTypeDTO
+}
+
+func (f *fakeReagentTypeSvc) Get(ctx context.Context, req *models.GetReagentTypeDTO) ([]*models.ReagentType, error) {
+	f.gotReq = req
+	return f.types, f.err
 }
 
 type fakeMostSvc struct {
@@ -120,7 +144,7 @@ func TestSpendingService_Create_HasRunOutDecoupled(t *testing.T) {
 			group: []*models.ReagentWithRemainder{
 				groupItem(testReagentId, 100, 1, true), // остаток 1 на массу 100 → мало, уже уведомлён
 			},
-			amount:       1, // списываем последний → остаток 0 → закончился
+			amount:       1,                 // списываем последний → остаток 0 → закончился
 			wantNotified: map[string]bool{}, // НЕ переуведомляем: флаг уже true, репо не переставит
 			wantRunOut:   map[string]bool{testReagentId: true},
 			wantSend:     true, // все закончились → отправить "заканчивается" нет, но см. ниже
@@ -141,17 +165,17 @@ func TestSpendingService_Create_HasRunOutDecoupled(t *testing.T) {
 				groupItem(testReagentId, 100, 88, false),
 				groupItem(runOutReagentId, 10, 0, true), // сосед: остаток 0, уже уведомлён
 			},
-			amount:       5, // целевой остаётся 83 — не закончился
-			wantNotified: map[string]bool{},           // целевой не маленький
+			amount:       5,                                      // целевой остаётся 83 — не закончился
+			wantNotified: map[string]bool{},                      // целевой не маленький
 			wantRunOut:   map[string]bool{runOutReagentId: true}, // сосед закончился
 			wantSend:     false,
 		},
 		{
-			name:    "остатка не хватает на целевой → ErrBadValue",
+			name: "остатка не хватает на целевой → ErrBadValue",
 			group: []*models.ReagentWithRemainder{
 				groupItem(testReagentId, 100, 15, false),
 			},
-			amount: 20, // > остатка → ошибка до любых флагов
+			amount:  20, // > остатка → ошибка до любых флагов
 			wantErr: models.ErrBadValue,
 		},
 	}
@@ -162,7 +186,7 @@ func TestSpendingService_Create_HasRunOutDecoupled(t *testing.T) {
 			spending := &fakeSpendingRepo{}
 			most := &fakeMostSvc{}
 
-			svc := NewSpendingService(spending, reagent, most)
+			svc := NewSpendingService(spending, reagent, nil, most)
 
 			id, err := svc.Create(ctx, &models.SpendingDTO{
 				ReagentId: testReagentId,
@@ -202,4 +226,45 @@ func TestSpendingService_Create_HasRunOutDecoupled(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSpendingService_GetReport(t *testing.T) {
+	ctx := context.Background()
+	types := []*models.ReagentType{{Id: "type-1"}, {Id: "type-2"}}
+
+	t.Run("период и видимые типы передаются в репозиторий", func(t *testing.T) {
+		repo := &fakeSpendingRepo{report: []*models.SpendingReportItem{{Name: "Кислота"}}}
+		typeSvc := &fakeReagentTypeSvc{types: types}
+		svc := NewSpendingService(repo, nil, typeSvc, nil)
+
+		got, err := svc.GetReport(ctx, &models.SpendingReportParams{From: 100, To: 200, RealmId: "realm-1", IsPublic: false})
+		if err != nil {
+			t.Fatalf("неожиданная ошибка: %v", err)
+		}
+		if len(got) != 1 || got[0].Name != "Кислота" {
+			t.Fatalf("неверный результат: %+v", got)
+		}
+		if typeSvc.gotReq == nil || typeSvc.gotReq.IsPublic {
+			t.Errorf("запрос типов должен быть для приватных реактивов: %+v", typeSvc.gotReq)
+		}
+		if repo.reportParams == nil || repo.reportParams.From != 100 || repo.reportParams.To != 200 || repo.reportParams.RealmId != "realm-1" {
+			t.Fatalf("неверные параметры отчёта: %+v", repo.reportParams)
+		}
+		if len(repo.reportParams.TypeIds) != 2 || repo.reportParams.TypeIds[0] != "type-1" || repo.reportParams.TypeIds[1] != "type-2" {
+			t.Errorf("неверный список типов: %+v", repo.reportParams.TypeIds)
+		}
+	})
+
+	t.Run("некорректный период отклоняется до запроса в БД", func(t *testing.T) {
+		repo := &fakeSpendingRepo{}
+		svc := NewSpendingService(repo, nil, &fakeReagentTypeSvc{types: types}, nil)
+
+		_, err := svc.GetReport(ctx, &models.SpendingReportParams{From: 200, To: 100, RealmId: "realm-1"})
+		if !errors.Is(err, models.ErrInvalidInput) {
+			t.Fatalf("хочу ErrInvalidInput, получил %v", err)
+		}
+		if repo.reportCalls != 0 {
+			t.Errorf("запрос в БД не должен выполняться, вызовов: %d", repo.reportCalls)
+		}
+	})
 }

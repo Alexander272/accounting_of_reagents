@@ -1,3 +1,5 @@
+export type TableCellAlign = 'left' | 'center' | 'right'
+
 export interface ITableColumn {
 	key: string
 	label: string

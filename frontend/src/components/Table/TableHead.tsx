@@ -1,7 +1,11 @@
-import { FC, PropsWithChildren } from 'react'
+import { CSSProperties, FC, PropsWithChildren } from 'react'
 
 import { TableHeadContainer } from './style'
 
-export const TableHead: FC<PropsWithChildren> = ({ children }) => {
-	return <TableHeadContainer>{children}</TableHeadContainer>
+type Props = {
+	sx?: CSSProperties
+}
+
+export const TableHead: FC<PropsWithChildren<Props>> = ({ children, sx }) => {
+	return <TableHeadContainer styles={sx}>{children}</TableHeadContainer>
 }
