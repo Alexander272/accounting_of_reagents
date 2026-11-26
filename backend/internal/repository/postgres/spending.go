@@ -50,23 +50,38 @@ func (r *SpendingRepo) GetReport(ctx context.Context, params *models.SpendingRep
 		return report, nil
 	}
 
-	query := fmt.Sprintf(`WITH spent AS (
-			SELECT reagent_id,
-				COALESCE(SUM(amount) FILTER (WHERE date_of_spending < $1), 0) AS before,
-				COALESCE(SUM(amount) FILTER (WHERE date_of_spending BETWEEN $1 AND $2), 0) AS in_period,
-				COALESCE(SUM(amount) FILTER (WHERE date_of_spending <= $2), 0) AS total
+	query := fmt.Sprintf(`WITH target_reagents AS (
+			SELECT id, name, uname, consignment, amount, amount_type_id
 			FROM %s
-			GROUP BY reagent_id
+			WHERE deleted IS NULL
+				AND realm_id = $3
+				AND type_id = ANY($4::uuid[])
+		),
+		spent AS (
+			SELECT
+				sp.reagent_id,
+				COALESCE(SUM(sp.amount) FILTER (WHERE sp.date_of_spending < $1), 0) AS before,
+				COALESCE(SUM(sp.amount) FILTER (WHERE sp.date_of_spending >= $1), 0) AS in_period,
+				COALESCE(SUM(sp.amount), 0) AS total
+			FROM %s AS sp
+			INNER JOIN target_reagents AS tr ON sp.reagent_id = tr.id
+			WHERE sp.date_of_spending <= $2
+			GROUP BY sp.reagent_id
+			HAVING SUM(sp.amount) FILTER (WHERE sp.date_of_spending >= $1) > 0
 		)
-		SELECT r.name, COALESCE(r.uname, '') AS uname, COALESCE(r.consignment, '') AS consignment,
+		SELECT
+			tr.name,
+			COALESCE(tr.uname, '') AS uname,
+			COALESCE(tr.consignment, '') AS consignment,
 			COALESCE(a.name, '') AS unit,
-			r.amount - s.before AS amount_at_start, s.in_period AS spent, r.amount - s.total AS remainder
-		FROM %s AS r
-		INNER JOIN spent AS s ON s.reagent_id = r.id
-		LEFT JOIN %s AS a ON r.amount_type_id = a.id
-		WHERE s.in_period > 0 AND r.deleted IS NULL AND r.realm_id = $3 AND r.type_id = ANY($4::uuid[])
-		ORDER BY r.name, r.consignment`,
-		Tables.Spending, Tables.Reagents, Tables.AmountType,
+			tr.amount - s.before AS amount_at_start,
+			s.in_period AS spent,
+			tr.amount - s.total AS remainder
+		FROM target_reagents AS tr
+		INNER JOIN spent AS s ON s.reagent_id = tr.id
+		LEFT JOIN %s AS a ON tr.amount_type_id = a.id
+		ORDER BY tr.name, tr.consignment`,
+		Tables.Reagents, Tables.Spending, Tables.AmountType,
 	)
 
 	if err := r.db.SelectContext(ctx, &report, query, params.From, params.To, params.RealmId, pq.Array(params.TypeIds)); err != nil {

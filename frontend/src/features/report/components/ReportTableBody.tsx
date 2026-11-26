@@ -14,7 +14,7 @@ export const ReportTableBody = ({ items }: Props) => (
 	<TableBody>
 		<FixedSizeList
 			overscanCount={10}
-			height={580}
+			height={550}
 			itemCount={items.length}
 			itemSize={RowHeight}
 			width={ReportColumnWidths.reduce((ac, cur) => ac + cur, 0)}
